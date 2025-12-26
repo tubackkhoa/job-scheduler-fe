@@ -1,0 +1,260 @@
+name: Notify Repo A on Developer Branch Push
+run-name: deploy-${{ github.repository }}-${{ github.ref_name }}-${{ github.run_id }}
+
+on:
+  push:
+    branches: [staging, master]
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  IMAGE_REPO: oraichain/job-scheduler-fe
+  CHART_NAME: job-scheduler-fe
+  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+  PIC: "684700353148747791"
+  # PIC_1: "596272320247758868"
+  PIC_INFRA: "769401829540102154"
+
+
+jobs:
+  # ====== YAML step anchors (DRY) ======
+  _templates:
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    steps:
+      - &checkout
+        name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - &docker_login
+        name: Login DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - &set_short_commit
+        name: Set Short Commit
+        run: echo "SHORT_COMMIT=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
+
+      - &env
+        name: Generate .env file
+        run: |
+          echo "${{ vars.ENV }}" > .env
+          echo "Generated .env:"
+          cat .env
+
+      - &build_push
+        name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ env.IMAGE_REPO }}:${{ github.ref_name }}.${{ env.SHORT_COMMIT }}
+
+      - &install_gh_cli
+        name: Install GH CLI
+        run: |
+          set -euo pipefail
+          type -p gh >/dev/null && exit 0
+          sudo apt-get update
+          sudo apt-get install -y curl
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+            | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+            | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt-get update && sudo apt-get install -y gh
+
+      - &gh_version
+        name: gh version
+        run: gh version
+
+      - &install_yq
+        name: Install yq
+        run: |
+          set -euo pipefail
+          if ! command -v yq >/dev/null 2>&1; then
+            BIN=/usr/local/bin/yq
+            sudo wget -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O "$BIN"
+            sudo chmod +x "$BIN"
+          fi
+          yq --version
+
+      - &update_tag_and_pr
+        name: Update image tag & PR
+        env:
+          PAT: ${{ secrets.PAT_TOKEN_HELM }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN_HELM }}
+          APPROVAL_GH_TOKEN: ${{ secrets.APPROVAL_GH_TOKEN_HELM }}
+        run: |
+          set -euo pipefail
+          export TAG="${{ github.ref_name }}.${{ env.SHORT_COMMIT }}"
+          export PAT="${APPROVAL_GH_TOKEN}"
+          export APPROVAL="${APPROVAL_GH_TOKEN}"
+
+          git clone https://${GH_TOKEN}@github.com/oraichain/infra-deployments.git
+          cd infra-deployments
+
+          git config --global user.email "devops@orai.io"
+          git config --global user.name "DevOps"
+          BR="feat/update-${{ env.CHART_NAME }}-${{ env.ENV_NAME }}-tag-${TAG}"
+          git checkout -b "$BR"
+          git remote set-url origin https://${PAT}@github.com/oraichain/infra-deployments.git
+
+          if [[ ! -f "${{ env.HELM_CHARTS_PATH }}" ]]; then
+            echo "❌ File ${{ env.HELM_CHARTS_PATH }} doesn't exist!"
+            exit 1
+          fi
+
+          yq eval -i ".image.tag = env(TAG)" "${{ env.HELM_CHARTS_PATH }}"
+          git add "${{ env.HELM_CHARTS_PATH }}"
+          git commit -m "feat(${{ env.CHART_NAME }}): update image tag in ${{ env.ENV_NAME }} to ${TAG}"
+          git push -fu origin "$BR"
+
+          PR_URL=$(gh pr list -H "$BR" -B master --json url --jq '.[].url')
+          if [[ -z "${PR_URL}" ]]; then
+            gh pr create --title "Update ${{ env.CHART_NAME }} image tag to ${TAG} in ${{ env.ENV_NAME }}" --body "${{ env.ENV_NAME }} ${TAG}" -B master
+            PR_URL=$(gh pr list -H "$BR" -B master --json url --jq '.[].url')
+          fi
+          echo "PR=${PR_URL}" >> $GITHUB_ENV
+
+          GH_TOKEN=$APPROVAL gh pr review -a "$BR" -b "${{ env.ENV_NAME }} env will be auto approved"
+          GH_TOKEN=$APPROVAL gh pr merge -d -s --body="${TAG} will be synced to ${{ env.ENV_NAME }} by ArgoCD" "$BR" --admin
+
+      - &run_deploy_vm
+        name: Run Deploy
+        run: |
+          SHORT_TAG="${{ github.ref_name }}.${SHORT_COMMIT}"
+          FULL_IMAGE="${{ env.IMAGE_REPO }}:${SHORT_TAG}"
+
+
+          sudo bash -c "
+            set -e
+            cd ${{ env.COMPOSE_PATH }}
+
+            if [ ! -f docker-compose.yml ]; then
+              echo '❌ docker-compose.yml not found in $(pwd)'
+              ls -la
+              exit 1
+            fi
+
+            sed -E \"s|^( *image:).*|\\1 $FULL_IMAGE|\" docker-compose.yml > docker-compose.yml.new
+            mv docker-compose.yml.new docker-compose.yml
+
+            docker compose down
+            docker compose pull
+            docker compose up -d
+          "
+
+      - &run_deploy_vm_prod
+        name: Run Deploy
+        run: |
+          SHORT_TAG="${{ github.ref_name }}.${SHORT_COMMIT}"
+          FULL_IMAGE="${{ env.IMAGE_REPO }}:${SHORT_TAG}"
+
+
+          sudo bash -c "
+            set -e
+            cd ${{ env.COMPOSE_PATH }}
+
+            if [ ! -f docker-compose.yml ]; then
+              echo '❌ docker-compose.yml not found in $(pwd)'
+              ls -la
+              exit 1
+            fi
+
+            sed -E \"s|^( *image:).*|\\1 $FULL_IMAGE|\" docker-compose.yml > docker-compose.yml.new
+            mv docker-compose.yml.new docker-compose.yml
+            docker compose pull
+          "
+
+      - &notify_single
+        name: Notify Discord (single)
+        if: always()
+        uses: appleboy/discord-action@master
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID_HELM }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN_HELM }}
+          username: GitBot
+          message: |
+            <@${{ env.PIC }}> ${{ job.status == 'success' && ':white_check_mark:' || ':x:' }} **${{ env.CHART_NAME }}** — `${{ env.ENV_NAME }}`
+            • Ref: `${{ github.ref_name }}`
+            • Commit: `${{ env.SHORT_COMMIT }}`
+            • Image: `${{ github.ref_name }}.${{ env.SHORT_COMMIT }}`
+            • PR: ${{ env.PR || 'N/A' }}
+            • Run: ${{ env.RUN_URL }}
+            ${{ job.status != 'success' && format('<@{}> please check deploy failure!', env.PIC) || '' }}
+
+      - &notify_single_prod
+        name: Notify Discord (single)
+        if: always()
+        uses: appleboy/discord-action@master
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID_HELM }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN_HELM }}
+          username: GitBot
+          message: |
+            <@${{ env.PIC }}><@${{ env.PIC_1 }}><@${{ env.PIC_INFRA }}> ${{ job.status == 'success' && ':white_check_mark:' || ':x:' }} **${{ env.CHART_NAME }}** — `${{ env.ENV_NAME }}`
+            • Ref: `${{ github.ref_name }}`
+            • Commit: `${{ env.SHORT_COMMIT }}`
+            • Image: `${{ github.ref_name }}.${{ env.SHORT_COMMIT }}`
+            • PR: ${{ env.PR || 'N/A' }}
+            • Run: ${{ env.RUN_URL }}
+            ${{ job.status != 'success' && format('<@{}> please check deploy failure!', env.PIC, env.PIC_1, env.PIC_INFRA) || '' }}
+
+
+  # ==========================
+  # Build Docker Images
+  # ==========================
+  build_docker:
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout
+      - *docker_login
+      - *set_short_commit
+      - *env
+      - *build_push
+
+
+  # ==========================
+  # Deploy to STAGING COMPOSE
+  # ==========================
+  trigger_deploy_staging_vm:
+    if: github.ref_type == 'branch' && github.ref_name == 'master'
+    needs:
+      - build_docker
+    runs-on: [self-hosted, "5116117430"]
+    env:
+      ENV_NAME: staging
+      COMPOSE_PATH: /opt/deploy/job-scheduler-fe
+    steps:
+      - *set_short_commit
+      - *run_deploy_vm
+      - *notify_single
+
+
+  # ==========================
+  # Deploy to PROD COMPOSE
+  # ==========================
+  trigger_deploy_prod_vm:
+    if: github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
+    needs:
+      - build_docker
+    runs-on: [self-hosted, "5116117430"]
+    env:
+      ENV_NAME: production
+      COMPOSE_PATH: /opt/deploy/job-scheduler-fe
+    steps:
+      - *set_short_commit
+      - *run_deploy_vm_prod
+      - *notify_single_prod
+
