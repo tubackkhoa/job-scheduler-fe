@@ -2,28 +2,63 @@ export const API_BASE_URL =
   // @ts-ignore
   import.meta.env.VITE_API_BASE_URL ?? '';
 
+const parseJsonResponse = async (res: Response, url: string) => {
+  const contentType = res.headers.get('content-type');
+  if (!contentType || !contentType.includes('application/json')) {
+    const text = await res.text();
+    // If we get HTML, it's likely a 404 or error page
+    if (contentType?.includes('text/html')) {
+      throw new Error(
+        `Response: ${text.substring(0, 200)}`
+      );
+    }
+    throw new Error(`Expected JSON but got ${contentType}. Response: ${text.substring(0, 100)}`);
+  }
+  return res.json();
+};
+
+const validateApiConfig = (endpoint: string) => {
+  if (!API_BASE_URL) {
+    throw new Error(
+      `API_BASE_URL is not configured. Please set VITE_API_BASE_URL environment variable.\n` +
+      `Current value: ${API_BASE_URL}`
+    );
+  }
+};
+
 export default {
   async fetchSchema(sessionId: number, pluginId: number) {
-    const res = await fetch(`${API_BASE_URL}/schema/${sessionId}/${pluginId}`);
+    const url = `${API_BASE_URL}/schema/${sessionId}/${pluginId}`;
+    validateApiConfig(url);
+    
+    const res = await fetch(url);
 
     if (!res.ok) {
-      throw new Error((await res.text()) || `Schema not found`);
+      const text = await res.text();
+      throw new Error(text || `Schema not found (${res.status})`);
     }
 
-    return res.json();
+    return parseJsonResponse(res, url);
   },
 
   async fetchPlugins() {
-    const res = await fetch(`${API_BASE_URL}/plugins`);
+    const url = `${API_BASE_URL}/plugins`;
+    validateApiConfig(url);
+    
+    const res = await fetch(url);
 
     if (!res.ok) {
-      throw new Error('Failed to load plugins');
+      const text = await res.text();
+      throw new Error(text || `Failed to load plugins (${res.status})`);
     }
 
-    return res.json();
+    return parseJsonResponse(res, url);
   },
   async updateConfig(jobId: number, payload: Object) {
-    const res = await fetch(`${API_BASE_URL}/config/${jobId}`, {
+    const url = `${API_BASE_URL}/config/${jobId}`;
+    validateApiConfig(url);
+    
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -32,13 +67,17 @@ export default {
     });
 
     if (!res.ok) {
-      throw new Error((await res.text()) || 'Plugin execution failed');
+      const text = await res.text();
+      throw new Error(text || `Plugin execution failed (${res.status})`);
     }
 
-    return res.json();
+    return parseJsonResponse(res, url);
   },
   async activateJob(jobId: number, activation: boolean) {
-    const res = await fetch(`${API_BASE_URL}/activate/${jobId}/${activation}`, {
+    const url = `${API_BASE_URL}/activate/${jobId}/${activation}`;
+    validateApiConfig(url);
+    
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -47,13 +86,16 @@ export default {
 
     if (!res.ok) {
       const msg = await res.text();
-      throw new Error(msg || 'Plugin activation failed');
+      throw new Error(msg || `Plugin activation failed (${res.status})`);
     }
 
-    return res.json();
+    return parseJsonResponse(res, url);
   },
   async deleteJob(jobId: number) {
-    const res = await fetch(`${API_BASE_URL}/delete/${jobId}`, {
+    const url = `${API_BASE_URL}/delete/${jobId}`;
+    validateApiConfig(url);
+    
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -62,13 +104,16 @@ export default {
 
     if (!res.ok) {
       const msg = await res.text();
-      throw new Error(msg || 'Plugin deletion failed');
+      throw new Error(msg || `Plugin deletion failed (${res.status})`);
     }
 
-    return res.json();
+    return parseJsonResponse(res, url);
   },
   async reloadPlugin(pkg: string) {
-    const res = await fetch(`${API_BASE_URL}/reload/${pkg}`, {
+    const url = `${API_BASE_URL}/reload/${pkg}`;
+    validateApiConfig(url);
+    
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -77,17 +122,20 @@ export default {
 
     if (!res.ok) {
       const msg = await res.text();
-      throw new Error(msg || 'Plugin reload failed');
+      throw new Error(msg || `Plugin reload failed (${res.status})`);
     }
 
-    return res.json();
+    return parseJsonResponse(res, url);
   },
   async createPlugin(
     packageName: string,
     interval: number,
     description?: string
   ) {
-    const res = await fetch(`${API_BASE_URL}/plugins`, {
+    const url = `${API_BASE_URL}/plugins`;
+    validateApiConfig(url);
+    
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -101,9 +149,9 @@ export default {
 
     if (!res.ok) {
       const msg = await res.text();
-      throw new Error(msg || 'Failed to create plugin');
+      throw new Error(msg || `Failed to create plugin (${res.status})`);
     }
 
-    return res.json();
+    return parseJsonResponse(res, url);
   },
 };
