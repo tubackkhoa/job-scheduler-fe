@@ -47,7 +47,7 @@ const LogRow = React.memo(function LogRow({ log, searchText }) {
     <ListItem
       disableGutters
       sx={{
-        py: 0.25,
+        py: 0.2,
         px: 0,
         fontFamily: '"JetBrains Mono", monospace',
       }}
