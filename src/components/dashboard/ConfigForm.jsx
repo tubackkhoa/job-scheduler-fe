@@ -46,7 +46,7 @@ export const ConfigForm = forwardRef(function ConfigForm(
           sx={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 4,
+            gap: 4
           }}
         >
           {/* General Settings section for non-object fields */}
@@ -58,7 +58,7 @@ export const ConfigForm = forwardRef(function ConfigForm(
                 bgcolor: 'rgba(99, 102, 241, 0.04)',
                 border: 1,
                 borderColor: 'divider',
-                borderRadius: 3,
+                borderRadius: 3
               }}
             >
               <Stack
@@ -106,7 +106,7 @@ export const ConfigForm = forwardRef(function ConfigForm(
           bgcolor: 'rgba(236, 72, 153, 0.04)',
           border: 1,
           borderColor: 'divider',
-          borderRadius: 3,
+          borderRadius: 3
         }}
       >
         <Box sx={{ mb: 3 }}>
@@ -139,8 +139,8 @@ export const ConfigForm = forwardRef(function ConfigForm(
         '& .rjsf': {
           '& .form-group': { mb: 0 },
           '& .field': { mb: 0 },
-          '& .control-label': { mb: 1 },
-        },
+          '& .control-label': { mb: 1 }
+        }
       }}
     >
       {formData && (
@@ -177,7 +177,7 @@ export const ConfigForm = forwardRef(function ConfigForm(
                   {help}
                 </Box>
               );
-            },
+            }
           }}
         >
           <div style={{ display: 'none' }} />
