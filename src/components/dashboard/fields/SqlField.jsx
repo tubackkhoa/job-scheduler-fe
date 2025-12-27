@@ -5,9 +5,6 @@ import { sql, PostgreSQL } from '@codemirror/lang-sql';
 import api from '../../../api';
 import _ from 'lodash';
 
-// Global map to cache tabIndex by fieldPathId
-const tabIndexCache = {};
-
 export function SqlField({
   formData,
   onChange,
@@ -16,21 +13,14 @@ export function SqlField({
   registry
 }) {
   const extensions = useMemo(() => [sql({ dialect: PostgreSQL })], []);
-  const cacheId = fieldPathId?.path?.join('.');
   // Local state for editor content during typing
   const [localValue, setLocalValue] = useState(formData);
   const [previewCode, setPreviewCode] = useState('');
-  const [tabIndex, setTabIndex] = useState(() => tabIndexCache[cacheId] || 0);
-
-  // Whenever tabIndex changes, update the global cache
-  useEffect(() => {
-    tabIndexCache[cacheId] = tabIndex;
-  }, [cacheId, tabIndex]);
+  const [tabIndex, setTabIndex] = useState(0);
 
   // Sync local state if formData changes externally
   useEffect(() => {
     setLocalValue(formData);
-    updatePrewiewCode(formData);
   }, [formData]);
 
   // Only notify parent on blur (when user finishes editing)
@@ -52,9 +42,6 @@ export function SqlField({
   };
 
   const handleTabChange = async (event, newValue) => {
-    if (newValue === 1) {
-      updatePrewiewCode(localValue);
-    }
     setTabIndex(newValue);
   };
 
