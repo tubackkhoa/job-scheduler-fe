@@ -297,3 +297,19 @@ export const evaluate = (expr, context, defaultValue, maxSteps = 256) => {
     return defaultValue;
   }
 };
+
+export const initPyodide = new Promise(async (resolve) => {
+  const pyodide = await loadPyodide();
+  await pyodide.loadPackage('jinja2');
+  const pythonCode = `
+import jinja2
+from datetime import datetime
+
+def render_template(tml, context):    
+    template = jinja2.Template(tml)
+    return template.render(datetime=datetime, **context)
+`;
+  await pyodide.runPythonAsync(pythonCode);
+  console.log('Pyodide initialized');
+  resolve(pyodide);
+});
