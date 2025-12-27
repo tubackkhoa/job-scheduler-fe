@@ -10,7 +10,7 @@ import {
   Divider,
   TextField,
   Box,
-  Paper,
+  Paper
 } from '@mui/material';
 
 export function MLThresholdsTableField({
@@ -18,7 +18,7 @@ export function MLThresholdsTableField({
   formData = {},
   registry,
   onChange,
-  fieldPathId,
+  fieldPathId
 }) {
   const modelSchemas = schema.properties ?? {};
   const firstModelKey = Object.keys(modelSchemas)[0];
@@ -33,9 +33,9 @@ export function MLThresholdsTableField({
           ...formData[modelKey],
           [thresholdKey]: {
             ...formData[modelKey]?.[thresholdKey],
-            ...patch,
-          },
-        },
+            ...patch
+          }
+        }
       },
       fieldPathId?.path
     );
@@ -49,7 +49,7 @@ export function MLThresholdsTableField({
         bgcolor: 'background.paper',
         border: '1px solid',
         borderColor: 'divider',
-        borderRadius: 2,
+        borderRadius: 2
       }}
     >
       <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
@@ -90,7 +90,7 @@ export function MLThresholdsTableField({
                 key={modelKey}
                 sx={{
                   '&:hover': { bgcolor: 'action.hover' },
-                  '&:last-child td': { borderBottom: 0 },
+                  '&:last-child td': { borderBottom: 0 }
                 }}
               >
                 <TableCell>
@@ -121,27 +121,29 @@ export function MLThresholdsTableField({
                         <TextField
                           type="number"
                           size="small"
-                          value={cell.value ?? 0}
-                          onChange={(e) =>
+                          value={cell.value ?? ''}
+                          onChange={(e) => {
                             updateCell(modelKey, thKey, {
-                              value: Number(e.target.value),
-                            })
-                          }
+                              value: e.target.value
+                            });
+                          }}
                           disabled={cell.disabled}
                           sx={{
                             width: 70,
                             '& .MuiOutlinedInput-root': {
-                              fontSize: '0.875rem',
-                            },
+                              fontSize: '0.875rem'
+                            }
                           }}
-                          inputProps={{ step: 0.01 }}
+                          slotProps={{
+                            htmlInput: { step: 0.01, min: 0.01, max: 1 }
+                          }}
                         />
                         <Checkbox
                           size="small"
                           checked={cell.disabled ?? false}
                           onChange={(e) =>
                             updateCell(modelKey, thKey, {
-                              disabled: e.target.checked,
+                              disabled: e.target.checked
                             })
                           }
                         />
