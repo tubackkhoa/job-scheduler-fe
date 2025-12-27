@@ -13,7 +13,8 @@ export function SqlField({
   onChange,
   schema,
   fieldPathId,
-  registry
+  registry,
+  formContext
 }) {
   const extensions = useMemo(() => [sql({ dialect: PostgreSQL })], []);
   const cacheId = fieldPathId?.path?.join('.');
@@ -29,7 +30,7 @@ export function SqlField({
 
   // Sync local state if formData changes externally
   useEffect(() => {
-    setLocalValue(formData || '');
+    setLocalValue(formData);
     updatePrewiewCode(formData);
   }, [formData]);
 
@@ -43,7 +44,9 @@ export function SqlField({
   const updatePrewiewCode = async (tpl) => {
     const pyodide = await initPyodide;
     const renderTemplate = pyodide.globals.get('render_template');
-    const pyContext = pyodide.toPy(registry.formContext);
+    const pyContext = pyodide.toPy(
+      registry.formContext.formRef.current.state.formData
+    );
     const output = renderTemplate(tpl, pyContext);
     setPreviewCode(output);
   };
@@ -60,7 +63,7 @@ export function SqlField({
       <Typography variant="subtitle2">{schema.title}</Typography>
       <Tabs value={tabIndex} onChange={handleTabChange}>
         <Tab label="Code" />
-        <Tab label="Preview" />
+        <Tab label="Preview" onClick={() => updatePrewiewCode(localValue)} />
       </Tabs>
       <CodeMirror
         style={{

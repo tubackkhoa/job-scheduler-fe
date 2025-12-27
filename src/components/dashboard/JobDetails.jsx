@@ -13,7 +13,7 @@ import {
   Tab,
   IconButton,
   Tooltip,
-  Divider,
+  Divider
 } from '@mui/material';
 import {
   PlayArrow,
@@ -25,7 +25,7 @@ import {
   Terminal,
   Delete,
   Save,
-  AddCircleOutline,
+  AddCircleOutline
 } from '@mui/icons-material';
 import { ConfigForm } from './ConfigForm';
 import LogViewer from '../../LogViewer';
@@ -52,12 +52,11 @@ export function JobDetails({
   onSave,
   onSaveAsNew,
   onDelete,
-  isSubmitting,
+  isSubmitting
 }) {
   const [tabIndex, setTabIndex] = useState(0);
   const [copied, setCopied] = useState(false);
   const [localFormData, setLocalFormData] = useState(formData);
-  const formRef = useRef(null);
 
   useEffect(() => {
     setLocalFormData(formData);
@@ -83,7 +82,7 @@ export function JobDetails({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          p: 3,
+          p: 3
         }}
       >
         <Typography variant="body1" color="text.secondary">
@@ -119,7 +118,7 @@ export function JobDetails({
                         borderRadius: '50%',
                         bgcolor: 'success.light',
                         animation: 'pulse 2s infinite',
-                        ml: 1,
+                        ml: 1
                       }}
                     />
                   ) : undefined
@@ -141,11 +140,11 @@ export function JobDetails({
         slotProps={{
           title: {
             variant: 'h6',
-            fontWeight: 600,
+            fontWeight: 600
           },
           subheader: {
-            variant: 'body2',
-          },
+            variant: 'body2'
+          }
         }}
       />
 
@@ -176,8 +175,8 @@ export function JobDetails({
               sx={{
                 '& .MuiTab-root': {
                   minHeight: 48,
-                  textTransform: 'none',
-                },
+                  textTransform: 'none'
+                }
               }}
             >
               <Tab
@@ -204,7 +203,6 @@ export function JobDetails({
               schema={schema}
               formData={localFormData}
               onChange={setLocalFormData}
-              formRef={formRef}
             />
           </TabPanel>
 
@@ -218,7 +216,7 @@ export function JobDetails({
                     top: 8,
                     right: 8,
                     zIndex: 1,
-                    bgcolor: 'action.hover',
+                    bgcolor: 'action.hover'
                   }}
                   size="small"
                 >
@@ -242,7 +240,7 @@ export function JobDetails({
                   overflow: 'auto',
                   fontFamily: '"JetBrains Mono", monospace',
                   fontSize: '0.85rem',
-                  color: 'primary.light',
+                  color: 'primary.light'
                 }}
               >
                 {JSON.stringify(formData, null, 2)}
@@ -268,9 +266,7 @@ export function JobDetails({
                 variant="contained"
                 startIcon={<Save />}
                 onClick={() => {
-                  const currentData =
-                    formRef.current?.state?.formData || localFormData || {};
-                  onSave(currentData);
+                  onSave(localFormData);
                 }}
                 disabled={isSubmitting}
                 sx={{
@@ -278,8 +274,8 @@ export function JobDetails({
                     'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
                   '&:hover': {
                     background:
-                      'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
-                  },
+                      'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)'
+                  }
                 }}
               >
                 {isSubmitting ? 'Saving...' : 'Save'}
@@ -288,9 +284,7 @@ export function JobDetails({
                 variant="outlined"
                 startIcon={<AddCircleOutline />}
                 onClick={() => {
-                  const currentData =
-                    formRef.current?.state?.formData || localFormData || {};
-                  onSaveAsNew(currentData);
+                  onSaveAsNew(localFormData);
                 }}
                 disabled={isSubmitting}
               >

@@ -293,7 +293,7 @@ export const evaluate = (expr, context, defaultValue, maxSteps = 256) => {
     }
     return evalAstIterative(ast, context, maxSteps);
   } catch (err) {
-    console.error('Evaluation error:', err);
+    console.log('Evaluation error:', err.message);
     return defaultValue;
   }
 };

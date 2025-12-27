@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { Box, Paper, Stack, Typography, Grid } from '@mui/material';
 import { Settings } from '@mui/icons-material';
 import Form from '@rjsf/mui';
@@ -6,12 +6,28 @@ import validator from '@rjsf/validator-ajv8';
 import { extractUiSchema, evaluate } from '../../utils';
 import fields from './fields';
 
-export const ConfigForm = forwardRef(function ConfigForm(
-  { schema, formData, onChange },
-  ref
-) {
+export const ConfigForm = function ConfigForm({ schema, formData, onChange }) {
+  const formRef = useRef();
+  // Pass a stable formContext object with the ref
+  const formContext = useMemo(() => ({ formRef }), []);
+  const watchMap = useRef({});
+  const currentFormData = useRef(formData);
+  const updateExpressions = (data) => {
+    currentFormData.current = data;
+    for (const [cacheId, expr] of Object.entries(watchMap.current)) {
+      const isHidden = evaluate(expr, data, false);
+      document.getElementById(cacheId).style.display = isHidden
+        ? 'none'
+        : 'block';
+    }
+  };
+  useEffect(() => {
+    updateExpressions(formData);
+  }, [formData]);
+
   const handleChange = ({ formData: newFormData }) => {
     if (onChange) {
+      updateExpressions(newFormData);
       onChange(newFormData);
     }
   };
@@ -147,10 +163,10 @@ export const ConfigForm = forwardRef(function ConfigForm(
         <Form
           schema={schema}
           uiSchema={extractUiSchema(schema)}
-          ref={ref}
+          formContext={formContext}
+          ref={formRef}
           fields={fields}
           formData={formData}
-          formContext={formData}
           validator={validator}
           onChange={handleChange}
           liveValidate={false}
@@ -158,20 +174,24 @@ export const ConfigForm = forwardRef(function ConfigForm(
           templates={{
             ObjectFieldTemplate,
             FieldTemplate: (props) => {
-              const { help, errors, children, schema, registry } = props;
+              const { help, errors, children, schema, fieldPathId } = props;
+              const cacheId = fieldPathId?.path?.join('.') ?? props.id;
+              let isHidden = false;
               if (schema['ui:options']) {
-                const isHidden = evaluate(
+                isHidden = evaluate(
                   schema['ui:options'].hidden,
-                  registry.formContext,
+                  currentFormData.current ?? formData,
                   false
                 );
-                if (isHidden) {
-                  return null;
-                }
+                // cache first time because schema won't change
+                watchMap.current[cacheId] = schema['ui:options'].hidden;
               }
 
               return (
-                <Box sx={{ width: '100%' }}>
+                <Box
+                  id={cacheId}
+                  sx={{ width: '100%', display: isHidden ? 'none' : 'block' }}
+                >
                   {children}
                   {errors}
                   {help}
@@ -185,4 +205,4 @@ export const ConfigForm = forwardRef(function ConfigForm(
       )}
     </Box>
   );
-});
+};
