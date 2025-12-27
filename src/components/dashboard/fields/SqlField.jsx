@@ -13,8 +13,7 @@ export function SqlField({
   onChange,
   schema,
   fieldPathId,
-  registry,
-  formContext
+  registry
 }) {
   const extensions = useMemo(() => [sql({ dialect: PostgreSQL })], []);
   const cacheId = fieldPathId?.path?.join('.');
