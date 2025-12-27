@@ -6,10 +6,18 @@ import validator from '@rjsf/validator-ajv8';
 import { extractUiSchema, evaluate } from '../../utils';
 import fields from './fields';
 
-export const ConfigForm = function ConfigForm({ schema, formData, onChange }) {
+export const ConfigForm = function ConfigForm({
+  schema,
+  formData,
+  onChange,
+  pluginPackage
+}) {
   const formRef = useRef();
   // Pass a stable formContext object with the ref
-  const formContext = useMemo(() => ({ formRef }), []);
+  const formContext = useMemo(
+    () => ({ formRef, pluginPackage }),
+    [pluginPackage]
+  );
   const watchMap = useRef({});
   const currentFormData = useRef(formData);
   const updateExpressions = (data) => {

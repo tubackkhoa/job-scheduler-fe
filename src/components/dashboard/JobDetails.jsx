@@ -200,6 +200,7 @@ export function JobDetails({
           {/* Tab panels */}
           <TabPanel value={tabIndex} index={0}>
             <ConfigForm
+              pluginPackage={pluginPackage}
               schema={schema}
               formData={localFormData}
               onChange={setLocalFormData}

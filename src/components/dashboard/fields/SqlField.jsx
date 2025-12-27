@@ -2,9 +2,9 @@ import { useMemo, useState, useEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { Stack, Typography, Tabs, Tab } from '@mui/material';
 import { sql, PostgreSQL } from '@codemirror/lang-sql';
-import { initPyodide } from '../../../utils';
+import api from '../../../api';
+import _ from 'lodash';
 
-initPyodide; // Preload Pyodide
 // Global map to cache tabIndex by fieldPathId
 const tabIndexCache = {};
 
@@ -41,13 +41,14 @@ export function SqlField({
   };
 
   const updatePrewiewCode = async (tpl) => {
-    const pyodide = await initPyodide;
-    const renderTemplate = pyodide.globals.get('render_template');
-    const pyContext = pyodide.toPy(
-      registry.formContext.formRef.current.state.formData
+    const params = { ...registry.formContext.formRef.current.state.formData };
+    _.unset(params, fieldPathId?.path);
+    const ret = await api.renderTemplate(
+      registry.formContext.pluginPackage,
+      tpl,
+      params
     );
-    const output = renderTemplate(tpl, pyContext);
-    setPreviewCode(output);
+    setPreviewCode(ret.result);
   };
 
   const handleTabChange = async (event, newValue) => {

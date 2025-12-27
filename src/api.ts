@@ -8,11 +8,14 @@ const parseJsonResponse = async (res: Response, url: string) => {
     const text = await res.text();
     // If we get HTML, it's likely a 404 or error page
     if (contentType?.includes('text/html')) {
-      throw new Error(
-        `Response: ${text.substring(0, 200)}`
-      );
+      throw new Error(`Response: ${text.substring(0, 200)}`);
     }
-    throw new Error(`Expected JSON but got ${contentType}. Response: ${text.substring(0, 100)}`);
+    throw new Error(
+      `Expected JSON but got ${contentType}. Response: ${text.substring(
+        0,
+        100
+      )}`
+    );
   }
   return res.json();
 };
@@ -21,7 +24,7 @@ const validateApiConfig = (endpoint: string) => {
   if (!API_BASE_URL) {
     throw new Error(
       `API_BASE_URL is not configured. Please set VITE_API_BASE_URL environment variable.\n` +
-      `Current value: ${API_BASE_URL}`
+        `Current value: ${API_BASE_URL}`
     );
   }
 };
@@ -30,7 +33,7 @@ export default {
   async fetchSchema(sessionId: number, pluginId: number) {
     const url = `${API_BASE_URL}/schema/${sessionId}/${pluginId}`;
     validateApiConfig(url);
-    
+
     const res = await fetch(url);
 
     if (!res.ok) {
@@ -44,7 +47,7 @@ export default {
   async fetchPlugins() {
     const url = `${API_BASE_URL}/plugins`;
     validateApiConfig(url);
-    
+
     const res = await fetch(url);
 
     if (!res.ok) {
@@ -57,13 +60,13 @@ export default {
   async updateConfig(jobId: number, payload: Object) {
     const url = `${API_BASE_URL}/config/${jobId}`;
     validateApiConfig(url);
-    
+
     const res = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(payload)
     });
 
     if (!res.ok) {
@@ -76,12 +79,12 @@ export default {
   async activateJob(jobId: number, activation: boolean) {
     const url = `${API_BASE_URL}/activate/${jobId}/${activation}`;
     validateApiConfig(url);
-    
+
     const res = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-      },
+        'Content-Type': 'application/json'
+      }
     });
 
     if (!res.ok) {
@@ -94,12 +97,12 @@ export default {
   async deleteJob(jobId: number) {
     const url = `${API_BASE_URL}/delete/${jobId}`;
     validateApiConfig(url);
-    
+
     const res = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-      },
+        'Content-Type': 'application/json'
+      }
     });
 
     if (!res.ok) {
@@ -112,12 +115,12 @@ export default {
   async reloadPlugin(pkg: string) {
     const url = `${API_BASE_URL}/reload/${pkg}`;
     validateApiConfig(url);
-    
+
     const res = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-      },
+        'Content-Type': 'application/json'
+      }
     });
 
     if (!res.ok) {
@@ -134,17 +137,17 @@ export default {
   ) {
     const url = `${API_BASE_URL}/plugins`;
     validateApiConfig(url);
-    
+
     const res = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         package: packageName,
         interval,
-        description: description || '',
-      }),
+        description: description || ''
+      })
     });
 
     if (!res.ok) {
@@ -154,4 +157,26 @@ export default {
 
     return parseJsonResponse(res, url);
   },
+  async renderTemplate(packageName: string, template: string, params: object) {
+    const url = `${API_BASE_URL}/template/${packageName}`;
+    validateApiConfig(url);
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        template,
+        params
+      })
+    });
+
+    if (!res.ok) {
+      const msg = await res.text();
+      throw new Error(msg || `Failed to render template (${res.status})`);
+    }
+
+    return parseJsonResponse(res, url);
+  }
 };
