@@ -371,9 +371,9 @@ export class JinjaCompletionBuilder {
       variables: [
         ...this.buildTopLevelVariables(params),
         ...this.buildGlobals(serverSymbols.globals),
-        ...this.buildFilters(serverSymbols.filters),
         ...this.buildTests(serverSymbols.tests)
       ],
+      filters: this.buildFilters(serverSymbols.filters),
       tags: this.buildTags(serverSymbols.tags),
       properties: this.buildProperties(params)
     };
