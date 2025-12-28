@@ -10,7 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@codemirror/lang-jinja": "^6.0.0",
+    "@codemirror/lang-json": "^6.0.2",
     "@codemirror/lang-sql": "^6.10.0",
+    "@codemirror/lang-yaml": "^6.1.2",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.6",

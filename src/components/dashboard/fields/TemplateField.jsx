@@ -2,17 +2,40 @@ import { useMemo, useState, useEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { Stack, Typography, Tabs, Tab } from '@mui/material';
 import { sql, PostgreSQL } from '@codemirror/lang-sql';
+import { json } from '@codemirror/lang-json';
+import { yaml } from '@codemirror/lang-yaml';
+import { jinja } from '@codemirror/lang-jinja';
 import api from '../../../api';
 import _ from 'lodash';
 
-export function SqlField({
+function resolveLanguageExtension(type) {
+  switch (type) {
+    case 'json':
+      return json();
+    case 'yaml':
+    case 'yml':
+      return yaml();
+    case 'sql':
+      return sql({ dialect: PostgreSQL });
+    default:
+      return jinja();
+  }
+}
+
+export function TemplateField({
   formData,
   onChange,
   schema,
   fieldPathId,
   registry
 }) {
-  const extensions = useMemo(() => [sql({ dialect: PostgreSQL })], []);
+  const languageType = schema?.type;
+
+  const extensions = useMemo(
+    () => [resolveLanguageExtension(languageType)],
+    [languageType]
+  );
+
   // Local state for editor content during typing
   const [localValue, setLocalValue] = useState(formData);
   const [previewCode, setPreviewCode] = useState('');
@@ -67,10 +90,8 @@ export function SqlField({
         editable={tabIndex === 0}
         value={tabIndex === 0 ? localValue : previewCode}
         extensions={extensions}
-        onChange={(value) => {
-          setLocalValue(value);
-        }} // update local only
-        onBlur={handleBlur} // sync on blur
+        onChange={setLocalValue}
+        onBlur={handleBlur}
         basicSetup={{
           lineNumbers: true,
           highlightActiveLine: true,

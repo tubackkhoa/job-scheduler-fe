@@ -1,9 +1,9 @@
 import { MLThresholdsTableField } from './MLThresholdsTableField';
 import { MultiSelectField } from './MultiSelectField';
-import { SqlField } from './SqlField';
+import { TemplateField } from './TemplateField';
 
 export default {
   MLThresholdsTable: MLThresholdsTableField,
   MultiSelect: MultiSelectField,
-  Sql: SqlField,
+  Template: TemplateField
 };
