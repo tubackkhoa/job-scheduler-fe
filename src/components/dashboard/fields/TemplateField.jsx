@@ -5,6 +5,7 @@ import { sql, PostgreSQL } from '@codemirror/lang-sql';
 import { json } from '@codemirror/lang-json';
 import { yaml } from '@codemirror/lang-yaml';
 import { jinja } from '@codemirror/lang-jinja';
+import { EditorView } from '@codemirror/view';
 import { JinjaCompletionBuilder } from '../../../utils';
 import api from '../../../api';
 import _ from 'lodash';
@@ -114,7 +115,11 @@ export function TemplateField({
           height="100%"
           editable={tabIndex === 0}
           value={tabIndex === 0 ? localValue : previewCode}
-          extensions={extensions}
+          extensions={
+            tabIndex === 0
+              ? extensions
+              : [...extensions, EditorView.lineWrapping]
+          }
           onChange={setLocalValue}
           onBlur={handleBlur}
           basicSetup={{
