@@ -1,4 +1,5 @@
 import jsep from 'jsep';
+import _ from 'lodash';
 
 const evalAstIterative = (root, context, maxSteps) => {
   const stack = [{ node: root, visited: false }];
@@ -296,4 +297,33 @@ export const evaluate = (expr, context, defaultValue, maxSteps = 256) => {
     console.log('Evaluation error:', err.message);
     return defaultValue;
   }
+};
+
+export const buildJinjaVariables = (params) => {
+  const vars = [];
+  const stack = [{ value: params, prefix: '' }];
+
+  while (stack.length > 0) {
+    const { value, prefix } = stack.pop();
+
+    if (!_.isPlainObject(value)) continue;
+
+    _.forOwn(value, (child, key) => {
+      const path = prefix ? `${prefix}.${key}` : key;
+
+      vars.push({
+        label: path,
+        type: 'variable'
+      });
+
+      if (_.isPlainObject(child)) {
+        stack.push({
+          value: child,
+          prefix: path
+        });
+      }
+    });
+  }
+
+  return vars;
 };

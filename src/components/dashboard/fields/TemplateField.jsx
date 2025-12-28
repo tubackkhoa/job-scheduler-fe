@@ -5,6 +5,7 @@ import { sql, PostgreSQL } from '@codemirror/lang-sql';
 import { json } from '@codemirror/lang-json';
 import { yaml } from '@codemirror/lang-yaml';
 import { jinja } from '@codemirror/lang-jinja';
+import { buildJinjaVariables } from '../../../utils';
 import api from '../../../api';
 import _ from 'lodash';
 
@@ -18,7 +19,7 @@ function resolveLanguageExtension(type) {
     case 'sql':
       return sql({ dialect: PostgreSQL });
     default:
-      return jinja();
+      return undefined;
   }
 }
 
@@ -30,11 +31,20 @@ export function TemplateField({
   registry
 }) {
   const languageType = schema?.type ?? 'jinja';
-
-  const extensions = useMemo(
-    () => [resolveLanguageExtension(languageType)],
-    [languageType]
-  );
+  const extensions = useMemo(() => {
+    const variables = buildJinjaVariables(
+      _.omit(
+        registry.formContext.formRef.current?.state.formData,
+        fieldPathId?.path
+      )
+    );
+    return [
+      jinja({
+        base: resolveLanguageExtension(languageType),
+        variables
+      })
+    ];
+  }, [languageType, registry.formContext.formRef.current]);
 
   // Local state for editor content during typing
   const [localValue, setLocalValue] = useState(formData);
@@ -55,13 +65,14 @@ export function TemplateField({
   };
 
   const updatePrewiewCode = async (tpl) => {
-    const params = { ...registry.formContext.formRef.current.state.formData };
-    _.unset(params, fieldPathId?.path);
     try {
       const ret = await api.renderTemplate(
         registry.formContext.pluginPackage,
         tpl,
-        params
+        _.omit(
+          registry.formContext.formRef.current.state.formData,
+          fieldPathId?.path
+        )
       );
       setPreviewCode(ret.result);
     } catch (ex) {
