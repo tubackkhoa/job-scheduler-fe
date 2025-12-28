@@ -17,8 +17,13 @@ import {
   Slider,
   List,
   ListItem,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogActions,
+  Button,
 } from '@mui/material';
-import { Terminal, Delete, Search } from '@mui/icons-material';
+import { Terminal, Delete, Search, Fullscreen, FullscreenExit } from '@mui/icons-material';
 import { API_BASE_URL } from './api';
 import { formatMessage, getLevelColor } from './utils';
 
@@ -93,6 +98,7 @@ export default function LogViewer({ jobId, maxMessages = 500, description }) {
   const [isLoading, setIsLoading] = useState(false);
   const [totalLogs, setTotalLogs] = useState(0);
   const [sliderOffset, setSliderOffset] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const ws = useRef(null);
   const logIdRef = useRef(0);
@@ -196,8 +202,8 @@ export default function LogViewer({ jobId, maxMessages = 500, description }) {
 
   /* ----------------------------- Render -------------------------------- */
 
-  return (
-    <Stack spacing={2}>
+  const LogContent = ({ isFullscreenMode = false }) => (
+    <Stack spacing={2} sx={{ height: isFullscreenMode ? '100%' : 'auto' }}>
       {/* Header */}
       <Stack direction="row" justifyContent="space-between">
         <Stack direction="row" spacing={1}>
@@ -205,11 +211,23 @@ export default function LogViewer({ jobId, maxMessages = 500, description }) {
           <Typography variant="body2">Logs for {description}</Typography>
         </Stack>
 
-        <Tooltip title="Clear logs">
-          <IconButton onClick={() => setLogs([])} size="small">
-            <Delete fontSize="small" />
-          </IconButton>
-        </Tooltip>
+        <Stack direction="row" spacing={0.5}>
+          {!isFullscreenMode && (
+            <Tooltip title="View fullscreen">
+              <IconButton
+                onClick={() => setIsFullscreen(true)}
+                size="small"
+              >
+                <Fullscreen fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+          <Tooltip title="Clear logs">
+            <IconButton onClick={() => setLogs([])} size="small">
+              <Delete fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Stack>
       </Stack>
 
       {/* Search */}
@@ -236,11 +254,12 @@ export default function LogViewer({ jobId, maxMessages = 500, description }) {
       {/* Log Container */}
       <Paper
         sx={{
-          height: 300,
+          height: isFullscreenMode ? 'calc(100vh - 250px)' : 300,
           overflow: 'auto',
           bgcolor: 'rgba(0,0,0,0.4)',
           fontFamily: '"JetBrains Mono", monospace',
           p: 1,
+          flex: 1,
         }}
       >
         {isLoading ? (
@@ -274,5 +293,48 @@ export default function LogViewer({ jobId, maxMessages = 500, description }) {
         )}
       </Paper>
     </Stack>
+  );
+
+  return (
+    <>
+      <LogContent isFullscreenMode={false} />
+
+      {/* Fullscreen Dialog */}
+      <Dialog
+        open={isFullscreen}
+        onClose={() => setIsFullscreen(false)}
+        maxWidth={false}
+        fullWidth
+        PaperProps={{
+          sx: {
+            m: 0,
+            height: '100vh',
+            maxHeight: '100vh',
+            borderRadius: 0,
+          },
+        }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6">Logs for {description}</Typography>
+            <IconButton
+              onClick={() => setIsFullscreen(false)}
+              size="small"
+              sx={{ ml: 'auto' }}
+            >
+              <FullscreenExit />
+            </IconButton>
+          </Stack>
+        </DialogTitle>
+        <DialogContent sx={{ p: 2, height: 'calc(100vh - 120px)', overflow: 'hidden' }}>
+          <LogContent isFullscreenMode={true} />
+        </DialogContent>
+        <DialogActions sx={{ p: 1.5 }}>
+          <Button onClick={() => setIsFullscreen(false)} variant="outlined" size="small">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
