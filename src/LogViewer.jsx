@@ -17,13 +17,9 @@ import {
   Slider,
   List,
   ListItem,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogActions,
-  Button,
+
 } from '@mui/material';
-import { Terminal, Delete, Search, Fullscreen, FullscreenExit } from '@mui/icons-material';
+import { Terminal, Delete, Search } from '@mui/icons-material';
 import { API_BASE_URL } from './api';
 import { formatMessage, getLevelColor } from './utils';
 
@@ -98,11 +94,12 @@ export default function LogViewer({ jobId, maxMessages = 500, description }) {
   const [isLoading, setIsLoading] = useState(false);
   const [totalLogs, setTotalLogs] = useState(0);
   const [sliderOffset, setSliderOffset] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const ws = useRef(null);
   const logIdRef = useRef(0);
   const maxMessagesRef = useRef(maxMessages);
+  const debounceRef = useRef(null);
+
 
   useEffect(() => {
     maxMessagesRef.current = maxMessages;
@@ -152,9 +149,21 @@ export default function LogViewer({ jobId, maxMessages = 500, description }) {
     if (!jobId) return;
 
     const limit = 100;
+    const timeoutId = debounceRef.current;
+    if(timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    debounceRef.current = setTimeout(() => {
+      fetchHistoricalLogs(searchText, limit);
+    }, 500);
 
-    fetchHistoricalLogs(searchText || null, limit);
-  }, [jobId, sliderOffset, searchText, fetchHistoricalLogs]);
+    
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [jobId, fetchHistoricalLogs, searchText]);
 
   /* ---------------------------- WebSocket ------------------------------- */
 
@@ -202,8 +211,9 @@ export default function LogViewer({ jobId, maxMessages = 500, description }) {
 
   /* ----------------------------- Render -------------------------------- */
 
-  const LogContent = ({ isFullscreenMode = false }) => (
-    <Stack spacing={2} sx={{ height: isFullscreenMode ? '100%' : 'auto' }}>
+
+  return (
+    <Stack spacing={2} sx={{ height: 'auto' }}>
       {/* Header */}
       <Stack direction="row" justifyContent="space-between">
         <Stack direction="row" spacing={1}>
@@ -212,16 +222,6 @@ export default function LogViewer({ jobId, maxMessages = 500, description }) {
         </Stack>
 
         <Stack direction="row" spacing={0.5}>
-          {!isFullscreenMode && (
-            <Tooltip title="View fullscreen">
-              <IconButton
-                onClick={() => setIsFullscreen(true)}
-                size="small"
-              >
-                <Fullscreen fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          )}
           <Tooltip title="Clear logs">
             <IconButton onClick={() => setLogs([])} size="small">
               <Delete fontSize="small" />
@@ -235,7 +235,9 @@ export default function LogViewer({ jobId, maxMessages = 500, description }) {
         size="small"
         placeholder="Search logs..."
         value={searchText}
-        onChange={(e) => setSearchText(e.target.value)}
+        onChange={(e) => {
+          setSearchText(e.target.value);
+        }}
         InputProps={{
           startAdornment: <Search fontSize="small" sx={{ mr: 1 }} />,
         }}
@@ -251,10 +253,9 @@ export default function LogViewer({ jobId, maxMessages = 500, description }) {
         valueLabelFormat={(v) => `Latest-${v}`}
       />
 
-      {/* Log Container */}
       <Paper
         sx={{
-          height: isFullscreenMode ? 'calc(100vh - 250px)' : 300,
+          height: "600px",
           overflow: 'auto',
           bgcolor: 'rgba(0,0,0,0.4)',
           fontFamily: '"JetBrains Mono", monospace',
@@ -292,49 +293,6 @@ export default function LogViewer({ jobId, maxMessages = 500, description }) {
           </List>
         )}
       </Paper>
-    </Stack>
-  );
-
-  return (
-    <>
-      <LogContent isFullscreenMode={false} />
-
-      {/* Fullscreen Dialog */}
-      <Dialog
-        open={isFullscreen}
-        onClose={() => setIsFullscreen(false)}
-        maxWidth={false}
-        fullWidth
-        PaperProps={{
-          sx: {
-            m: 0,
-            height: '100vh',
-            maxHeight: '100vh',
-            borderRadius: 0,
-          },
-        }}
-      >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6">Logs for {description}</Typography>
-            <IconButton
-              onClick={() => setIsFullscreen(false)}
-              size="small"
-              sx={{ ml: 'auto' }}
-            >
-              <FullscreenExit />
-            </IconButton>
-          </Stack>
-        </DialogTitle>
-        <DialogContent sx={{ p: 2, height: 'calc(100vh - 120px)', overflow: 'hidden' }}>
-          <LogContent isFullscreenMode={true} />
-        </DialogContent>
-        <DialogActions sx={{ p: 1.5 }}>
-          <Button onClick={() => setIsFullscreen(false)} variant="outlined" size="small">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
+  </Stack>
   );
 }
