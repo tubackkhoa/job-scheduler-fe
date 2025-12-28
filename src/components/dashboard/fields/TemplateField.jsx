@@ -29,7 +29,7 @@ export function TemplateField({
   fieldPathId,
   registry
 }) {
-  const languageType = schema?.type;
+  const languageType = schema?.type ?? 'jinja';
 
   const extensions = useMemo(
     () => [resolveLanguageExtension(languageType)],
