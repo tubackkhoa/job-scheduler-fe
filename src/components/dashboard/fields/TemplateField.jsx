@@ -5,7 +5,7 @@ import { sql, PostgreSQL } from '@codemirror/lang-sql';
 import { json } from '@codemirror/lang-json';
 import { yaml } from '@codemirror/lang-yaml';
 import { jinja } from '@codemirror/lang-jinja';
-import { buildJinjaVariables } from '../../../utils';
+import { JinjaCompletionBuilder } from '../../../utils';
 import api from '../../../api';
 import _ from 'lodash';
 
@@ -32,16 +32,17 @@ export function TemplateField({
 }) {
   const languageType = schema?.type ?? 'jinja';
   const extensions = useMemo(() => {
-    const variables = buildJinjaVariables(
+    const completions = JinjaCompletionBuilder.build(
       _.omit(
         registry.formContext.formRef.current?.state.formData,
         fieldPathId?.path
-      )
+      ),
+      registry.formContext.env
     );
     return [
       jinja({
         base: resolveLanguageExtension(languageType),
-        variables
+        ...completions
       })
     ];
   }, [languageType, registry.formContext.formRef.current]);

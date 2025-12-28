@@ -299,31 +299,83 @@ export const evaluate = (expr, context, defaultValue, maxSteps = 256) => {
   }
 };
 
-export const buildJinjaVariables = (params) => {
-  const vars = [];
-  const stack = [{ value: params, prefix: '' }];
+export class JinjaCompletionBuilder {
+  /* ---------- Server symbols ---------- */
 
-  while (stack.length > 0) {
-    const { value, prefix } = stack.pop();
-
-    if (!_.isPlainObject(value)) continue;
-
-    _.forOwn(value, (child, key) => {
-      const path = prefix ? `${prefix}.${key}` : key;
-
-      vars.push({
-        label: path,
-        type: 'variable'
-      });
-
-      if (_.isPlainObject(child)) {
-        stack.push({
-          value: child,
-          prefix: path
-        });
-      }
-    });
+  static buildGlobals(globals = []) {
+    return globals.map((name) => ({
+      label: name,
+      type: 'function',
+      detail: 'global',
+      section: 'Globals'
+    }));
   }
 
-  return vars;
-};
+  static buildFilters(filters = []) {
+    return filters.map((name) => ({
+      label: name,
+      type: 'function',
+      detail: 'filter',
+      section: 'Filters'
+    }));
+  }
+
+  static buildTests(tests = []) {
+    return tests.map((name) => ({
+      label: name,
+      type: 'keyword',
+      detail: 'test',
+      section: 'Tests'
+    }));
+  }
+
+  static buildTags(tags = []) {
+    return tags.map((name) => ({
+      label: name,
+      type: 'keyword',
+      detail: 'tag',
+      section: 'Tags'
+    }));
+  }
+
+  /* ---------- Params ---------- */
+
+  static buildTopLevelVariables(params = {}) {
+    return Object.keys(params).map((key) => ({
+      label: key,
+      type: 'variable',
+      detail: 'param',
+      section: 'Variables'
+    }));
+  }
+
+  static buildProperties(params = {}) {
+    return (path) => {
+      const value = _.get(params, path);
+
+      if (!_.isPlainObject(value)) return [];
+
+      return Object.keys(value).map((key) => ({
+        label: key,
+        type: 'property',
+        detail: 'param',
+        section: 'Properties'
+      }));
+    };
+  }
+
+  /* ---------- Final public API ---------- */
+
+  static build(params = {}, serverSymbols = {}) {
+    return {
+      variables: [
+        ...this.buildTopLevelVariables(params),
+        ...this.buildGlobals(serverSymbols.globals),
+        ...this.buildFilters(serverSymbols.filters),
+        ...this.buildTests(serverSymbols.tests)
+      ],
+      tags: this.buildTags(serverSymbols.tags),
+      properties: this.buildProperties(params)
+    };
+  }
+}
