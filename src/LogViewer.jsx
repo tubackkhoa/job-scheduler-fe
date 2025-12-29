@@ -174,7 +174,8 @@ export default function LogViewer({ jobId, maxMessages = 1500, description }) {
           })),
           ...prev,
         ];
-        return next.slice(0, -maxMessages);
+        // Keep only the first maxMessages items
+        return next.slice(0, maxMessages);
       });
     };
 
