@@ -1,0 +1,13 @@
+diff --git a/node_modules/@codemirror/lang-jinja/dist/index.js b/node_modules/@codemirror/lang-jinja/dist/index.js
+index a129e40..9f5453a 100644
+--- a/node_modules/@codemirror/lang-jinja/dist/index.js
++++ b/node_modules/@codemirror/lang-jinja/dist/index.js
+@@ -219,7 +219,7 @@ function jinjaCompletionSource(config = {}) {
+         let from = (_a = cx.from) !== null && _a !== void 0 ? _a : (cx.node ? cx.node.from : context.pos);
+         let options;
+         if (cx.type == "filter")
+-            options = Filters;
++            options = config.filters ?? Filters;
+         else if (cx.type == "tag")
+             options = tags;
+         else if (cx.type == "expr")

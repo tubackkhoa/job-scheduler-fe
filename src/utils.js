@@ -1,4 +1,5 @@
 import jsep from 'jsep';
+import _ from 'lodash';
 
 const evalAstIterative = (root, context, maxSteps) => {
   const stack = [{ node: root, visited: false }];
@@ -285,11 +286,12 @@ export const getLevelColor = (level) =>
 const cache = new Map();
 
 export const evaluate = (expr, context, defaultValue, maxSteps = 256) => {
+  const val = typeof expr === 'string' ? expr : expr.toString();
   try {
-    let ast = cache.get(expr);
+    let ast = cache.get(val);
     if (!ast) {
-      ast = jsep(expr);
-      cache.set(expr, ast);
+      ast = jsep(val);
+      cache.set(val, ast);
     }
     return evalAstIterative(ast, context, maxSteps);
   } catch (err) {
@@ -297,3 +299,84 @@ export const evaluate = (expr, context, defaultValue, maxSteps = 256) => {
     return defaultValue;
   }
 };
+
+export class JinjaCompletionBuilder {
+  /* ---------- Server symbols ---------- */
+
+  static buildGlobals(globals = []) {
+    return globals.map((name) => ({
+      label: name,
+      type: 'function',
+      detail: 'global',
+      section: 'Globals'
+    }));
+  }
+
+  static buildFilters(filters = []) {
+    return filters.map((name) => ({
+      label: name,
+      type: 'function',
+      detail: 'filter',
+      section: 'Filters'
+    }));
+  }
+
+  static buildTests(tests = []) {
+    return tests.map((name) => ({
+      label: name,
+      type: 'keyword',
+      detail: 'test',
+      section: 'Tests'
+    }));
+  }
+
+  static buildTags(tags = []) {
+    return tags.map((name) => ({
+      label: name,
+      type: 'keyword',
+      detail: 'tag',
+      section: 'Tags'
+    }));
+  }
+
+  /* ---------- Params ---------- */
+
+  static buildTopLevelVariables(params = {}) {
+    return Object.keys(params).map((key) => ({
+      label: key,
+      type: 'variable',
+      detail: 'param',
+      section: 'Variables'
+    }));
+  }
+
+  static buildProperties(params = {}) {
+    return (path) => {
+      const value = _.get(params, path);
+
+      if (!_.isPlainObject(value)) return [];
+
+      return Object.keys(value).map((key) => ({
+        label: key,
+        type: 'property',
+        detail: 'param',
+        section: 'Properties'
+      }));
+    };
+  }
+
+  /* ---------- Final public API ---------- */
+
+  static build(params = {}, serverSymbols = {}) {
+    return {
+      variables: [
+        ...this.buildTopLevelVariables(params),
+        ...this.buildGlobals(serverSymbols.globals),
+        ...this.buildTests(serverSymbols.tests)
+      ],
+      filters: this.buildFilters(serverSymbols.filters),
+      tags: this.buildTags(serverSymbols.tags),
+      properties: this.buildProperties(params)
+    };
+  }
+}

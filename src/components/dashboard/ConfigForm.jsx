@@ -8,6 +8,7 @@ import fields from './fields';
 
 export const ConfigForm = function ConfigForm({
   schema,
+  env,
   formData,
   onChange,
   pluginPackage
@@ -15,7 +16,7 @@ export const ConfigForm = function ConfigForm({
   const formRef = useRef();
   // Pass a stable formContext object with the ref
   const formContext = useMemo(
-    () => ({ formRef, pluginPackage }),
+    () => ({ formRef, pluginPackage, env }),
     [pluginPackage]
   );
   const watchMap = useRef({});

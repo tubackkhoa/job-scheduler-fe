@@ -14,12 +14,12 @@ import api from './api';
 const sessions = [
   {
     id: 1,
-    name: 'Staging',
+    name: 'Staging'
   },
   {
     id: 2,
-    name: 'Production',
-  },
+    name: 'Production'
+  }
 ];
 
 const darkTheme = createTheme({
@@ -28,69 +28,69 @@ const darkTheme = createTheme({
     primary: {
       main: '#6366f1',
       light: '#818cf8',
-      dark: '#4f46e5',
+      dark: '#4f46e5'
     },
     secondary: {
       main: '#ec4899',
       light: '#f472b6',
-      dark: '#db2777',
+      dark: '#db2777'
     },
     success: {
       main: '#22c55e',
       light: '#4ade80',
-      dark: '#16a34a',
+      dark: '#16a34a'
     },
     warning: {
       main: '#f59e0b',
       light: '#fbbf24',
-      dark: '#d97706',
+      dark: '#d97706'
     },
     error: {
       main: '#ef4444',
       light: '#f87171',
-      dark: '#dc2626',
+      dark: '#dc2626'
     },
     background: {
       default: '#0a0a0f',
-      paper: '#111119',
+      paper: '#111119'
     },
-    divider: 'rgba(255, 255, 255, 0.08)',
+    divider: 'rgba(255, 255, 255, 0.08)'
   },
   typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif'
   },
   shape: {
-    borderRadius: 12,
+    borderRadius: 12
   },
   components: {
     MuiCard: {
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-        },
-      },
+          border: '1px solid rgba(255, 255, 255, 0.08)'
+        }
+      }
     },
     MuiButton: {
       styleOverrides: {
         root: {
           textTransform: 'none',
-          fontWeight: 500,
-        },
-      },
+          fontWeight: 500
+        }
+      }
     },
     MuiTextField: {
       defaultProps: {
         variant: 'outlined',
-        size: 'small',
-      },
+        size: 'small'
+      }
     },
     MuiSelect: {
       defaultProps: {
-        size: 'small',
-      },
-    },
-  },
+        size: 'small'
+      }
+    }
+  }
 });
 
 export default function App() {
@@ -101,6 +101,7 @@ export default function App() {
   const [newJobDraft, setNewJobDraft] = useState(null);
   const [configVersions, setConfigVersions] = useState([]);
   const [schema, setSchema] = useState(null);
+  const [env, setEnv] = useState(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
@@ -133,11 +134,13 @@ export default function App() {
     setSchema(null);
 
     try {
-      const { schema: fetchedSchema, configs } = await api.fetchSchema(
-        currentSessionId ?? sessionId,
-        currentPluginId
-      );
+      const {
+        schema: fetchedSchema,
+        configs,
+        env
+      } = await api.fetchSchema(currentSessionId ?? sessionId, currentPluginId);
       setSchema(fetchedSchema);
+      setEnv(env);
       setConfigVersions(configs);
       const templateConfig =
         configs.find((c) => c.id === 0)?.config ?? configs[0]?.config ?? '{}';
@@ -145,7 +148,7 @@ export default function App() {
         id: 0,
         description: '',
         active: 0,
-        config: templateConfig,
+        config: templateConfig
       });
       const newJobId = currentJobId ?? configs[0]?.id ?? 0;
       handleChangeJob(newJobId, configs);
@@ -164,7 +167,7 @@ export default function App() {
     try {
       const jobItem = {
         config: formData,
-        description: jobDesc,
+        description: jobDesc
       };
 
       let response;
@@ -173,7 +176,7 @@ export default function App() {
         response = await api.updateConfig(0, {
           ...jobItem,
           sessionId,
-          pluginId,
+          pluginId
         });
       } else {
         response = await api.updateConfig(jobId, jobItem);
@@ -270,7 +273,10 @@ export default function App() {
         pluginData.interval,
         pluginData.description
       );
-      handleSetResult({ success: true, message: 'Plugin created successfully' });
+      handleSetResult({
+        success: true,
+        message: 'Plugin created successfully'
+      });
       setCreatePluginModalOpen(false);
       // Reload plugins list
       const updatedPlugins = await api.fetchPlugins();
@@ -320,7 +326,7 @@ export default function App() {
                   flexDirection: 'column',
                   gap: 3,
                   position: 'sticky',
-                  top: 30,
+                  top: 30
                 }}
               >
                 <ContextPanel
@@ -361,6 +367,7 @@ export default function App() {
                 pluginInterval={pluginInfo?.interval}
                 isActive={isActive}
                 formData={formData}
+                env={env}
                 schema={schema}
                 onDescChange={setJobDesc}
                 onToggleActive={() => handleJobActivation(!isActive)}

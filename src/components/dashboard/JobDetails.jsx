@@ -47,6 +47,7 @@ export function JobDetails({
   isActive,
   formData,
   schema,
+  env,
   onDescChange,
   onToggleActive,
   onSave,
@@ -202,6 +203,7 @@ export function JobDetails({
             <ConfigForm
               pluginPackage={pluginPackage}
               schema={schema}
+              env={env}
               formData={localFormData}
               onChange={setLocalFormData}
             />
