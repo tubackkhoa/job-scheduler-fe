@@ -286,11 +286,12 @@ export const getLevelColor = (level) =>
 const cache = new Map();
 
 export const evaluate = (expr, context, defaultValue, maxSteps = 256) => {
+  const val = typeof expr === 'string' ? expr : expr.toString();
   try {
-    let ast = cache.get(expr);
+    let ast = cache.get(val);
     if (!ast) {
-      ast = jsep(expr);
-      cache.set(expr, ast);
+      ast = jsep(val);
+      cache.set(val, ast);
     }
     return evalAstIterative(ast, context, maxSteps);
   } catch (err) {
