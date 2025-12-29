@@ -88,30 +88,31 @@ const LogRow = React.memo(function LogRow({ log, searchText }) {
 
 /* ------------------------------ Main ---------------------------------------- */
 
-export default function LogViewer({ jobId, maxMessages = 500, description }) {
+export default function LogViewer({ jobId, maxMessages = 1500, description }) {
   const [logs, setLogs] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [totalLogs, setTotalLogs] = useState(0);
   const [sliderOffset, setSliderOffset] = useState(0);
 
   const ws = useRef(null);
   const logIdRef = useRef(0);
-  const maxMessagesRef = useRef(maxMessages);
   const debounceRef = useRef(null);
+  const totalLogRef = useRef(0)
 
 
-  useEffect(() => {
-    maxMessagesRef.current = maxMessages;
-  }, [maxMessages]);
+  // useEffect(() => {
+  //   maxMessagesRef.current = maxMessages;
+  // }, [maxMessages]);
+
+  
 
   /* -------------------------- Fetch Historical -------------------------- */
 
   const fetchHistoricalLogs = useCallback(
-    async (search, limit = 100) => {
+    async (search, limit = 100, sliderOffset = 2000) => {
       if (!jobId) return;
 
-      const offset = Math.max(0, totalLogs - sliderOffset - limit);
+      const offset = Math.max(0, totalLogRef.current - sliderOffset - limit);
 
       setIsLoading(true);
       try {
@@ -123,7 +124,7 @@ export default function LogViewer({ jobId, maxMessages = 500, description }) {
         const res = await fetch(`${API_BASE_URL}/api/logs/${jobId}?${params}`);
         const data = await res.json();
 
-        setTotalLogs(data.total);
+        totalLogRef.current = data.total;
 
         setLogs(
           data.logs.map((log) => ({
@@ -140,30 +141,16 @@ export default function LogViewer({ jobId, maxMessages = 500, description }) {
         setIsLoading(false);
       }
     },
-    [jobId, totalLogs, sliderOffset]
+    [jobId]
   );
 
   /* ------------------------------ Load ---------------------------------- */
 
   useEffect(() => {
     if (!jobId) return;
+    fetchHistoricalLogs(null, 500);
 
-    const limit = 100;
-    const timeoutId = debounceRef.current;
-    if(timeoutId) {
-      clearTimeout(timeoutId);
-    }
-    debounceRef.current = setTimeout(() => {
-      fetchHistoricalLogs(searchText, limit);
-    }, 500);
-
-    
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-  }, [jobId, fetchHistoricalLogs, searchText]);
+  }, [jobId, fetchHistoricalLogs]);
 
   /* ---------------------------- WebSocket ------------------------------- */
 
@@ -180,22 +167,21 @@ export default function LogViewer({ jobId, maxMessages = 500, description }) {
 
       setLogs((prev) => {
         const next = [
-          ...prev,
           ...items.map((item) => ({
             ...item,
             id: logIdRef.current++,
           })),
+          ...prev,
         ];
-        return next.slice(-maxMessagesRef.current);
+        return next.slice(0, maxMessages);
       });
     };
 
     return () => {
       ws.current?.close();
-      setSliderOffset(0);
       // setLogs([]);
     };
-  }, [jobId]);
+  }, [jobId, maxMessages]);
 
   /* ---------------------------- Filtering ------------------------------- */
 
@@ -237,6 +223,12 @@ export default function LogViewer({ jobId, maxMessages = 500, description }) {
         value={searchText}
         onChange={(e) => {
           setSearchText(e.target.value);
+          if(debounceRef.current){
+            clearTimeout(debounceRef.current);
+          }
+          debounceRef.current = setTimeout(() => {
+            fetchHistoricalLogs(null, 500, sliderOffset);
+          }, 500);
         }}
         InputProps={{
           startAdornment: <Search fontSize="small" sx={{ mr: 1 }} />,
@@ -247,8 +239,11 @@ export default function LogViewer({ jobId, maxMessages = 500, description }) {
       <Slider
         value={sliderOffset}
         min={0}
-        max={Math.max(0, totalLogs - 1)}
-        onChangeCommitted={(_, v) => setSliderOffset(v)}
+        max={Math.max(0, totalLogRef.current - 1)}
+        onChangeCommitted={(_, v) => {
+          setSliderOffset(v);
+          fetchHistoricalLogs(searchText,  500, v);
+        }}
         valueLabelDisplay="auto"
         valueLabelFormat={(v) => `Latest-${v}`}
       />
