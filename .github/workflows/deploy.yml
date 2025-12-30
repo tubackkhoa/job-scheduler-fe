@@ -150,7 +150,6 @@ jobs:
             sed -E \"s|^( *image:).*|\\1 $FULL_IMAGE|\" docker-compose.yml > docker-compose.yml.new
             mv docker-compose.yml.new docker-compose.yml
 
-            docker compose down
             docker compose pull
             docker compose up -d
           "
@@ -257,4 +256,5 @@ jobs:
       - *set_short_commit
       - *run_deploy_vm_prod
       - *notify_single_prod
+
 
