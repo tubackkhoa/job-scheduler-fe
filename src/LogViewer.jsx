@@ -120,7 +120,7 @@ export default function LogViewer({ jobId, maxMessages = 1500, description }) {
         if (search) params.append('search', search);
         if (offset != null) params.append('offset', offset);
         params.append('limit', limit);
-        params.append('sort', 'asc');
+        params.append('sort', 'desc');
 
         const res = await fetch(`${API_BASE_URL}/api/logs/${jobId}?${params}`);
         const data = await res.json();
@@ -134,7 +134,7 @@ export default function LogViewer({ jobId, maxMessages = 1500, description }) {
             time: log.timestamp,
             level: log.level,
             message: log.message,
-          }))
+          })).sort((a, b) => a.offset - b.offset)
         );
       } catch (e) {
         console.error(e);
