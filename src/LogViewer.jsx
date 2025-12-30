@@ -168,14 +168,14 @@ export default function LogViewer({ jobId, maxMessages = 1500, description }) {
 
       setLogs((prev) => {
         const next = [
+          ...prev,
           ...items.map((item) => ({
             ...item,
             id: logIdRef.current++,
           })),
-          ...prev,
         ];
-        // Keep only the first maxMessages items
-        return next.slice(0, maxMessages);
+        // Keep only the last maxMessages items
+        return next.slice(-maxMessages);
       });
     };
 
