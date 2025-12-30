@@ -76,7 +76,7 @@ export function TemplateField({
           fieldPathId?.path
         )
       );
-      setPreviewCode(ret.result);
+      setPreviewCode(ret.result.trim());
     } catch (ex) {
       setErrorMessage(ex.message);
     }
