@@ -304,12 +304,15 @@ export class JinjaCompletionBuilder {
   /* ---------- Server symbols ---------- */
 
   static buildGlobals(globals = []) {
-    return globals.map((name) => ({
-      label: name,
-      type: 'function',
-      detail: 'global',
-      section: 'Globals'
-    }));
+    return globals.map((name) => {
+      const [label, type = 'function'] = name.split(':');
+      return {
+        label,
+        type,
+        detail: 'global',
+        section: 'Globals'
+      };
+    });
   }
 
   static buildFilters(filters = []) {
