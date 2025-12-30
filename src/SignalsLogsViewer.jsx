@@ -17,6 +17,12 @@ import {
   ListItem,
   Chip,
   Divider,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
 } from '@mui/material';
 import { SignalCellularAlt, Delete, Search, Refresh } from '@mui/icons-material';
 import { API_BASE_URL } from './api';
@@ -24,23 +30,184 @@ import { formatMessage, getLevelColor } from './utils';
 
 /* -------------------------------- Utilities -------------------------------- */
 
-// Removed highlightMessage as it's no longer used in compact view
+// Parse message to detect if it's a pandas DataFrame table format
+const parseTableMessage = (message) => {
+  if (!message) return null;
+  
+  const lines = message.trim().split('\n').filter(line => line.trim());
+  if (lines.length < 2) return null;
+  
+  // Check if it looks like a pandas DataFrame (has header row and numbered data rows)
+  // Pattern: First line has column names, subsequent lines start with numbers (index)
+  const firstLine = lines[0].trim();
+  const secondLine = lines[1].trim();
+  
+  // Check if second line starts with a number (pandas index)
+  const hasIndexPattern = /^\d+\s+/.test(secondLine);
+  
+  // Check if first line has multiple columns (spaces separating)
+  const firstLineColumns = firstLine.split(/\s{2,}/).filter(col => col.trim());
+  const hasMultipleColumns = firstLineColumns.length > 2;
+  
+  if (!hasIndexPattern || !hasMultipleColumns) return null;
+  
+  // Parse header (first line)
+  const header = firstLine.split(/\s{2,}/).map(h => h.trim()).filter(h => h);
+  
+  // Parse data rows (skip first line)
+  const dataRows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line || line.length < 3) continue;
+    
+    // Split by multiple spaces (pandas DataFrame format)
+    let cells = line.split(/\s{2,}/).map(c => c.trim()).filter(c => c);
+    
+    // Remove index if present (first column is a number)
+    if (cells.length > 0 && /^\d+$/.test(cells[0])) {
+      cells = cells.slice(1);
+    }
+    
+    // Only add if we have enough columns
+    if (cells.length >= Math.min(header.length, 2)) {
+      dataRows.push(cells);
+    }
+  }
+  
+  if (dataRows.length === 0) return null;
+  
+  return { header, rows: dataRows };
+};
+
+// Component to render table message beautifully
+const TableMessage = ({ message }) => {
+  const tableData = parseTableMessage(message);
+  
+  if (!tableData) {
+    // Not a table, render as plain text with horizontal scroll
+    return (
+      <Box
+        sx={{
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          maxWidth: '100%',
+        }}
+      >
+        <Typography
+          variant="body2"
+          sx={{
+            fontFamily: '"JetBrains Mono", monospace',
+            whiteSpace: 'pre',
+            fontSize: '0.75rem',
+            minWidth: 'max-content',
+          }}
+        >
+          {formatMessage(message)}
+        </Typography>
+      </Box>
+    );
+  }
+  
+  const { header, rows } = tableData;
+  
+  return (
+    <TableContainer
+      component={Box}
+      sx={{
+        bgcolor: 'rgba(0, 0, 0, 0.3)',
+        maxHeight: 500,
+        maxWidth: '100%',
+        overflowX: 'auto',
+        overflowY: 'auto',
+        borderRadius: 1,
+        border: '1px solid rgba(255, 193, 7, 0.2)',
+        '&::-webkit-scrollbar': {
+          width: '8px',
+          height: '8px',
+        },
+        '&::-webkit-scrollbar-track': {
+          bgcolor: 'rgba(0, 0, 0, 0.2)',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          bgcolor: 'rgba(255, 193, 7, 0.3)',
+          borderRadius: '4px',
+          '&:hover': {
+            bgcolor: 'rgba(255, 193, 7, 0.5)',
+          },
+        },
+      }}
+    >
+      <Table size="small" stickyHeader sx={{ minWidth: 800 }}>
+        <TableHead>
+          <TableRow>
+            {header.map((col, idx) => (
+              <TableCell
+                key={idx}
+                sx={{
+                  fontFamily: '"JetBrains Mono", monospace',
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  bgcolor: 'rgba(255, 193, 7, 0.25)',
+                  color: 'warning.light',
+                  borderBottom: '2px solid rgba(255, 193, 7, 0.4)',
+                  whiteSpace: 'nowrap',
+                  px: 1.5,
+                  py: 1,
+                  textTransform: 'uppercase',
+                }}
+              >
+                {col}
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((row, rowIdx) => (
+            <TableRow
+              key={rowIdx}
+              sx={{
+                '&:nth-of-type(even)': {
+                  bgcolor: 'rgba(255, 255, 255, 0.03)',
+                },
+                '&:hover': {
+                  bgcolor: 'rgba(255, 193, 7, 0.15)',
+                },
+                transition: 'background-color 0.2s',
+              }}
+            >
+              {header.map((_, colIdx) => {
+                const cellValue = row[colIdx] || '-';
+                const isNumeric = !isNaN(parseFloat(cellValue)) && isFinite(cellValue);
+                const isNone = cellValue === 'None' || cellValue === 'none';
+                
+                return (
+                  <TableCell
+                    key={colIdx}
+                    sx={{
+                      fontFamily: '"JetBrains Mono", monospace',
+                      fontSize: '0.7rem',
+                      color: isNone ? 'text.disabled' : isNumeric ? 'primary.light' : 'text.secondary',
+                      py: 0.75,
+                      px: 1.5,
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {cellValue}
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+};
 
 /* ------------------------------ Signal Group Row --------------------------- */
 
 const SignalGroupRow = React.memo(function SignalGroupRow({ group }) {
-  console.log(group.matched_entry);
-  
-  // Concatenate following entries into compact format
-  const followingEntriesText = group.following_entries
-    ?.map((entry) => {
-      const time = entry.timestamp || '';
-      const level = entry.level || '';
-      const message = formatMessage(entry.message) || '';
-      return `${time} [${level}] ${message}`;
-    })
-    .join(' | ') || '';
-
   return (
     <Box>
       <ListItem
@@ -89,17 +256,12 @@ const SignalGroupRow = React.memo(function SignalGroupRow({ group }) {
               >
                 [{group.matched_entry.level}]
               </Typography>
-              <Typography
-                variant="body2"
-                sx={{ fontFamily: '"JetBrains Mono", monospace', whiteSpace: 'pre-wrap' }}
-              >
-                {formatMessage(group.matched_entry.message)}
-              </Typography>
+              <TableMessage message={formatMessage(group.matched_entry.message)} />
             </Box>
           </Stack>
         </Paper>
 
-        {/* Following Entries - Compact */}
+        {/* Following Entries - Each with horizontal scroll */}
         {group.following_entries && group.following_entries.length > 0 && (
           <Box
             sx={{
@@ -108,28 +270,48 @@ const SignalGroupRow = React.memo(function SignalGroupRow({ group }) {
               mt: 0.5,
             }}
           >
-            <Box
+            <Typography
+              variant="caption"
+              color="text.secondary"
               sx={{
-                p: 1,
-                bgcolor: 'rgba(0, 0, 0, 0.2)',
-                borderRadius: 1,
-                maxWidth: '100%',
-                overflow: 'auto',
+                fontFamily: '"JetBrains Mono", monospace',
+                mb: 0.5,
+                display: 'block',
+                fontSize: '0.7rem',
               }}
             >
-              <Typography
-                variant="caption"
-                sx={{
-                  fontFamily: '"JetBrains Mono", monospace',
-                  opacity: 0.8,
-                  whiteSpace: 'pre-wrap',
-                  fontSize: '0.7rem',
-                  lineHeight: 1.4,
-                }}
-              >
-                {followingEntriesText}
-              </Typography>
-            </Box>
+              Following ({group.following_entries.length}):
+            </Typography>
+            <Stack spacing={0.5}>
+              {group.following_entries.map((item, idx) => (
+                <Box
+                  key={item.id || idx}
+                  sx={{
+                    p: 1,
+                    bgcolor: 'rgba(0, 0, 0, 0.2)',
+                    borderRadius: 1,
+                    maxWidth: '100%',
+                    overflowX: 'auto',
+                    overflowY: 'hidden',
+                    '&::-webkit-scrollbar': {
+                      height: '6px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      bgcolor: 'rgba(0, 0, 0, 0.2)',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      bgcolor: 'rgba(255, 193, 7, 0.3)',
+                      borderRadius: '3px',
+                      '&:hover': {
+                        bgcolor: 'rgba(255, 193, 7, 0.5)',
+                      },
+                    },
+                  }}
+                >
+                  <TableMessage message={formatMessage(item.message)} />
+                </Box>
+              ))}
+            </Stack>
           </Box>
         )}
       </ListItem>
@@ -138,8 +320,8 @@ const SignalGroupRow = React.memo(function SignalGroupRow({ group }) {
   );
 });
 
-const KEYWORD = 'Total inference features'
-const LIMIT = 10
+const KEYWORD = 'Ranking completed'
+const LIMIT = 2
 
 export default function SignalsLogsViewer({ jobId, description }) {
   const [groups, setGroups] = useState([]);
