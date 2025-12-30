@@ -10,7 +10,7 @@ import { JinjaCompletionBuilder } from '../../../utils';
 import api from '../../../api';
 import _ from 'lodash';
 
-function resolveLanguageExtension(type) {
+function resolveLanguageExtension(type, schema) {
   switch (type) {
     case 'json':
       return json();
@@ -18,7 +18,7 @@ function resolveLanguageExtension(type) {
     case 'yml':
       return yaml();
     case 'sql':
-      return sql({ dialect: PostgreSQL });
+      return sql({ dialect: PostgreSQL, schema: schema.schema });
     default:
       return undefined;
   }
@@ -42,7 +42,7 @@ export function TemplateField({
     );
     return [
       jinja({
-        base: resolveLanguageExtension(languageType),
+        base: resolveLanguageExtension(languageType, schema),
         ...completions
       })
     ];
