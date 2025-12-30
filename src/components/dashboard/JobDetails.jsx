@@ -105,7 +105,7 @@ export function JobDetails({
         action={
           jobId !== 0 && (
             <Stack direction="row" spacing={1} alignItems="center">
-              <Chip
+              {/* <Chip
                 label={isActive ? 'Active' : 'Paused'}
                 size="small"
                 color={isActive ? 'success' : 'default'}
@@ -124,7 +124,7 @@ export function JobDetails({
                     />
                   ) : undefined
                 }
-              />
+              /> */}
               <Button
                 variant={isActive ? 'outlined' : 'contained'}
                 color={isActive ? 'warning' : 'success'}
