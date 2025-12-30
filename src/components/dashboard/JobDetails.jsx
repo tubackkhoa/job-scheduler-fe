@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -25,10 +25,12 @@ import {
   Terminal,
   Delete,
   Save,
-  AddCircleOutline
+  AddCircleOutline,
+  SignalCellularAlt
 } from '@mui/icons-material';
 import { ConfigForm } from './ConfigForm';
 import LogViewer from '../../LogViewer';
+import SignalsLogsViewer from '../../SignalsLogsViewer';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -195,6 +197,11 @@ export function JobDetails({
                 iconPosition="start"
                 label="Live Logs"
               />
+              <Tab
+                icon={<SignalCellularAlt sx={{ fontSize: 18 }} />}
+                iconPosition="start"
+                label="Signals Logs"
+              />
             </Tabs>
           </Box>
 
@@ -253,6 +260,10 @@ export function JobDetails({
 
           <TabPanel value={tabIndex} index={2}>
             <LogViewer jobId={jobId} description={jobDesc} />
+          </TabPanel>
+
+          <TabPanel value={tabIndex} index={3}>
+            <SignalsLogsViewer jobId={jobId} description={jobDesc} />
           </TabPanel>
 
           {/* Actions */}

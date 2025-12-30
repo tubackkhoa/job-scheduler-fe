@@ -19,7 +19,7 @@ import {
   ListItem,
 
 } from '@mui/material';
-import { Terminal, Delete, Search } from '@mui/icons-material';
+import { Terminal, Delete, Search, Refresh } from '@mui/icons-material';
 import { API_BASE_URL } from './api';
 import { formatMessage, getLevelColor } from './utils';
 
@@ -88,17 +88,17 @@ const LogRow = React.memo(function LogRow({ log, searchText }) {
 
 /* ------------------------------ Main ---------------------------------------- */
 
-export default function LogViewer({ jobId, maxMessages = 1500, description }) {
+export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, description }) {
   const [logs, setLogs] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sliderOffset, setSliderOffset] = useState(0);
 
-  const ws = useRef(null);
-  const logIdRef = useRef(0);
+  const _ws = useRef(null);
+  const _logIdRef = useRef(0);
   const debounceRef = useRef(null);
   const totalLogRef = useRef(0);
-  const reconnectTimeoutRef = useRef(null);
+  const _reconnectTimeoutRef = useRef(null);
 
 
   // useEffect(() => {
@@ -156,68 +156,68 @@ export default function LogViewer({ jobId, maxMessages = 1500, description }) {
 
   /* ---------------------------- WebSocket ------------------------------- */
 
-  useEffect(() => {
-    if (!jobId) return;
+  // useEffect(() => {
+  //   if (!jobId) return;
 
-    let isActive = true;
+  //   let isActive = true;
 
-    const connect = () => {
-      if (!isActive) return;
+  //   const connect = () => {
+  //     if (!isActive) return;
 
-      const url = `${API_BASE_URL.replace(/^http/, 'ws')}/ws/logs/${jobId}`;
-      const socket = new WebSocket(url);
-      ws.current = socket;
+  //     const url = `${API_BASE_URL.replace(/^http/, 'ws')}/ws/logs/${jobId}`;
+  //     const socket = new WebSocket(url);
+  //     ws.current = socket;
 
-      socket.onmessage = (e) => {
-        const data = JSON.parse(e.data);
-        const items = Array.isArray(data) ? data : [data];
+  //     socket.onmessage = (e) => {
+  //       const data = JSON.parse(e.data);
+  //       const items = Array.isArray(data) ? data : [data];
 
-        setLogs((prev) => {
-          const next = [
-            ...prev,
-            ...items.map((item) => ({
-              ...item,
-              id: logIdRef.current++,
-            })),
-          ];
-          // Keep only the last maxMessages items
-          return next.slice(-maxMessages);
-        });
-      };
+  //       setLogs((prev) => {
+  //         const next = [
+  //           ...prev,
+  //           ...items.map((item) => ({
+  //             ...item,
+  //             id: logIdRef.current++,
+  //           })),
+  //         ];
+  //         // Keep only the last maxMessages items
+  //         return next.slice(-maxMessages);
+  //       });
+  //     };
 
-      const scheduleReconnect = () => {
-        if (!isActive) return;
-        if (reconnectTimeoutRef.current) {
-          clearTimeout(reconnectTimeoutRef.current);
-        }
-        // simple fixed-delay reconnect; can be replaced with exponential backoff if needed
-        reconnectTimeoutRef.current = setTimeout(() => {
-          connect();
-        }, 2000);
-      };
+  //     const scheduleReconnect = () => {
+  //       if (!isActive) return;
+  //       if (reconnectTimeoutRef.current) {
+  //         clearTimeout(reconnectTimeoutRef.current);
+  //       }
+  //       // simple fixed-delay reconnect; can be replaced with exponential backoff if needed
+  //       reconnectTimeoutRef.current = setTimeout(() => {
+  //         connect();
+  //       }, 2000);
+  //     };
 
-      socket.onclose = scheduleReconnect;
-      socket.onerror = () => {
-        // close triggers onclose -> scheduleReconnect
-        socket.close();
-      };
-    };
+  //     socket.onclose = scheduleReconnect;
+  //     socket.onerror = () => {
+  //       // close triggers onclose -> scheduleReconnect
+  //       socket.close();
+  //     };
+  //   };
 
-    connect();
+  //   connect();
 
-    return () => {
-      isActive = false;
+  //   return () => {
+  //     isActive = false;
 
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
-      }
+  //     if (reconnectTimeoutRef.current) {
+  //       clearTimeout(reconnectTimeoutRef.current);
+  //       reconnectTimeoutRef.current = null;
+  //     }
 
-      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-        ws.current.close();
-      }
-    };
-  }, [jobId, maxMessages]);
+  //     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+  //       ws.current.close();
+  //     }
+  //   };
+  // }, [jobId, maxMessages]);
 
   /* ---------------------------- Filtering ------------------------------- */
 
@@ -244,6 +244,22 @@ export default function LogViewer({ jobId, maxMessages = 1500, description }) {
         </Stack>
 
         <Stack direction="row" spacing={0.5}>
+          <Tooltip title="Refresh logs">
+            <IconButton
+              onClick={() => {
+                // Cancel any pending debounce and force reload
+                if (debounceRef.current) {
+                  clearTimeout(debounceRef.current);
+                  debounceRef.current = null;
+                }
+                fetchHistoricalLogs(searchText || null, 500, sliderOffset || 0);
+              }}
+              size="small"
+              disabled={isLoading}
+            >
+              <Refresh fontSize="small" />
+            </IconButton>
+          </Tooltip>
           <Tooltip title="Clear logs">
             <IconButton onClick={() => setLogs([])} size="small">
               <Delete fontSize="small" />

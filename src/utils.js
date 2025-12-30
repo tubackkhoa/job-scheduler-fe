@@ -1,5 +1,5 @@
-import jsep from 'jsep';
-import _ from 'lodash';
+import jsep from "jsep";
+import _ from "lodash";
 
 const evalAstIterative = (root, context, maxSteps) => {
   const stack = [{ node: root, visited: false }];
@@ -7,7 +7,7 @@ const evalAstIterative = (root, context, maxSteps) => {
   let steps = 0;
   while (stack.length) {
     if (++steps > maxSteps) {
-      throw new Error('Evaluation step limit exceeded');
+      throw new Error("Evaluation step limit exceeded");
     }
     const item = stack.pop();
     const node = item.node;
@@ -17,31 +17,31 @@ const evalAstIterative = (root, context, maxSteps) => {
       stack.push({ node, visited: true });
 
       switch (node.type) {
-        case 'UnaryExpression':
+        case "UnaryExpression":
           stack.push({ node: node.argument, visited: false });
           break;
 
-        case 'BinaryExpression':
-        case 'LogicalExpression':
+        case "BinaryExpression":
+        case "LogicalExpression":
           stack.push({ node: node.right, visited: false });
           stack.push({ node: node.left, visited: false });
           break;
 
-        case 'ConditionalExpression':
+        case "ConditionalExpression":
           stack.push({ node: node.alternate, visited: false });
           stack.push({ node: node.consequent, visited: false });
           stack.push({ node: node.test, visited: false });
           break;
 
-        case 'MemberExpression':
+        case "MemberExpression":
           if (node.computed) {
             stack.push({ node: node.property, visited: false });
           }
           stack.push({ node: node.object, visited: false });
           break;
 
-        case 'Compound':
-          if (node.body?.[0]?.name === 'return') {
+        case "Compound":
+          if (node.body?.[0]?.name === "return") {
             stack.push({ node: node.body[1], visited: false });
           } else {
             throw new Error(`Unsupported node ${node.body?.[0]?.name}`);
@@ -53,27 +53,27 @@ const evalAstIterative = (root, context, maxSteps) => {
       let result;
 
       switch (node.type) {
-        case 'Literal':
+        case "Literal":
           result = node.value;
           break;
 
-        case 'Identifier':
+        case "Identifier":
           if (!(node.name in context)) {
             throw new Error(`Unknown identifier: ${node.name}`);
           }
           result = context[node.name];
           break;
 
-        case 'UnaryExpression': {
+        case "UnaryExpression": {
           const arg = values.get(node.argument);
           switch (node.operator) {
-            case '+':
+            case "+":
               result = +arg;
               break;
-            case '-':
+            case "-":
               result = -arg;
               break;
-            case '!':
+            case "!":
               result = !arg;
               break;
             default:
@@ -82,48 +82,48 @@ const evalAstIterative = (root, context, maxSteps) => {
           break;
         }
 
-        case 'BinaryExpression': {
+        case "BinaryExpression": {
           const left = values.get(node.left);
           const right = values.get(node.right);
 
           switch (node.operator) {
-            case '+':
+            case "+":
               result = left + right;
               break;
-            case '-':
+            case "-":
               result = left - right;
               break;
-            case '*':
+            case "*":
               result = left * right;
               break;
-            case '/':
+            case "/":
               result = left / right;
               break;
-            case '%':
+            case "%":
               result = left % right;
               break;
-            case '==':
+            case "==":
               result = left == right;
               break;
-            case '===':
+            case "===":
               result = left === right;
               break;
-            case '!=':
+            case "!=":
               result = left != right;
               break;
-            case '!==':
+            case "!==":
               result = left !== right;
               break;
-            case '<':
+            case "<":
               result = left < right;
               break;
-            case '<=':
+            case "<=":
               result = left <= right;
               break;
-            case '>':
+            case ">":
               result = left > right;
               break;
-            case '>=':
+            case ">=":
               result = left >= right;
               break;
             default:
@@ -132,11 +132,11 @@ const evalAstIterative = (root, context, maxSteps) => {
           break;
         }
 
-        case 'LogicalExpression': {
+        case "LogicalExpression": {
           const left = values.get(node.left);
-          if (node.operator === '&&') {
+          if (node.operator === "&&") {
             result = left && values.get(node.right);
-          } else if (node.operator === '||') {
+          } else if (node.operator === "||") {
             result = left || values.get(node.right);
           } else {
             throw new Error(`Unsupported logical ${node.operator}`);
@@ -144,13 +144,13 @@ const evalAstIterative = (root, context, maxSteps) => {
           break;
         }
 
-        case 'ConditionalExpression':
+        case "ConditionalExpression":
           result = values.get(node.test)
             ? values.get(node.consequent)
             : values.get(node.alternate);
           break;
 
-        case 'MemberExpression': {
+        case "MemberExpression": {
           const obj = values.get(node.object);
           const prop = node.computed
             ? values.get(node.property)
@@ -159,7 +159,7 @@ const evalAstIterative = (root, context, maxSteps) => {
           break;
         }
 
-        case 'Compound':
+        case "Compound":
           // return <expression>
           result = values.get(node.body[1]);
           break;
@@ -183,8 +183,8 @@ export const extractUiSchema = (schema) => {
     {
       props: schema.properties,
       target: uiSchema,
-      path: []
-    }
+      path: [],
+    },
   ];
 
   while (stack.length > 0) {
@@ -195,7 +195,7 @@ export const extractUiSchema = (schema) => {
 
       // Copy ui:field and ui:classNames if present
       for (const uiKey in prop) {
-        if (uiKey.startsWith('ui:')) {
+        if (uiKey.startsWith("ui:")) {
           uiEntry[uiKey] = prop[uiKey];
         }
       }
@@ -203,12 +203,12 @@ export const extractUiSchema = (schema) => {
       // Check for nested properties either inline or via $ref
       let nestedProps = null;
 
-      if (prop.type === 'object' && prop.properties) {
+      if (prop.type === "object" && prop.properties) {
         nestedProps = prop.properties;
       } else if (prop.$ref) {
-        const defKey = prop.$ref.replace('#/$defs/', '');
+        const defKey = prop.$ref.replace("#/$defs/", "");
         const defSchema = schema.$defs?.[defKey];
-        if (defSchema?.type === 'object' && defSchema.properties) {
+        if (defSchema?.type === "object" && defSchema.properties) {
           nestedProps = defSchema.properties;
         }
       }
@@ -223,7 +223,7 @@ export const extractUiSchema = (schema) => {
         stack.push({
           props: nestedProps,
           target: target[key],
-          path: [...path, key]
+          path: [...path, key],
         });
       } else if (Object.keys(uiEntry).length > 0) {
         // Only add uiEntry if not empty and no nested props
@@ -236,33 +236,28 @@ export const extractUiSchema = (schema) => {
 };
 
 export const getSystemTheme = () =>
-  window.matchMedia?.('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light';
+  window.matchMedia?.("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
 
-/**
- * Formats ugly Python datetime repr strings like:
- * "datetime.datetime(2025, 12, 18, 10, 57, 15, 461066, tzinfo=...)"
- * → "12/18/2025, 10:57:15 AM"
- */
 export const formatMessage = (message) => {
-  if (typeof message !== 'string') return message;
+  if (typeof message !== "string") return message;
 
   return message.replace(
     /\[?datetime\.datetime\(([^)]+)\)/g,
     (match, dtStr) => {
       try {
-        const parts = dtStr.split(', ').map(Number);
+        const parts = dtStr.split(", ").map(Number);
         const [year, month, day, hour, minute, second] = parts;
         const date = new Date(year, month - 1, day, hour, minute, second || 0);
         return date.toLocaleString(undefined, {
-          year: 'numeric',
-          month: 'numeric',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: true
+          year: "numeric",
+          month: "numeric",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
         });
       } catch {
         return match; // fallback if parsing fails
@@ -272,12 +267,12 @@ export const formatMessage = (message) => {
 };
 
 const LEVEL_COLOR_MAP = {
-  CRITICAL: 'error.dark',
-  ERROR: 'error.main',
-  WARNING: 'warning.main',
-  INFO: 'info.main',
-  DEBUG: 'success.main',
-  NOTSET: 'primary.main'
+  CRITICAL: "error.dark",
+  ERROR: "error.main",
+  WARNING: "warning.main",
+  INFO: "info.main",
+  DEBUG: "success.main",
+  NOTSET: "primary.main",
 };
 
 export const getLevelColor = (level) =>
@@ -286,7 +281,7 @@ export const getLevelColor = (level) =>
 const cache = new Map();
 
 export const evaluate = (expr, context, defaultValue, maxSteps = 256) => {
-  const val = typeof expr === 'string' ? expr : expr.toString();
+  const val = typeof expr === "string" ? expr : expr.toString();
   try {
     let ast = cache.get(val);
     if (!ast) {
@@ -295,7 +290,7 @@ export const evaluate = (expr, context, defaultValue, maxSteps = 256) => {
     }
     return evalAstIterative(ast, context, maxSteps);
   } catch (err) {
-    console.log('Evaluation error:', err.message);
+    console.log("Evaluation error:", err.message);
     return defaultValue;
   }
 };
@@ -305,12 +300,12 @@ export class JinjaCompletionBuilder {
 
   static buildGlobals(globals = []) {
     return globals.map((name) => {
-      const [label, type = 'function'] = name.split(':');
+      const [label, type = "function"] = name.split(":");
       return {
         label,
         type,
-        detail: 'global',
-        section: 'Globals'
+        detail: "global",
+        section: "Globals",
       };
     });
   }
@@ -318,27 +313,27 @@ export class JinjaCompletionBuilder {
   static buildFilters(filters = []) {
     return filters.map((name) => ({
       label: name,
-      type: 'function',
-      detail: 'filter',
-      section: 'Filters'
+      type: "function",
+      detail: "filter",
+      section: "Filters",
     }));
   }
 
   static buildTests(tests = []) {
     return tests.map((name) => ({
       label: name,
-      type: 'keyword',
-      detail: 'test',
-      section: 'Tests'
+      type: "keyword",
+      detail: "test",
+      section: "Tests",
     }));
   }
 
   static buildTags(tags = []) {
     return tags.map((name) => ({
       label: name,
-      type: 'keyword',
-      detail: 'tag',
-      section: 'Tags'
+      type: "keyword",
+      detail: "tag",
+      section: "Tags",
     }));
   }
 
@@ -347,9 +342,9 @@ export class JinjaCompletionBuilder {
   static buildTopLevelVariables(params = {}) {
     return Object.keys(params).map((key) => ({
       label: key,
-      type: 'variable',
-      detail: 'param',
-      section: 'Variables'
+      type: "variable",
+      detail: "param",
+      section: "Variables",
     }));
   }
 
@@ -361,9 +356,9 @@ export class JinjaCompletionBuilder {
 
       return Object.keys(value).map((key) => ({
         label: key,
-        type: 'property',
-        detail: 'param',
-        section: 'Properties'
+        type: "property",
+        detail: "param",
+        section: "Properties",
       }));
     };
   }
@@ -375,11 +370,11 @@ export class JinjaCompletionBuilder {
       variables: [
         ...this.buildTopLevelVariables(params),
         ...this.buildGlobals(serverSymbols.globals),
-        ...this.buildTests(serverSymbols.tests)
+        ...this.buildTests(serverSymbols.tests),
       ],
       filters: this.buildFilters(serverSymbols.filters),
       tags: this.buildTags(serverSymbols.tags),
-      properties: this.buildProperties(params)
+      properties: this.buildProperties(params),
     };
   }
 }
