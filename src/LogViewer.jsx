@@ -97,7 +97,8 @@ export default function LogViewer({ jobId, maxMessages = 1500, description }) {
   const ws = useRef(null);
   const logIdRef = useRef(0);
   const debounceRef = useRef(null);
-  const totalLogRef = useRef(0)
+  const totalLogRef = useRef(0);
+  const reconnectTimeoutRef = useRef(null);
 
 
   // useEffect(() => {
@@ -158,30 +159,63 @@ export default function LogViewer({ jobId, maxMessages = 1500, description }) {
   useEffect(() => {
     if (!jobId) return;
 
-    const url = `${API_BASE_URL.replace(/^http/, 'ws')}/ws/logs/${jobId}`;
+    let isActive = true;
 
-    ws.current = new WebSocket(url);
+    const connect = () => {
+      if (!isActive) return;
 
-    ws.current.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      const items = Array.isArray(data) ? data : [data];
+      const url = `${API_BASE_URL.replace(/^http/, 'ws')}/ws/logs/${jobId}`;
+      const socket = new WebSocket(url);
+      ws.current = socket;
 
-      setLogs((prev) => {
-        const next = [
-          ...prev,
-          ...items.map((item) => ({
-            ...item,
-            id: logIdRef.current++,
-          })),
-        ];
-        // Keep only the last maxMessages items
-        return next.slice(-maxMessages);
-      });
+      socket.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        const items = Array.isArray(data) ? data : [data];
+
+        setLogs((prev) => {
+          const next = [
+            ...prev,
+            ...items.map((item) => ({
+              ...item,
+              id: logIdRef.current++,
+            })),
+          ];
+          // Keep only the last maxMessages items
+          return next.slice(-maxMessages);
+        });
+      };
+
+      const scheduleReconnect = () => {
+        if (!isActive) return;
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
+        }
+        // simple fixed-delay reconnect; can be replaced with exponential backoff if needed
+        reconnectTimeoutRef.current = setTimeout(() => {
+          connect();
+        }, 2000);
+      };
+
+      socket.onclose = scheduleReconnect;
+      socket.onerror = () => {
+        // close triggers onclose -> scheduleReconnect
+        socket.close();
+      };
     };
 
+    connect();
+
     return () => {
-      ws.current?.close();
-      // setLogs([]);
+      isActive = false;
+
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+
+      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+        ws.current.close();
+      }
     };
   }, [jobId, maxMessages]);
 
