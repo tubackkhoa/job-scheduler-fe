@@ -1,6 +1,15 @@
 import { useMemo, useState, useEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
-import { Stack, Typography, Tabs, Tab, Alert } from '@mui/material';
+import {
+  Stack,
+  Typography,
+  Tabs,
+  Tab,
+  Alert,
+  Tooltip,
+  IconButton,
+  Box
+} from '@mui/material';
 import { sql, PostgreSQL } from '@codemirror/lang-sql';
 import { json } from '@codemirror/lang-json';
 import { yaml } from '@codemirror/lang-yaml';
@@ -9,6 +18,7 @@ import { EditorView } from '@codemirror/view';
 import { JinjaCompletionBuilder } from '../../../utils';
 import api from '../../../api';
 import _ from 'lodash';
+import { Check, ContentCopySharp } from '@mui/icons-material';
 
 function resolveLanguageExtension(type, schema) {
   switch (type) {
@@ -53,6 +63,17 @@ export function TemplateField({
   const [previewCode, setPreviewCode] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [tabIndex, setTabIndex] = useState(0);
+  const [copied, setCopied] = useState(false);
+  const handleCopyCode = async () => {
+    if (!formData) return;
+    try {
+      await navigator.clipboard.writeText(previewCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.error('Copy failed', err);
+    }
+  };
 
   // Sync local state if formData changes externally
   useEffect(() => {
@@ -96,40 +117,65 @@ export function TemplateField({
         <Tab label="Code" />
         <Tab label="Preview" onClick={() => updatePrewiewCode(localValue)} />
       </Tabs>
-      {errorMessage ? (
-        <Alert variant="outlined" severity="error" sx={{ mb: 4 }}>
-          {errorMessage}
-        </Alert>
-      ) : (
-        <CodeMirror
-          style={{
-            resize: 'vertical',
-            overflow: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: 200,
-            maxHeight: 600,
-            height: '100%'
-          }}
-          minHeight="200px"
-          height="100%"
-          editable={tabIndex === 0}
-          value={tabIndex === 0 ? localValue : previewCode}
-          extensions={
-            tabIndex === 0
-              ? extensions
-              : [...extensions, EditorView.lineWrapping]
-          }
-          onChange={setLocalValue}
-          onBlur={handleBlur}
-          basicSetup={{
-            lineNumbers: true,
-            highlightActiveLine: true,
-            foldGutter: false
-          }}
-          theme="dark"
-        />
-      )}
+
+      <Box sx={{ position: 'relative' }}>
+        {tabIndex == 1 && (
+          <Tooltip title={copied ? 'Copied!' : 'Copy Code'}>
+            <IconButton
+              onClick={handleCopyCode}
+              sx={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                zIndex: 1,
+                bgcolor: 'action.hover'
+              }}
+              size="small"
+            >
+              {copied ? (
+                <Check color="success" fontSize="small" />
+              ) : (
+                <ContentCopySharp fontSize="small" />
+              )}
+            </IconButton>
+          </Tooltip>
+        )}
+
+        {errorMessage ? (
+          <Alert variant="outlined" severity="error" sx={{ mb: 4 }}>
+            {errorMessage}
+          </Alert>
+        ) : (
+          <CodeMirror
+            style={{
+              resize: 'vertical',
+              overflow: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: 200,
+              maxHeight: 600,
+              height: '100%'
+            }}
+            minHeight="200px"
+            height="100%"
+            editable={tabIndex === 0}
+            value={tabIndex === 0 ? localValue : previewCode}
+            extensions={
+              tabIndex === 0
+                ? extensions
+                : [...extensions, EditorView.lineWrapping]
+            }
+            onChange={setLocalValue}
+            onBlur={handleBlur}
+            basicSetup={{
+              lineNumbers: true,
+              highlightActiveLine: true,
+              foldGutter: false
+            }}
+            theme="dark"
+          />
+        )}
+      </Box>
     </Stack>
   );
 }

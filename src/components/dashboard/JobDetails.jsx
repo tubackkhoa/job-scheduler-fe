@@ -31,6 +31,8 @@ import {
 import { ConfigForm } from './ConfigForm';
 import LogViewer from '../../LogViewer';
 import SignalsLogsViewer from '../../SignalsLogsViewer';
+import { json } from '@codemirror/lang-json';
+import CodeMirror, { EditorView } from '@uiw/react-codemirror';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -237,24 +239,27 @@ export function JobDetails({
                   )}
                 </IconButton>
               </Tooltip>
-              <Box
-                component="pre"
-                sx={{
-                  bgcolor: 'rgba(0, 0, 0, 0.4)',
-                  border: 1,
-                  borderColor: 'divider',
-                  borderRadius: 2,
-                  p: 2,
-                  m: 0,
+
+              <CodeMirror
+                style={{
                   maxHeight: 500,
                   overflow: 'auto',
-                  fontFamily: '"JetBrains Mono", monospace',
-                  fontSize: '0.85rem',
-                  color: 'primary.light'
+                  resize: 'vertical',
+                  minHeight: 200,
+                  height: '100%'
                 }}
-              >
-                {JSON.stringify(formData, null, 2)}
-              </Box>
+                minHeight="200px"
+                height="100%"
+                editable={false}
+                value={JSON.stringify(formData, null, 2)}
+                extensions={[json(), EditorView.lineWrapping]}
+                basicSetup={{
+                  lineNumbers: true,
+                  highlightActiveLine: true,
+                  foldGutter: false
+                }}
+                theme="dark"
+              />
             </Box>
           </TabPanel>
 
