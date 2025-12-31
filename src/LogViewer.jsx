@@ -75,12 +75,39 @@ const LogRow = React.memo(function LogRow({ log, searchText }) {
           [{log.level}]
         </Typography>
 
-        <Typography
-          variant="caption"
-          sx={{ fontFamily: 'inherit', opacity: 0.9, whiteSpace: 'pre-wrap' }}
+        <Box
+          sx={{
+            flex: 1,
+            overflowX: 'auto',
+            overflowY: 'hidden',
+            maxWidth: '100%',
+            '&::-webkit-scrollbar': {
+              height: '4px',
+            },
+            '&::-webkit-scrollbar-track': {
+              bgcolor: 'rgba(0, 0, 0, 0.2)',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              bgcolor: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: '2px',
+              '&:hover': {
+                bgcolor: 'rgba(255, 255, 255, 0.3)',
+              },
+            },
+          }}
         >
-          {highlightMessage(formatMessage(log.message), searchText)}
-        </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              fontFamily: 'inherit',
+              opacity: 0.9,
+              whiteSpace: 'pre',
+              minWidth: 'max-content',
+            }}
+          >
+            {highlightMessage(formatMessage(log.message), searchText)}
+          </Typography>
+        </Box>
       </Stack>
     </ListItem>
   );
@@ -340,6 +367,32 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
           </List>
         )}
       </Paper>
+
+      {/* Refresh Button at Bottom */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1 }}>
+        <Tooltip title="Refresh logs">
+          <IconButton
+            onClick={() => {
+              // Cancel any pending debounce and force reload
+              if (debounceRef.current) {
+                clearTimeout(debounceRef.current);
+                debounceRef.current = null;
+              }
+              fetchHistoricalLogs(searchText || null, 500, sliderOffset || 0);
+            }}
+            size="small"
+            disabled={isLoading}
+            sx={{
+              bgcolor: 'rgba(99, 102, 241, 0.1)',
+              '&:hover': {
+                bgcolor: 'rgba(99, 102, 241, 0.2)',
+              },
+            }}
+          >
+            <Refresh fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </Box>
   </Stack>
   );
 }
