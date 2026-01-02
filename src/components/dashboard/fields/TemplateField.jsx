@@ -158,7 +158,7 @@ export function TemplateField({
             }}
             minHeight="200px"
             height="100%"
-            editable={tabIndex === 0}
+            readOnly={tabIndex !== 0}
             value={tabIndex === 0 ? localValue : previewCode}
             extensions={
               tabIndex === 0
