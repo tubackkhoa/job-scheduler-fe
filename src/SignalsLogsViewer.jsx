@@ -30,45 +30,54 @@ import { formatMessage, getLevelColor } from './utils';
 
 /* -------------------------------- Utilities -------------------------------- */
 
-// Parse message to detect if it's a pandas DataFrame table format
+
 const parseTableMessage = (message) => {
   if (!message) return null;
   
-  const lines = message.trim().split('\n').filter(line => line.trim());
+  let cleanedMessage = message.trim();
+  cleanedMessage = cleanedMessage.replace(/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\s+\[.*?\]\s+/, '');
+  
+  const lines = cleanedMessage.split('\n').map(line => line.trim()).filter(line => line);
   if (lines.length < 2) return null;
   
-  // Check if it looks like a pandas DataFrame (has header row and numbered data rows)
-  // Pattern: First line has column names, subsequent lines start with numbers (index)
-  const firstLine = lines[0].trim();
-  const secondLine = lines[1].trim();
+  const header = lines[0].split(/\s+/).filter(h => h.length > 0);
+  if (header.length < 2) return null;
   
-  // Check if second line starts with a number (pandas index)
-  const hasIndexPattern = /^\d+\s+/.test(secondLine);
+  // Find pred_time column index
+  const predTimeIndex = header.findIndex(col => col.toLowerCase() === 'pred_time');
   
-  // Check if first line has multiple columns (spaces separating)
-  const firstLineColumns = firstLine.split(/\s{2,}/).filter(col => col.trim());
-  const hasMultipleColumns = firstLineColumns.length > 2;
-  
-  if (!hasIndexPattern || !hasMultipleColumns) return null;
-  
-  // Parse header (first line)
-  const header = firstLine.split(/\s{2,}/).map(h => h.trim()).filter(h => h);
-  
-  // Parse data rows (skip first line)
   const dataRows = [];
   for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim();
+    const line = lines[i];
     if (!line || line.length < 3) continue;
     
-    // Split by multiple spaces (pandas DataFrame format)
-    let cells = line.split(/\s{2,}/).map(c => c.trim()).filter(c => c);
+    let cells = line.split(/\s+/).filter(c => c.length > 0);
     
     // Remove index if present (first column is a number)
     if (cells.length > 0 && /^\d+$/.test(cells[0])) {
       cells = cells.slice(1);
     }
     
-    // Only add if we have enough columns
+    // Merge date and time for pred_time column if needed
+    if (predTimeIndex >= 0 && predTimeIndex < cells.length - 1) {
+      const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+      const timePattern = /^\d{2}:\d{2}:\d{2}$/;
+      
+      // Check if current cell is a date and next cell is a time
+      if (datePattern.test(cells[predTimeIndex]) && timePattern.test(cells[predTimeIndex + 1])) {
+        // Merge date and time: "2026-01-02 09:00:00"
+        cells[predTimeIndex] = `${cells[predTimeIndex]} ${cells[predTimeIndex + 1]}`;
+        // Remove the time cell
+        cells.splice(predTimeIndex + 1, 1);
+      }
+    }
+    
+    // Pad or trim to match header length
+    while (cells.length < header.length) {
+      cells.push('');
+    }
+    cells = cells.slice(0, header.length);
+    
     if (cells.length >= Math.min(header.length, 2)) {
       dataRows.push(cells);
     }
