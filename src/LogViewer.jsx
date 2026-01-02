@@ -137,7 +137,7 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
   /* -------------------------- Fetch Historical -------------------------- */
 
   const fetchHistoricalLogs = useCallback(
-    async (search, limit = 100, sliderOffset = 2000) => {
+    async (searchText, limit = 100, sliderOffset = 2000) => {
       if (!jobId) return;
 
       const offset = Math.max(0, totalLogRef.current - sliderOffset - limit);
@@ -145,7 +145,7 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
       setIsLoading(true);
       try {
         const params = new URLSearchParams();
-        if (search) params.append('search', search);
+        if (searchText) params.append('search', searchText);
         if (offset != null) params.append('offset', offset);
         params.append('limit', limit);
         params.append('sort', 'desc');
@@ -279,7 +279,9 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
                   clearTimeout(debounceRef.current);
                   debounceRef.current = null;
                 }
-                fetchHistoricalLogs(searchText || null, 500, sliderOffset || 0);
+                debounceRef.current = setTimeout(() => {
+                  fetchHistoricalLogs(searchText || null, 500, sliderOffset || 0);
+                }, 500);
               }}
               size="small"
               disabled={isLoading}
@@ -306,7 +308,7 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
             clearTimeout(debounceRef.current);
           }
           debounceRef.current = setTimeout(() => {
-            fetchHistoricalLogs(null, 500, sliderOffset);
+            fetchHistoricalLogs(e.target.value || null, 500, sliderOffset);
           }, 500);
         }}
         InputProps={{
