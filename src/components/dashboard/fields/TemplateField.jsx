@@ -201,6 +201,21 @@ const MarkdownPreview = ({ text = '' }) => (
     sx={{
       typography: 'body1',
       p: 3,
+      overflowX: 'auto',
+      maxWidth: '100%',
+      '&::-webkit-scrollbar': {
+        height: '8px',
+      },
+      '&::-webkit-scrollbar-track': {
+        bgcolor: 'rgba(0, 0, 0, 0.2)',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        bgcolor: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: '4px',
+        '&:hover': {
+          bgcolor: 'rgba(255, 255, 255, 0.3)',
+        },
+      },
 
       '& h1': { typography: 'h4', mb: 2 },
       '& h2': { typography: 'h5', mt: 3 },
@@ -214,12 +229,14 @@ const MarkdownPreview = ({ text = '' }) => (
       '& table': {
         width: '100%',
         borderCollapse: 'collapse',
-        my: 2
+        my: 2,
+        minWidth: 'max-content'
       },
       '& th, & td': {
         border: '1px solid',
         borderColor: 'divider',
-        p: 1
+        p: 1,
+        whiteSpace: 'nowrap'
       },
       '& th': {
         bgcolor: 'action.hover',
