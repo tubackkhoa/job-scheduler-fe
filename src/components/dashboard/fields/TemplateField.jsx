@@ -14,11 +14,14 @@ import { sql, PostgreSQL } from '@codemirror/lang-sql';
 import { json } from '@codemirror/lang-json';
 import { yaml } from '@codemirror/lang-yaml';
 import { jinja } from '@codemirror/lang-jinja';
+import { markdown } from '@codemirror/lang-markdown';
 import { EditorView } from '@codemirror/view';
 import { JinjaCompletionBuilder } from '../../../utils';
 import api from '../../../api';
 import _ from 'lodash';
 import { Check, ContentCopySharp } from '@mui/icons-material';
+import MarkdownIt from 'markdown-it';
+import DOMPurify from 'dompurify';
 
 function resolveLanguageExtension(type, schema) {
   switch (type) {
@@ -27,6 +30,8 @@ function resolveLanguageExtension(type, schema) {
     case 'yaml':
     case 'yml':
       return yaml();
+    case 'markdown':
+      return markdown();
     case 'sql':
       return sql({ dialect: PostgreSQL, schema: schema.schema });
     default:
@@ -110,6 +115,8 @@ export function TemplateField({
     setTabIndex(newValue);
   };
 
+  const isMarkdownPreview = tabIndex === 1 && languageType === 'markdown';
+
   return (
     <Stack spacing={1}>
       <Typography variant="subtitle2">{schema.title}</Typography>
@@ -145,6 +152,9 @@ export function TemplateField({
           <Alert variant="outlined" severity="error" sx={{ mb: 4 }}>
             {errorMessage}
           </Alert>
+        ) : isMarkdownPreview ? (
+          /* ✅ Markdown HTML preview */
+          <MarkdownPreview text={previewCode} />
         ) : (
           <CodeMirror
             style={{
@@ -179,3 +189,68 @@ export function TemplateField({
     </Stack>
   );
 }
+
+const md = new MarkdownIt({
+  html: false,
+  linkify: true,
+  breaks: true
+});
+
+const MarkdownPreview = ({ text = '' }) => (
+  <Box
+    sx={{
+      typography: 'body1',
+      p: 3,
+
+      '& h1': { typography: 'h4', mb: 2 },
+      '& h2': { typography: 'h5', mt: 3 },
+      '& h3': { typography: 'h6', mt: 2 },
+
+      '& p': { mb: 1.5 },
+
+      '& ul': { pl: 3 },
+      '& li': { mb: 0.5 },
+
+      '& table': {
+        width: '100%',
+        borderCollapse: 'collapse',
+        my: 2
+      },
+      '& th, & td': {
+        border: '1px solid',
+        borderColor: 'divider',
+        p: 1
+      },
+      '& th': {
+        bgcolor: 'action.hover',
+        fontWeight: 'bold'
+      },
+
+      '& pre': {
+        bgcolor: 'grey.900',
+        color: 'grey.100',
+        p: 2,
+        borderRadius: 1,
+        overflowX: 'auto'
+      },
+
+      '& code': {
+        bgcolor: 'action.hover',
+        px: 0.5,
+        borderRadius: 0.5,
+        fontFamily: 'monospace'
+      },
+
+      '& blockquote': {
+        borderLeft: '4px solid',
+        borderColor: 'primary.main',
+        pl: 2,
+        color: 'text.secondary',
+        my: 2
+      }
+    }}
+    dangerouslySetInnerHTML={{
+      __html: DOMPurify.sanitize(md.render(text))
+    }}
+  />
+);
