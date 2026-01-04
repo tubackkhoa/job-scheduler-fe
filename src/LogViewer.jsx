@@ -137,16 +137,14 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
   /* -------------------------- Fetch Historical -------------------------- */
 
   const fetchHistoricalLogs = useCallback(
-    async (searchText, limit = 100, sliderOffset = 2000) => {
+    async (searchText, limit = 100) => {
       if (!jobId) return;
 
-      const offset = Math.max(0, totalLogRef.current - sliderOffset - limit);
 
       setIsLoading(true);
       try {
         const params = new URLSearchParams();
         if (searchText) params.append('search', searchText);
-        if (offset != null) params.append('offset', offset);
         params.append('limit', limit);
         params.append('sort', 'desc');
 
@@ -280,7 +278,7 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
                   debounceRef.current = null;
                 }
                 debounceRef.current = setTimeout(() => {
-                  fetchHistoricalLogs(searchText || null, 500, sliderOffset || 0);
+                  fetchHistoricalLogs(searchText || null, (sliderOffset > 500 ? sliderOffset : 500));
                 }, 500);
               }}
               size="small"
@@ -308,7 +306,7 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
             clearTimeout(debounceRef.current);
           }
           debounceRef.current = setTimeout(() => {
-            fetchHistoricalLogs(e.target.value || null, 500, sliderOffset);
+            fetchHistoricalLogs(e.target.value || null, (sliderOffset > 500 ? sliderOffset : 500));
           }, 500);
         }}
         InputProps={{
@@ -323,7 +321,7 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
         max={Math.max(0, totalLogRef.current - 1)}
         onChangeCommitted={(_, v) => {
           setSliderOffset(v);
-          fetchHistoricalLogs(searchText,  500, v);
+          fetchHistoricalLogs(searchText,  (v > 500 ? v : 500));
         }}
         valueLabelDisplay="auto"
         valueLabelFormat={(v) => `Latest-${v}`}
