@@ -404,7 +404,17 @@ export default function SignalsLogsViewer({ jobId, description }) {
             </IconButton>
           </Tooltip>
           <Tooltip title="Clear signals">
-            <IconButton onClick={() => setGroups([])} size="small">
+            <IconButton onClick={async () => {
+              try {
+                await fetch(`${API_BASE_URL}/api/logs/${jobId}/clear`, {
+                  method: 'POST',
+                });
+              } catch (e) {
+                console.error('Failed to clear signals:', e);
+            } finally {
+                setGroups([]);
+              }
+            }} size="small">
               <Delete fontSize="small" />
             </IconButton>
           </Tooltip>

@@ -296,8 +296,9 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
                   });
                 } catch (e) {
                   console.error('Failed to clear logs:', e);
+                } finally {
+                  setLogs([]);
                 }
-                setLogs([]);
               }}
               size="small"
             >
