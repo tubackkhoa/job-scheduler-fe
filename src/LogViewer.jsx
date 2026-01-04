@@ -288,7 +288,19 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
             </IconButton>
           </Tooltip>
           <Tooltip title="Clear logs">
-            <IconButton onClick={() => setLogs([])} size="small">
+            <IconButton
+              onClick={async () => {
+                try {
+                  await fetch(`${API_BASE_URL}/api/logs/${jobId}/clear`, {
+                    method: 'POST',
+                  });
+                } catch (e) {
+                  console.error('Failed to clear logs:', e);
+                }
+                setLogs([]);
+              }}
+              size="small"
+            >
               <Delete fontSize="small" />
             </IconButton>
           </Tooltip>
