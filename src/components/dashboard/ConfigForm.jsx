@@ -18,7 +18,7 @@ export const ConfigForm = function ConfigForm({
   // Pass a stable formContext object with the ref
   const formContext = useMemo(
     () => ({ formRef, pluginPackage, env }),
-    [pluginPackage]
+    [pluginPackage, env]
   );
   const watchMap = useRef({});
   const currentFormData = useRef(formData);
@@ -34,6 +34,28 @@ export const ConfigForm = function ConfigForm({
   useEffect(() => {
     updateExpressions(formData);
   }, [formData]);
+
+  console.log({formData, schema, env})
+
+  // // Ensure datetime field has a default value when missing
+  // useEffect(() => {
+  //   if (!schema || !formData || !onChange) return;
+
+  //   // Handle top-level datetime field named current_date (Ranking date)
+  //   if (
+  //     schema.properties &&
+  //     schema.properties.current_date &&
+  //     !formData.current_date
+  //   ) {
+  //     // Use ISO string without timezone (match backend tzinfo=None)
+  //     const now = new Date();
+  //     const isoWithoutZ = now.toISOString().slice(0, 19);
+  //     onChange({
+  //       ...formData,
+  //       current_date: isoWithoutZ
+  //     });
+  //   }
+  // }, [schema, formData, onChange]);
 
   const handleChange = ({ formData: newFormData }) => {
     if (onChange) {
