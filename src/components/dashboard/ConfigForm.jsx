@@ -186,7 +186,7 @@ export const ConfigForm = function ConfigForm({
               const { help, errors, children, schema, fieldPathId } = props;
               const cacheId = fieldPathId?.path?.join('.') ?? props.id;
               let isHidden = false;
-              if (schema['ui:options']) {
+              if (schema['ui:options'] && schema['ui:options'].hidden) {
                 isHidden = evaluate(
                   schema['ui:options'].hidden,
                   currentFormData.current ?? formData,
