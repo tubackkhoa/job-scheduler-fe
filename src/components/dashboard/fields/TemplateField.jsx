@@ -124,12 +124,41 @@ export function TemplateField({
   const isMarkdownPreview = tabIndex === 1 && languageType === 'markdown';
 
   return (
-    <Stack spacing={1}>
+    <Stack spacing={1} sx={{ position: 'relative' }}>
       <Typography variant="subtitle2">{schema.title}</Typography>
       <Tabs value={tabIndex} onChange={handleTabChange}>
         <Tab label="Code" />
         <Tab label="Preview" onClick={() => updatePrewiewCode(localValue)} />
       </Tabs>
+
+      {tabIndex == 1 && (
+        <Tooltip title={copied ? 'Copied!' : 'Copy Code'}>
+          <IconButton
+            onClick={handleCopyCode}
+            disabled={loadingPreview}
+            sx={{
+              position: 'absolute',
+              top: 40,
+              right: 8,
+              zIndex: 1,
+              bgcolor: 'action.hover'
+            }}
+            size="small"
+          >
+            {copied ? (
+              <Check color="success" fontSize="small" />
+            ) : (
+              <ContentCopySharp fontSize="small" />
+            )}
+          </IconButton>
+        </Tooltip>
+      )}
+
+      {errorMessage && (
+        <Alert variant="outlined" severity="error" sx={{ mb: 4 }}>
+          {errorMessage}
+        </Alert>
+      )}
 
       <Box
         sx={{
@@ -155,34 +184,8 @@ export function TemplateField({
             <CircularProgress />
           </Box>
         )}
-        {tabIndex == 1 && (
-          <Tooltip title={copied ? 'Copied!' : 'Copy Code'}>
-            <IconButton
-              onClick={handleCopyCode}
-              disabled={loadingPreview}
-              sx={{
-                position: 'absolute',
-                top: -40,
-                right: 8,
-                zIndex: 1,
-                bgcolor: 'action.hover'
-              }}
-              size="small"
-            >
-              {copied ? (
-                <Check color="success" fontSize="small" />
-              ) : (
-                <ContentCopySharp fontSize="small" />
-              )}
-            </IconButton>
-          </Tooltip>
-        )}
 
-        {errorMessage ? (
-          <Alert variant="outlined" severity="error" sx={{ mb: 4 }}>
-            {errorMessage}
-          </Alert>
-        ) : isMarkdownPreview ? (
+        {isMarkdownPreview ? (
           /* ✅ Markdown HTML preview */
           <MarkdownPreview text={previewCode} />
         ) : (
