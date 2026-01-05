@@ -131,7 +131,14 @@ export function TemplateField({
         <Tab label="Preview" onClick={() => updatePrewiewCode(localValue)} />
       </Tabs>
 
-      <Box sx={{ position: 'relative', minHeight: 200, maxHeight: 800 }}>
+      <Box
+        sx={{
+          position: 'relative',
+          minHeight: 200,
+          maxHeight: 800,
+          overflow: 'auto'
+        }}
+      >
         {loadingPreview && tabIndex === 1 && (
           <Box
             sx={{
