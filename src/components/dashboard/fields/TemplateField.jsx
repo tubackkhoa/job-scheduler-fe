@@ -24,11 +24,11 @@ import { EditorView } from '@codemirror/view';
 import { JinjaCompletionBuilder } from '../../../utils';
 import api from '../../../api';
 import _ from 'lodash';
-import { Check, ContentCopySharp, Save, Refresh } from '@mui/icons-material';
+import { Check, ContentCopySharp, Save } from '@mui/icons-material';
 import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
 
-function resolveLanguageExtension(type, schema) {
+const resolveLanguageExtension = (type, schema) => {
   switch (type) {
     case 'json':
       return json();
@@ -42,7 +42,27 @@ function resolveLanguageExtension(type, schema) {
     default:
       return undefined;
   }
-}
+};
+
+const codeMirrorStyle = {
+  style: {
+    resize: 'vertical',
+    overflow: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 200,
+    maxHeight: 600,
+    height: '100%'
+  },
+  minHeight: '200px',
+  height: '100%',
+  theme: 'dark',
+  basicSetup: {
+    lineNumbers: true,
+    highlightActiveLine: true,
+    foldGutter: false
+  }
+};
 
 export function TemplateField({
   formData,
@@ -142,9 +162,10 @@ export function TemplateField({
 
   useEffect(() => {
     if (!isSqlType) return;
-    
+
     let mounted = true;
-    api.listSqlVersions({ limit: 20, offset: 0 })
+    api
+      .listSqlVersions({ limit: 20, offset: 0 })
       .then((result) => {
         if (mounted) {
           setSqlVersions(result.versions || []);
@@ -153,7 +174,7 @@ export function TemplateField({
       .catch((err) => {
         console.error('Failed to load SQL versions:', err);
       });
-    
+
     return () => {
       mounted = false;
     };
@@ -284,10 +305,8 @@ export function TemplateField({
     setTabIndex(newValue);
   };
 
-  const isMarkdownPreview = tabIndex === 1 && languageType === 'markdown';
-
   return (
-    <Stack spacing={1} sx={{ position: 'relative' }}>
+    <Stack spacing={1}>
       <Typography variant="subtitle2">{schema.title}</Typography>
 
       {/* SQL Version Management Bar (only for SQL type) */}
@@ -324,7 +343,12 @@ export function TemplateField({
                 )}
                 renderOption={(props, option) => (
                   <Box component="li" {...props}>
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ width: '100%' }}>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      alignItems="center"
+                      sx={{ width: '100%' }}
+                    >
                       <Typography variant="body2" sx={{ flex: 1 }}>
                         {option.name}
                       </Typography>
@@ -351,10 +375,16 @@ export function TemplateField({
                 size="small"
                 startIcon={<Save />}
                 onClick={handleSaveVersion}
-                disabled={savingVersion || !versionName.trim() || !localValue.trim()}
+                disabled={
+                  savingVersion || !versionName.trim() || !localValue.trim()
+                }
                 sx={{ minWidth: 100 }}
               >
-                {savingVersion ? 'Saving...' : selectedVersion ? 'Update' : 'Save'}
+                {savingVersion
+                  ? 'Saving...'
+                  : selectedVersion
+                  ? 'Update'
+                  : 'Save'}
               </Button>
             </Stack>
             {versionMessage && (
@@ -376,31 +406,6 @@ export function TemplateField({
         <Tab label="Preview" onClick={() => updatePrewiewCode(localValue)} />
       </Tabs>
 
-      {tabIndex == 1 && (
-        <>
-          <Tooltip title={copied ? 'Copied!' : 'Copy Code'}>
-            <IconButton
-              onClick={handleCopyCode}
-              disabled={loadingPreview}
-              sx={{
-                position: 'absolute',
-                top: 40,
-                right: 8,
-                zIndex: 1,
-                bgcolor: 'action.hover'
-              }}
-              size="small"
-            >
-              {copied ? (
-                <Check color="success" fontSize="small" />
-              ) : (
-                <ContentCopySharp fontSize="small" />
-              )}
-            </IconButton>
-          </Tooltip>
-        </>
-      )}
-
       {errorMessage && (
         <Alert variant="outlined" severity="error" sx={{ mb: 4 }}>
           {errorMessage}
@@ -415,7 +420,7 @@ export function TemplateField({
           overflow: 'auto'
         }}
       >
-        {loadingPreview && tabIndex === 1 && (
+        {loadingPreview && (
           <Box
             sx={{
               position: 'absolute',
@@ -431,39 +436,48 @@ export function TemplateField({
             <CircularProgress />
           </Box>
         )}
-
-        {isMarkdownPreview ? (
-          /* ✅ Markdown HTML preview */
-          <MarkdownPreview text={previewCode} />
-        ) : (
+        <Box sx={{ display: tabIndex === 1 ? 'none' : 'block' }}>
           <CodeMirror
-            style={{
-              resize: 'vertical',
-              overflow: 'auto',
-              display: 'flex',
-              flexDirection: 'column',
-              minHeight: 200,
-              maxHeight: 600,
-              height: '100%'
-            }}
-            minHeight="200px"
-            height="100%"
-            readOnly={tabIndex !== 0}
-            value={tabIndex === 0 ? localValue : previewCode}
-            extensions={
-              tabIndex === 0
-                ? extensions
-                : [...extensions, EditorView.lineWrapping]
-            }
+            {...codeMirrorStyle}
+            value={localValue}
+            extensions={extensions}
             onChange={handleEditorChange}
             onBlur={handleBlur}
-            basicSetup={{
-              lineNumbers: true,
-              highlightActiveLine: true,
-              foldGutter: false
-            }}
-            theme="dark"
           />
+        </Box>
+        {tabIndex === 1 && (
+          <Box sx={{ position: 'relative' }}>
+            <Tooltip title={copied ? 'Copied!' : 'Copy Code'}>
+              <IconButton
+                onClick={handleCopyCode}
+                disabled={loadingPreview}
+                sx={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  zIndex: 1,
+                  bgcolor: 'action.hover'
+                }}
+                size="small"
+              >
+                {copied ? (
+                  <Check color="success" fontSize="small" />
+                ) : (
+                  <ContentCopySharp fontSize="small" />
+                )}
+              </IconButton>
+            </Tooltip>
+            {languageType === 'markdown' ? (
+              <MarkdownPreview text={previewCode} />
+            ) : (
+              <CodeMirror
+                {...codeMirrorStyle}
+                readOnly
+                value={previewCode}
+                extensions={[...extensions, EditorView.lineWrapping]}
+              />
+            )}
+          </Box>
         )}
       </Box>
     </Stack>
@@ -479,6 +493,8 @@ const md = new MarkdownIt({
 const MarkdownPreview = ({ text = '' }) => (
   <Box
     sx={{
+      pt: 3,
+      mb: 2,
       typography: 'body1',
       overflowX: 'auto',
       maxWidth: '100%',
