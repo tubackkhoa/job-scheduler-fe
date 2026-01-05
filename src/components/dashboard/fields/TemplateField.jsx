@@ -155,7 +155,7 @@ export function TemplateField({
               disabled={loadingPreview}
               sx={{
                 position: 'absolute',
-                top: 8,
+                top: -40,
                 right: 8,
                 zIndex: 1,
                 bgcolor: 'action.hover'
@@ -223,7 +223,6 @@ const MarkdownPreview = ({ text = '' }) => (
   <Box
     sx={{
       typography: 'body1',
-      p: 3,
       overflowX: 'auto',
       maxWidth: '100%',
       '&::-webkit-scrollbar': {
