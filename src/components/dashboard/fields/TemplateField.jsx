@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import {
   Stack,
@@ -9,7 +9,11 @@ import {
   Tooltip,
   CircularProgress,
   IconButton,
-  Box
+  Box,
+  Autocomplete,
+  TextField,
+  Button,
+  Chip
 } from '@mui/material';
 import { sql, PostgreSQL } from '@codemirror/lang-sql';
 import { json } from '@codemirror/lang-json';
@@ -20,7 +24,7 @@ import { EditorView } from '@codemirror/view';
 import { JinjaCompletionBuilder } from '../../../utils';
 import api from '../../../api';
 import _ from 'lodash';
-import { Check, ContentCopySharp } from '@mui/icons-material';
+import { Check, ContentCopySharp, Save, Refresh } from '@mui/icons-material';
 import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
 
@@ -71,6 +75,18 @@ export function TemplateField({
   const [errorMessage, setErrorMessage] = useState('');
   const [tabIndex, setTabIndex] = useState(0);
   const [copied, setCopied] = useState(false);
+
+  // SQL Version management state (only for SQL type)
+  const isSqlType = languageType === 'sql';
+  const [sqlVersions, setSqlVersions] = useState([]);
+  const [selectedVersion, setSelectedVersion] = useState(null);
+  const [versionName, setVersionName] = useState('');
+  const [versionSearchInput, setVersionSearchInput] = useState('');
+  const [loadingVersions, setLoadingVersions] = useState(false);
+  const [savingVersion, setSavingVersion] = useState(false);
+  const [versionMessage, setVersionMessage] = useState('');
+  const [isDirty, setIsDirty] = useState(false);
+  const searchDebounceRef = useRef(null);
   const handleCopyCode = async () => {
     if (!formData) return;
     try {
@@ -85,7 +101,154 @@ export function TemplateField({
   // Sync local state if formData changes externally
   useEffect(() => {
     setLocalValue(formData);
+    setIsDirty(false);
   }, [formData]);
+
+  useEffect(() => {
+    if (!isSqlType) return;
+
+    const searchVersions = async (searchTerm = '') => {
+      setLoadingVersions(true);
+      try {
+        const result = await api.listSqlVersions({
+          search: searchTerm,
+          limit: 20,
+          offset: 0
+        });
+        setSqlVersions(result.versions || []);
+      } catch (err) {
+        console.error('Failed to load SQL versions:', err);
+        setSqlVersions([]);
+      } finally {
+        setLoadingVersions(false);
+      }
+    };
+
+    // Debounce search
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+
+    searchDebounceRef.current = setTimeout(() => {
+      searchVersions(versionSearchInput);
+    }, 300);
+
+    return () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+      }
+    };
+  }, [isSqlType, versionSearchInput]);
+
+  useEffect(() => {
+    if (!isSqlType) return;
+    
+    let mounted = true;
+    api.listSqlVersions({ limit: 20, offset: 0 })
+      .then((result) => {
+        if (mounted) {
+          setSqlVersions(result.versions || []);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load SQL versions:', err);
+      });
+    
+    return () => {
+      mounted = false;
+    };
+  }, [isSqlType]);
+
+  const handleVersionSelect = async (version) => {
+    if (!version) {
+      setSelectedVersion(null);
+      setVersionName('');
+      setIsDirty(false);
+      return;
+    }
+
+    setLoadingVersions(true);
+    setVersionMessage('');
+    try {
+      const fullVersion = await api.getSqlVersion(version.id);
+      setSelectedVersion(fullVersion);
+      setVersionName(fullVersion.name);
+      setLocalValue(fullVersion.sql_query);
+      setIsDirty(false);
+      // Update parent form data
+      onChange(fullVersion.sql_query, fieldPathId?.path);
+    } catch (err) {
+      setErrorMessage(err.message || 'Failed to load SQL version');
+    } finally {
+      setLoadingVersions(false);
+    }
+  };
+
+  // Handle save version
+  const handleSaveVersion = async () => {
+    if (!versionName.trim()) {
+      setVersionMessage('Version name is required');
+      return;
+    }
+
+    if (!localValue.trim()) {
+      setVersionMessage('SQL query cannot be empty');
+      return;
+    }
+
+    setSavingVersion(true);
+    setVersionMessage('');
+    setErrorMessage('');
+
+    try {
+      if (selectedVersion) {
+        // Update existing version
+        const updated = await api.updateSqlVersion(selectedVersion.id, {
+          name: versionName.trim(),
+          sql_query: localValue
+        });
+        setSelectedVersion(updated);
+        setVersionMessage(`Updated version #${updated.id}`);
+        setIsDirty(false);
+        // Refresh versions list
+        const result = await api.listSqlVersions({
+          search: versionSearchInput,
+          limit: 20,
+          offset: 0
+        });
+        setSqlVersions(result.versions || []);
+      } else {
+        // Create new version
+        const newVersion = await api.createSqlVersion({
+          name: versionName.trim(),
+          sql_query: localValue,
+          description: '',
+          tags: null
+        });
+        setSelectedVersion(newVersion);
+        setVersionMessage(`Saved as version #${newVersion.id}`);
+        setIsDirty(false);
+        // Refresh versions list
+        const result = await api.listSqlVersions({
+          search: versionSearchInput,
+          limit: 20,
+          offset: 0
+        });
+        setSqlVersions(result.versions || []);
+      }
+    } catch (err) {
+      setErrorMessage(err.message || 'Failed to save SQL version');
+    } finally {
+      setSavingVersion(false);
+    }
+  };
+
+  // Track changes in editor
+  const handleEditorChange = (value) => {
+    setLocalValue(value);
+    setIsDirty(true);
+    setVersionMessage('');
+  };
 
   // Only notify parent on blur (when user finishes editing)
   const handleBlur = () => {
@@ -126,32 +289,116 @@ export function TemplateField({
   return (
     <Stack spacing={1} sx={{ position: 'relative' }}>
       <Typography variant="subtitle2">{schema.title}</Typography>
+
+      {/* SQL Version Management Bar (only for SQL type) */}
+      {isSqlType && (
+        <Box
+          sx={{
+            p: 1.5,
+            bgcolor: 'rgba(99, 102, 241, 0.08)',
+            borderRadius: 1,
+            border: '1px solid',
+            borderColor: 'divider'
+          }}
+        >
+          <Stack spacing={1.5}>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Autocomplete
+                size="small"
+                options={sqlVersions}
+                getOptionLabel={(option) => option.name || ''}
+                value={selectedVersion}
+                onChange={(_, newValue) => handleVersionSelect(newValue)}
+                inputValue={versionSearchInput}
+                onInputChange={(_, newInputValue) => {
+                  setVersionSearchInput(newInputValue);
+                }}
+                loading={loadingVersions}
+                sx={{ flex: 1, minWidth: 200 }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Search / Select SQL Version"
+                    placeholder="Type to search..."
+                  />
+                )}
+                renderOption={(props, option) => (
+                  <Box component="li" {...props}>
+                    <Stack direction="row" spacing={1} alignItems="center" sx={{ width: '100%' }}>
+                      <Typography variant="body2" sx={{ flex: 1 }}>
+                        {option.name}
+                      </Typography>
+                      {option.is_active && (
+                        <Chip label="Active" size="small" color="success" />
+                      )}
+                      <Typography variant="caption" color="text.secondary">
+                        #{option.id}
+                      </Typography>
+                    </Stack>
+                  </Box>
+                )}
+              />
+              <TextField
+                size="small"
+                label="Version Name"
+                value={versionName}
+                onChange={(e) => setVersionName(e.target.value)}
+                placeholder="e.g. v1.0 - Production"
+                sx={{ flex: 1, minWidth: 200 }}
+              />
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<Save />}
+                onClick={handleSaveVersion}
+                disabled={savingVersion || !versionName.trim() || !localValue.trim()}
+                sx={{ minWidth: 100 }}
+              >
+                {savingVersion ? 'Saving...' : selectedVersion ? 'Update' : 'Save'}
+              </Button>
+            </Stack>
+            {versionMessage && (
+              <Typography variant="caption" color="success.main">
+                {versionMessage}
+              </Typography>
+            )}
+            {isDirty && selectedVersion && (
+              <Typography variant="caption" color="warning.main">
+                You have unsaved changes
+              </Typography>
+            )}
+          </Stack>
+        </Box>
+      )}
+
       <Tabs value={tabIndex} onChange={handleTabChange}>
         <Tab label="Code" />
         <Tab label="Preview" onClick={() => updatePrewiewCode(localValue)} />
       </Tabs>
 
       {tabIndex == 1 && (
-        <Tooltip title={copied ? 'Copied!' : 'Copy Code'}>
-          <IconButton
-            onClick={handleCopyCode}
-            disabled={loadingPreview}
-            sx={{
-              position: 'absolute',
-              top: 40,
-              right: 8,
-              zIndex: 1,
-              bgcolor: 'action.hover'
-            }}
-            size="small"
-          >
-            {copied ? (
-              <Check color="success" fontSize="small" />
-            ) : (
-              <ContentCopySharp fontSize="small" />
-            )}
-          </IconButton>
-        </Tooltip>
+        <>
+          <Tooltip title={copied ? 'Copied!' : 'Copy Code'}>
+            <IconButton
+              onClick={handleCopyCode}
+              disabled={loadingPreview}
+              sx={{
+                position: 'absolute',
+                top: 40,
+                right: 8,
+                zIndex: 1,
+                bgcolor: 'action.hover'
+              }}
+              size="small"
+            >
+              {copied ? (
+                <Check color="success" fontSize="small" />
+              ) : (
+                <ContentCopySharp fontSize="small" />
+              )}
+            </IconButton>
+          </Tooltip>
+        </>
       )}
 
       {errorMessage && (
@@ -208,7 +455,7 @@ export function TemplateField({
                 ? extensions
                 : [...extensions, EditorView.lineWrapping]
             }
-            onChange={setLocalValue}
+            onChange={handleEditorChange}
             onBlur={handleBlur}
             basicSetup={{
               lineNumbers: true,

@@ -36,3 +36,5 @@ coverage/
 # Optional: cache
 .cache/
 .eslintcache
+
+docs/
