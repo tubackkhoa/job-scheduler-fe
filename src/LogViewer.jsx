@@ -3,7 +3,7 @@ import React, {
   useState,
   useRef,
   useCallback,
-  useMemo,
+  useMemo
 } from 'react';
 import {
   Box,
@@ -16,8 +16,7 @@ import {
   CircularProgress,
   Slider,
   List,
-  ListItem,
-
+  ListItem
 } from '@mui/material';
 import { Terminal, Delete, Search, Refresh } from '@mui/icons-material';
 import { API_BASE_URL } from './api';
@@ -43,14 +42,14 @@ const highlightMessage = (text, search) => {
 
 /* ------------------------------ Log Row ------------------------------------ */
 
-const LogRow = React.memo(function LogRow({ log, searchText }) {
+const LogRow = function LogRow({ log, searchText }) {
   return (
     <ListItem
       disableGutters
       sx={{
         py: 0.2,
         px: 0,
-        fontFamily: '"JetBrains Mono", monospace',
+        fontFamily: '"JetBrains Mono", monospace'
       }}
     >
       <Stack direction="row" spacing={2}>
@@ -69,7 +68,7 @@ const LogRow = React.memo(function LogRow({ log, searchText }) {
             fontFamily: 'inherit',
             fontWeight: 600,
             textTransform: 'uppercase',
-            color: getLevelColor(log.level),
+            color: getLevelColor(log.level)
           }}
         >
           [{log.level}]
@@ -82,18 +81,18 @@ const LogRow = React.memo(function LogRow({ log, searchText }) {
             overflowY: 'hidden',
             maxWidth: '100%',
             '&::-webkit-scrollbar': {
-              height: '4px',
+              height: '4px'
             },
             '&::-webkit-scrollbar-track': {
-              bgcolor: 'rgba(0, 0, 0, 0.2)',
+              bgcolor: 'rgba(0, 0, 0, 0.2)'
             },
             '&::-webkit-scrollbar-thumb': {
               bgcolor: 'rgba(255, 255, 255, 0.2)',
               borderRadius: '2px',
               '&:hover': {
-                bgcolor: 'rgba(255, 255, 255, 0.3)',
-              },
-            },
+                bgcolor: 'rgba(255, 255, 255, 0.3)'
+              }
+            }
           }}
         >
           <Typography
@@ -102,7 +101,7 @@ const LogRow = React.memo(function LogRow({ log, searchText }) {
               fontFamily: 'inherit',
               opacity: 0.9,
               whiteSpace: 'pre',
-              minWidth: 'max-content',
+              minWidth: 'max-content'
             }}
           >
             {highlightMessage(formatMessage(log.message), searchText)}
@@ -111,11 +110,15 @@ const LogRow = React.memo(function LogRow({ log, searchText }) {
       </Stack>
     </ListItem>
   );
-});
+};
 
 /* ------------------------------ Main ---------------------------------------- */
 
-export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, description }) {
+export default function LogViewer({
+  jobId,
+  maxMessages: _maxMessages = 1500,
+  description
+}) {
   const [logs, setLogs] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -127,19 +130,15 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
   const totalLogRef = useRef(0);
   const _reconnectTimeoutRef = useRef(null);
 
-
   // useEffect(() => {
   //   maxMessagesRef.current = maxMessages;
   // }, [maxMessages]);
-
-  
 
   /* -------------------------- Fetch Historical -------------------------- */
 
   const fetchHistoricalLogs = useCallback(
     async (searchText, limit = 100) => {
       if (!jobId) return;
-
 
       setIsLoading(true);
       try {
@@ -154,13 +153,15 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
         totalLogRef.current = data.total;
 
         setLogs(
-          data.logs.map((log) => ({
-            id: log.offset,
-            offset: log.offset,
-            time: log.timestamp,
-            level: log.level,
-            message: log.message,
-          })).sort((a, b) => a.offset - b.offset)
+          data.logs
+            .map((log) => ({
+              id: log.offset,
+              offset: log.offset,
+              time: log.timestamp,
+              level: log.level,
+              message: log.message
+            }))
+            .sort((a, b) => a.offset - b.offset)
         );
       } catch (e) {
         console.error(e);
@@ -176,7 +177,6 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
   useEffect(() => {
     if (!jobId) return;
     fetchHistoricalLogs(null, 500);
-
   }, [jobId, fetchHistoricalLogs]);
 
   /* ---------------------------- WebSocket ------------------------------- */
@@ -258,7 +258,6 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
 
   /* ----------------------------- Render -------------------------------- */
 
-
   return (
     <Stack spacing={2} sx={{ height: 'auto' }}>
       {/* Header */}
@@ -278,7 +277,10 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
                   debounceRef.current = null;
                 }
                 debounceRef.current = setTimeout(() => {
-                  fetchHistoricalLogs(searchText || null, (sliderOffset > 500 ? sliderOffset : 500));
+                  fetchHistoricalLogs(
+                    searchText || null,
+                    sliderOffset > 500 ? sliderOffset : 500
+                  );
                 }, 500);
               }}
               size="small"
@@ -292,7 +294,7 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
               onClick={async () => {
                 try {
                   await fetch(`${API_BASE_URL}/api/logs/${jobId}/clear`, {
-                    method: 'POST',
+                    method: 'POST'
                   });
                 } catch (e) {
                   console.error('Failed to clear logs:', e);
@@ -315,15 +317,18 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
         value={searchText}
         onChange={(e) => {
           setSearchText(e.target.value);
-          if(debounceRef.current){
+          if (debounceRef.current) {
             clearTimeout(debounceRef.current);
           }
           debounceRef.current = setTimeout(() => {
-            fetchHistoricalLogs(e.target.value || null, (sliderOffset > 500 ? sliderOffset : 500));
+            fetchHistoricalLogs(
+              e.target.value || null,
+              sliderOffset > 500 ? sliderOffset : 500
+            );
           }, 500);
         }}
         InputProps={{
-          startAdornment: <Search fontSize="small" sx={{ mr: 1 }} />,
+          startAdornment: <Search fontSize="small" sx={{ mr: 1 }} />
         }}
       />
 
@@ -334,7 +339,7 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
         max={Math.max(0, totalLogRef.current - 1)}
         onChangeCommitted={(_, v) => {
           setSliderOffset(v);
-          fetchHistoricalLogs(searchText,  (v > 500 ? v : 500));
+          fetchHistoricalLogs(searchText, v > 500 ? v : 500);
         }}
         valueLabelDisplay="auto"
         valueLabelFormat={(v) => `Latest-${v}`}
@@ -342,12 +347,12 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
 
       <Paper
         sx={{
-          height: "600px",
+          height: '600px',
           overflow: 'auto',
           bgcolor: 'rgba(0,0,0,0.4)',
           fontFamily: '"JetBrains Mono", monospace',
           p: 1,
-          flex: 1,
+          flex: 1
         }}
       >
         {isLoading ? (
@@ -356,7 +361,7 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
               height: '100%',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
+              justifyContent: 'center'
             }}
           >
             <CircularProgress size={24} />
@@ -367,7 +372,7 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
               height: '100%',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
+              justifyContent: 'center'
             }}
           >
             <Typography variant="body2">No logs</Typography>
@@ -398,14 +403,14 @@ export default function LogViewer({ jobId, maxMessages: _maxMessages = 1500, des
             sx={{
               bgcolor: 'rgba(99, 102, 241, 0.1)',
               '&:hover': {
-                bgcolor: 'rgba(99, 102, 241, 0.2)',
-              },
+                bgcolor: 'rgba(99, 102, 241, 0.2)'
+              }
             }}
           >
             <Refresh fontSize="small" />
           </IconButton>
         </Tooltip>
       </Box>
-  </Stack>
+    </Stack>
   );
 }
