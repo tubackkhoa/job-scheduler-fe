@@ -7,6 +7,7 @@ import {
   Tab,
   Alert,
   Tooltip,
+  CircularProgress,
   IconButton,
   Box
 } from '@mui/material';
@@ -65,6 +66,7 @@ export function TemplateField({
 
   // Local state for editor content during typing
   const [localValue, setLocalValue] = useState(formData);
+  const [loadingPreview, setLoadingPreview] = useState(false);
   const [previewCode, setPreviewCode] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [tabIndex, setTabIndex] = useState(0);
@@ -93,6 +95,8 @@ export function TemplateField({
   };
 
   const updatePrewiewCode = async (tpl) => {
+    setLoadingPreview(true);
+    setErrorMessage('');
     try {
       const ret = await api.renderTemplate(
         registry.formContext.pluginPackage,
@@ -105,6 +109,8 @@ export function TemplateField({
       setPreviewCode(ret.result.trim());
     } catch (ex) {
       setErrorMessage(ex.message);
+    } finally {
+      setLoadingPreview(false);
     }
   };
 
@@ -125,11 +131,28 @@ export function TemplateField({
         <Tab label="Preview" onClick={() => updatePrewiewCode(localValue)} />
       </Tabs>
 
-      <Box sx={{ position: 'relative' }}>
+      <Box sx={{ position: 'relative', minHeight: 200 }}>
+        {loadingPreview && tabIndex === 1 && (
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: 'rgba(0,0,0,0.4)',
+              zIndex: 2,
+              borderRadius: 1
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        )}
         {tabIndex == 1 && (
           <Tooltip title={copied ? 'Copied!' : 'Copy Code'}>
             <IconButton
               onClick={handleCopyCode}
+              disabled={loadingPreview}
               sx={{
                 position: 'absolute',
                 top: 8,
@@ -204,17 +227,17 @@ const MarkdownPreview = ({ text = '' }) => (
       overflowX: 'auto',
       maxWidth: '100%',
       '&::-webkit-scrollbar': {
-        height: '8px',
+        height: '8px'
       },
       '&::-webkit-scrollbar-track': {
-        bgcolor: 'rgba(0, 0, 0, 0.2)',
+        bgcolor: 'rgba(0, 0, 0, 0.2)'
       },
       '&::-webkit-scrollbar-thumb': {
         bgcolor: 'rgba(255, 255, 255, 0.2)',
         borderRadius: '4px',
         '&:hover': {
-          bgcolor: 'rgba(255, 255, 255, 0.3)',
-        },
+          bgcolor: 'rgba(255, 255, 255, 0.3)'
+        }
       },
 
       '& h1': { typography: 'h4', mb: 2 },
