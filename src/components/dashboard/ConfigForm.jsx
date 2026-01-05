@@ -37,7 +37,7 @@ export const ConfigForm = function ConfigForm({
     updateExpressions(formData);
   }, [formData]);
 
-  console.log({formData, schema, env})
+  // console.log({ formData, schema, env });
 
   // // Ensure datetime field has a default value when missing
   // useEffect(() => {

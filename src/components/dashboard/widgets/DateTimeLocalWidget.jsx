@@ -61,8 +61,7 @@ export const DateTimeLocalWidget = (props) => {
       id={id}
       name={id}
       label={label}
-      slotProps={{ htmlInput: { step } }}
-      fullWidth
+      slotProps={{ htmlInput: { step, min: options.min, max: options.max } }}
     />
   );
 };
