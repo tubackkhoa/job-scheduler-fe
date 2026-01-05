@@ -1,10 +1,12 @@
 import { useEffect, useRef, useMemo } from 'react';
+
 import { Box, Paper, Stack, Typography, Grid } from '@mui/material';
 import { Settings } from '@mui/icons-material';
 import Form from '@rjsf/mui';
 import validator from '@rjsf/validator-ajv8';
 import { extractUiSchema, evaluate } from '../../utils';
 import fields from './fields';
+import widgets from './widgets';
 import ErrorBoundary from './ErrorBound';
 
 export const ConfigForm = function ConfigForm({
@@ -177,6 +179,7 @@ export const ConfigForm = function ConfigForm({
             formContext={formContext}
             ref={formRef}
             fields={fields}
+            widgets={widgets}
             formData={formData}
             validator={validator}
             onChange={handleChange}
