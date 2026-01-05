@@ -25,7 +25,7 @@ export const DateTimeLocalWidget = (props) => {
     ? dayjs
         .utc(value)
         .local()
-        .format(options.format || 'YYYY-MM-DDTHH:mm')
+        .format(options.format || 'YYYY-MM-DDTHH:mm:ss')
     : '';
 
   // When the input changes: parse the local datetime string, convert to UTC ISO string
