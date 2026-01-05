@@ -1,10 +1,13 @@
 import { useEffect, useRef, useMemo } from 'react';
+
 import { Box, Paper, Stack, Typography, Grid } from '@mui/material';
 import { Settings } from '@mui/icons-material';
 import Form from '@rjsf/mui';
 import validator from '@rjsf/validator-ajv8';
 import { extractUiSchema, evaluate } from '../../utils';
 import fields from './fields';
+import widgets from './widgets';
+import ErrorBoundary from './ErrorBound';
 
 export const ConfigForm = function ConfigForm({
   schema,
@@ -17,22 +20,44 @@ export const ConfigForm = function ConfigForm({
   // Pass a stable formContext object with the ref
   const formContext = useMemo(
     () => ({ formRef, pluginPackage, env }),
-    [pluginPackage]
+    [pluginPackage, env]
   );
   const watchMap = useRef({});
   const currentFormData = useRef(formData);
   const updateExpressions = (data) => {
     currentFormData.current = data;
     for (const [cacheId, expr] of Object.entries(watchMap.current)) {
+      const el = document.getElementById(cacheId);
+      if (!el) continue;
       const isHidden = evaluate(expr, data, false);
-      document.getElementById(cacheId).style.display = isHidden
-        ? 'none'
-        : 'block';
+      el.style.display = isHidden ? 'none' : 'block';
     }
   };
   useEffect(() => {
     updateExpressions(formData);
   }, [formData]);
+
+  // console.log({ formData, schema, env });
+
+  // // Ensure datetime field has a default value when missing
+  // useEffect(() => {
+  //   if (!schema || !formData || !onChange) return;
+
+  //   // Handle top-level datetime field named current_date (Ranking date)
+  //   if (
+  //     schema.properties &&
+  //     schema.properties.current_date &&
+  //     !formData.current_date
+  //   ) {
+  //     // Use ISO string without timezone (match backend tzinfo=None)
+  //     const now = new Date();
+  //     const isoWithoutZ = now.toISOString().slice(0, 19);
+  //     onChange({
+  //       ...formData,
+  //       current_date: isoWithoutZ
+  //     });
+  //   }
+  // }, [schema, formData, onChange]);
 
   const handleChange = ({ formData: newFormData }) => {
     if (onChange) {
@@ -169,48 +194,53 @@ export const ConfigForm = function ConfigForm({
       }}
     >
       {formData && (
-        <Form
-          schema={schema}
-          uiSchema={extractUiSchema(schema)}
-          formContext={formContext}
-          ref={formRef}
-          fields={fields}
-          formData={formData}
-          validator={validator}
-          onChange={handleChange}
-          liveValidate={false}
-          showErrorList={false}
-          templates={{
-            ObjectFieldTemplate,
-            FieldTemplate: (props) => {
-              const { help, errors, children, schema, fieldPathId } = props;
-              const cacheId = fieldPathId?.path?.join('.') ?? props.id;
-              let isHidden = false;
-              if (schema['ui:options'] && schema['ui:options'].hidden) {
-                isHidden = evaluate(
-                  schema['ui:options'].hidden,
-                  currentFormData.current ?? formData,
-                  false
-                );
-                // cache first time because schema won't change
-                watchMap.current[cacheId] = schema['ui:options'].hidden;
-              }
+        <ErrorBoundary>
+          <Form
+            schema={schema}
+            uiSchema={extractUiSchema(schema)}
+            formContext={formContext}
+            ref={formRef}
+            fields={fields}
+            widgets={widgets}
+            formData={formData}
+            validator={validator}
+            onChange={handleChange}
+            liveValidate={false}
+            showErrorList={false}
+            templates={{
+              ObjectFieldTemplate,
+              FieldTemplate: (props) => {
+                const { help, errors, children, schema, fieldPathId } = props;
+                const cacheId = `cache_${
+                  fieldPathId?.path?.join('.') ?? props.id
+                }`;
+                let isHidden = false;
+                if (schema['ui:options'] && schema['ui:options'].hidden) {
+                  isHidden = evaluate(
+                    schema['ui:options'].hidden,
+                    currentFormData.current ?? formData,
+                    false
+                  );
+                  // cache first time because schema won't change
+                  watchMap.current[cacheId] = schema['ui:options'].hidden;
+                }
 
-              return (
-                <Box
-                  id={cacheId}
-                  sx={{ width: '100%', display: isHidden ? 'none' : 'block' }}
-                >
-                  {children}
-                  {errors}
-                  {help}
-                </Box>
-              );
-            }
-          }}
-        >
-          <div style={{ display: 'none' }} />
-        </Form>
+                return (
+                  <Box
+                    id={cacheId}
+                    sx={{ width: '100%', display: isHidden ? 'none' : 'block' }}
+                  >
+                    {children}
+                    {errors}
+                    {help}
+                  </Box>
+                );
+              }
+            }}
+          >
+            <div style={{ display: 'none' }} />
+          </Form>
+        </ErrorBoundary>
       )}
     </Box>
   );

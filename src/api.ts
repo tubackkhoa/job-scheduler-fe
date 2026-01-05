@@ -178,5 +178,97 @@ export default {
     }
 
     return parseJsonResponse(res, url);
+  },
+
+  // -------------------------- SQL Version API --------------------------- //
+
+  async listSqlVersions(params?: {
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }) {
+    const queryParams = new URLSearchParams();
+    if (params?.search) queryParams.append('search', params.search);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.offset) queryParams.append('offset', params.offset.toString());
+
+    const url = `${API_BASE_URL}/api/sql-versions${queryParams.toString() ? `?${queryParams}` : ''}`;
+    validateApiConfig(url);
+
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Failed to list SQL versions (${res.status})`);
+    }
+
+    return parseJsonResponse(res, url);
+  },
+
+  async getSqlVersion(versionId: number) {
+    const url = `${API_BASE_URL}/api/sql-versions/${versionId}`;
+    validateApiConfig(url);
+
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Failed to get SQL version (${res.status})`);
+    }
+
+    return parseJsonResponse(res, url);
+  },
+
+  async createSqlVersion(payload: {
+    name: string;
+    sql_query: string;
+    description?: string;
+    tags?: string | null;
+  }) {
+    const url = `${API_BASE_URL}/api/sql-versions`;
+    validateApiConfig(url);
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Failed to create SQL version (${res.status})`);
+    }
+
+    return parseJsonResponse(res, url);
+  },
+
+  async updateSqlVersion(
+    versionId: number,
+    payload: {
+      name?: string;
+      sql_query?: string;
+      description?: string;
+      tags?: string | null;
+    }
+  ) {
+    const url = `${API_BASE_URL}/api/sql-versions/${versionId}`;
+    validateApiConfig(url);
+
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Failed to update SQL version (${res.status})`);
+    }
+
+    return parseJsonResponse(res, url);
   }
 };
