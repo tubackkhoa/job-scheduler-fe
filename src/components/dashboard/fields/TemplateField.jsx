@@ -445,40 +445,44 @@ export function TemplateField({
             onBlur={handleBlur}
           />
         </Box>
-        {tabIndex === 1 && (
-          <Box sx={{ position: 'relative' }}>
-            <Tooltip title={copied ? 'Copied!' : 'Copy Code'}>
-              <IconButton
-                onClick={handleCopyCode}
-                disabled={loadingPreview}
-                sx={{
-                  position: 'absolute',
-                  top: 8,
-                  right: 8,
-                  zIndex: 1,
-                  bgcolor: 'action.hover'
-                }}
-                size="small"
-              >
-                {copied ? (
-                  <Check color="success" fontSize="small" />
-                ) : (
-                  <ContentCopySharp fontSize="small" />
-                )}
-              </IconButton>
-            </Tooltip>
-            {languageType === 'markdown' ? (
-              <MarkdownPreview text={previewCode} />
-            ) : (
-              <CodeMirror
-                {...codeMirrorStyle}
-                readOnly
-                value={previewCode}
-                extensions={[...extensions, EditorView.lineWrapping]}
-              />
-            )}
-          </Box>
-        )}
+
+        <Box
+          sx={{
+            position: 'relative',
+            display: tabIndex === 0 ? 'none' : 'block'
+          }}
+        >
+          <Tooltip title={copied ? 'Copied!' : 'Copy Code'}>
+            <IconButton
+              onClick={handleCopyCode}
+              disabled={loadingPreview}
+              sx={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                zIndex: 1,
+                bgcolor: 'action.hover'
+              }}
+              size="small"
+            >
+              {copied ? (
+                <Check color="success" fontSize="small" />
+              ) : (
+                <ContentCopySharp fontSize="small" />
+              )}
+            </IconButton>
+          </Tooltip>
+          {languageType === 'markdown' ? (
+            <MarkdownPreview text={previewCode} />
+          ) : (
+            <CodeMirror
+              {...codeMirrorStyle}
+              readOnly
+              value={previewCode}
+              extensions={[...extensions, EditorView.lineWrapping]}
+            />
+          )}
+        </Box>
       </Box>
     </Stack>
   );
