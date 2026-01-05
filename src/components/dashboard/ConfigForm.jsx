@@ -5,6 +5,7 @@ import Form from '@rjsf/mui';
 import validator from '@rjsf/validator-ajv8';
 import { extractUiSchema, evaluate } from '../../utils';
 import fields from './fields';
+import ErrorBoundary from './ErrorBound';
 
 export const ConfigForm = function ConfigForm({
   schema,
@@ -24,10 +25,10 @@ export const ConfigForm = function ConfigForm({
   const updateExpressions = (data) => {
     currentFormData.current = data;
     for (const [cacheId, expr] of Object.entries(watchMap.current)) {
+      const el = document.getElementById(cacheId);
+      if (!el) continue;
       const isHidden = evaluate(expr, data, false);
-      document.getElementById(cacheId).style.display = isHidden
-        ? 'none'
-        : 'block';
+      el.style.display = isHidden ? 'none' : 'block';
     }
   };
   useEffect(() => {
@@ -169,48 +170,50 @@ export const ConfigForm = function ConfigForm({
       }}
     >
       {formData && (
-        <Form
-          schema={schema}
-          uiSchema={extractUiSchema(schema)}
-          formContext={formContext}
-          ref={formRef}
-          fields={fields}
-          formData={formData}
-          validator={validator}
-          onChange={handleChange}
-          liveValidate={false}
-          showErrorList={false}
-          templates={{
-            ObjectFieldTemplate,
-            FieldTemplate: (props) => {
-              const { help, errors, children, schema, fieldPathId } = props;
-              const cacheId = fieldPathId?.path?.join('.') ?? props.id;
-              let isHidden = false;
-              if (schema['ui:options']) {
-                isHidden = evaluate(
-                  schema['ui:options'].hidden,
-                  currentFormData.current ?? formData,
-                  false
-                );
-                // cache first time because schema won't change
-                watchMap.current[cacheId] = schema['ui:options'].hidden;
-              }
+        <ErrorBoundary>
+          <Form
+            schema={schema}
+            uiSchema={extractUiSchema(schema)}
+            formContext={formContext}
+            ref={formRef}
+            fields={fields}
+            formData={formData}
+            validator={validator}
+            onChange={handleChange}
+            liveValidate={false}
+            showErrorList={false}
+            templates={{
+              ObjectFieldTemplate,
+              FieldTemplate: (props) => {
+                const { help, errors, children, schema, fieldPathId } = props;
+                const cacheId = fieldPathId?.path?.join('.') ?? props.id;
+                let isHidden = false;
+                if (schema['ui:options']) {
+                  isHidden = evaluate(
+                    schema['ui:options'].hidden,
+                    currentFormData.current ?? formData,
+                    false
+                  );
+                  // cache first time because schema won't change
+                  watchMap.current[cacheId] = schema['ui:options'].hidden;
+                }
 
-              return (
-                <Box
-                  id={cacheId}
-                  sx={{ width: '100%', display: isHidden ? 'none' : 'block' }}
-                >
-                  {children}
-                  {errors}
-                  {help}
-                </Box>
-              );
-            }
-          }}
-        >
-          <div style={{ display: 'none' }} />
-        </Form>
+                return (
+                  <Box
+                    id={cacheId}
+                    sx={{ width: '100%', display: isHidden ? 'none' : 'block' }}
+                  >
+                    {children}
+                    {errors}
+                    {help}
+                  </Box>
+                );
+              }
+            }}
+          >
+            <div style={{ display: 'none' }} />
+          </Form>
+        </ErrorBoundary>
       )}
     </Box>
   );
