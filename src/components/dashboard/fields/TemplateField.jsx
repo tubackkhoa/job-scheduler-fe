@@ -423,7 +423,6 @@ export function TemplateField({
         sx={{
           position: 'relative',
           minHeight: 200,
-          maxHeight: 800,
           overflow: 'auto'
         }}
       >
@@ -431,11 +430,12 @@ export function TemplateField({
           <Box
             sx={{
               position: 'absolute',
-              inset: 0,
               display: 'flex',
+              top: 100,
+              left: '50%',
+              transform: 'translateX(-50%)',
               alignItems: 'center',
               justifyContent: 'center',
-              bgcolor: 'rgba(0,0,0,0.4)',
               zIndex: 2,
               borderRadius: 1
             }}
