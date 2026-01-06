@@ -20,7 +20,7 @@ import api from '../../api';
  * Types
  */
 type DocItem = {
-  type: string;
+  type: 'function' | 'variable';
   doc?: string | null;
   signature?: string | null;
 };
@@ -77,7 +77,7 @@ const TryInput = memo(function TryInput({
         <>
           <TextField
             size="small"
-            placeholder="args"
+            placeholder={placeholder}
             value={input}
             onChange={handleInputChange}
             sx={{ flexGrow: 1 }}
@@ -238,7 +238,7 @@ const DocItemAccordion = memo(function DocItemAccordion({
           </Typography>
         )}
 
-        {expanded && (
+        {expanded && item.type === 'function' && (
           <TryInput
             name={name}
             signature={item.signature}
