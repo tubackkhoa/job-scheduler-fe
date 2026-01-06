@@ -28,11 +28,14 @@ export const ConfigForm = function ConfigForm({
     if (onChange) {
       onChange(newFormData);
     }
+  };
+
+  useEffect(() => {
     for (const [el, expr] of hiddenRefs.current) {
-      const isHidden = evaluate(expr, newFormData, false);
+      const isHidden = evaluate(expr, formData, false);
       el.style.display = isHidden ? 'none' : 'block';
     }
-  };
+  }, [formData]);
 
   if (!schema) {
     return null;
