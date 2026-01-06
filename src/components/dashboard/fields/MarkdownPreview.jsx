@@ -12,19 +12,21 @@ const md = new MarkdownIt({
   breaks: true
 });
 
-md.renderer.rules.fence = (tokens, idx) => {
+const md_renderer_rules_fence = md.renderer.rules.fence.bind(md.renderer.rules);
+
+md.renderer.rules.fence = (tokens, idx, options, env, slf) => {
   const token = tokens[idx];
   const info = token.info.trim();
 
-  if (info === 'chart') {
-    return `<canvas class="chartjs">${md.utils.escapeHtml(
-      token.content
-    )}</canvas>`;
-  }
+  switch (info) {
+    case 'chart':
+      return `<canvas class="chartjs">${md.utils.escapeHtml(
+        token.content
+      )}</canvas>`;
 
-  return `<pre><code class="language-${info}">${md.utils.escapeHtml(
-    token.content
-  )}</code></pre>`;
+    default:
+      return md_renderer_rules_fence(tokens, idx, options, env, slf);
+  }
 };
 
 /* ---------- Component ---------- */
@@ -78,9 +80,69 @@ export const MarkdownPreview = ({ text = '' }) => {
         pt: 3,
         mb: 2,
         typography: 'body1',
-        '& canvas.chartjs': {
-          maxWidth: '100%',
-          height: 'auto'
+        overflowX: 'auto',
+        maxWidth: '100%',
+        '&::-webkit-scrollbar': {
+          height: '8px'
+        },
+        '&::-webkit-scrollbar-track': {
+          bgcolor: 'rgba(0, 0, 0, 0.2)'
+        },
+        '&::-webkit-scrollbar-thumb': {
+          bgcolor: 'rgba(255, 255, 255, 0.2)',
+          borderRadius: '4px',
+          '&:hover': {
+            bgcolor: 'rgba(255, 255, 255, 0.3)'
+          }
+        },
+
+        '& h1': { typography: 'h4', mb: 2 },
+        '& h2': { typography: 'h5', mt: 3 },
+        '& h3': { typography: 'h6', mt: 2 },
+
+        '& p': { mb: 1.5 },
+
+        '& ul': { pl: 3 },
+        '& li': { mb: 0.5 },
+
+        '& table': {
+          width: '100%',
+          borderCollapse: 'collapse',
+          my: 2,
+          minWidth: 'max-content'
+        },
+        '& th, & td': {
+          border: '1px solid',
+          borderColor: 'divider',
+          p: 1,
+          whiteSpace: 'nowrap'
+        },
+        '& th': {
+          bgcolor: 'action.hover',
+          fontWeight: 'bold'
+        },
+
+        '& pre': {
+          bgcolor: 'grey.900',
+          color: 'grey.100',
+          p: 2,
+          borderRadius: 1,
+          overflowX: 'auto'
+        },
+
+        '& code': {
+          bgcolor: 'action.hover',
+          px: 0.5,
+          borderRadius: 0.5,
+          fontFamily: 'monospace'
+        },
+
+        '& blockquote': {
+          borderLeft: '4px solid',
+          borderColor: 'primary.main',
+          pl: 2,
+          color: 'text.secondary',
+          my: 2
         }
       }}
       dangerouslySetInnerHTML={{ __html: htmlContent }}
