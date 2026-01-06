@@ -281,11 +281,6 @@ export const getLevelColor = (level) =>
 const cache = new Map();
 
 export const evaluate = (expr, context, defaultValue, maxSteps = 256) => {
-<<<<<<< HEAD
-=======
-  if (!expr) return defaultValue;
-  const val = typeof expr === 'string' ? expr : expr.toString();
->>>>>>> 56a2f107e97c5f998c269663d2b6e7913e53ad15
   try {
     const val = typeof expr === "string" ? expr : expr.toString();
     let ast = cache.get(val);
