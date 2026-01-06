@@ -24,28 +24,6 @@ export const ConfigForm = function ConfigForm({
   );
   const hiddenRefs = useRef([]);
 
-  // console.log({ formData, schema, env });
-
-  // // Ensure datetime field has a default value when missing
-  // useEffect(() => {
-  //   if (!schema || !formData || !onChange) return;
-
-  //   // Handle top-level datetime field named current_date (Ranking date)
-  //   if (
-  //     schema.properties &&
-  //     schema.properties.current_date &&
-  //     !formData.current_date
-  //   ) {
-  //     // Use ISO string without timezone (match backend tzinfo=None)
-  //     const now = new Date();
-  //     const isoWithoutZ = now.toISOString().slice(0, 19);
-  //     onChange({
-  //       ...formData,
-  //       current_date: isoWithoutZ
-  //     });
-  //   }
-  // }, [schema, formData, onChange]);
-
   const handleChange = ({ formData: newFormData }) => {
     if (onChange) {
       onChange(newFormData);
@@ -211,11 +189,12 @@ export const ConfigForm = function ConfigForm({
                 const { help, errors, children, uiSchema } = props;
                 let isHidden = false;
                 const hiddenExpr = uiSchema?.['ui:options']?.hidden;
-                if (hiddenExpr) {
-                  const params = formRef.current
-                    ? formRef.current.state.formData
-                    : formData;
-                  isHidden = evaluate(hiddenExpr, params, false);
+                if (hiddenExpr && formRef.current) {
+                  isHidden = evaluate(
+                    hiddenExpr,
+                    formRef.current.state.formData,
+                    false
+                  );
                 }
 
                 return (
