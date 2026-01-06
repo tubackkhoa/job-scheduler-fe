@@ -327,8 +327,10 @@ export default function LogViewer({
             );
           }, 500);
         }}
-        InputProps={{
-          startAdornment: <Search fontSize="small" sx={{ mr: 1 }} />
+        slotProps={{
+          input: {
+            startAdornment: <Search fontSize="small" sx={{ mr: 1 }} />
+          }
         }}
       />
 

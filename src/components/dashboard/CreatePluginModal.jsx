@@ -7,7 +7,7 @@ import {
   TextField,
   Stack,
   Typography,
-  Box,
+  Box
 } from '@mui/material';
 import { useState } from 'react';
 
@@ -27,11 +27,12 @@ export function CreatePluginModal({ open, onClose, onSubmit, isLoading }) {
 
   const validate = () => {
     const newErrors = {};
-    
+
     if (!packageName.trim()) {
       newErrors.packageName = 'Package name is required';
     } else if (!packageName.includes('.')) {
-      newErrors.packageName = 'Package name should be a valid Python import path (e.g., plugins.sample_plugin@v0_1_0.Plugin)';
+      newErrors.packageName =
+        'Package name should be a valid Python import path (e.g., plugins.sample_plugin@v0_1_0.Plugin)';
     }
 
     if (!interval || interval < 1) {
@@ -48,7 +49,7 @@ export function CreatePluginModal({ open, onClose, onSubmit, isLoading }) {
     onSubmit({
       package: packageName.trim(),
       interval: Number(interval),
-      description: description.trim() || undefined,
+      description: description.trim() || undefined
     });
   };
 
@@ -85,10 +86,14 @@ export function CreatePluginModal({ open, onClose, onSubmit, isLoading }) {
             value={interval}
             onChange={(e) => setInterval(e.target.value)}
             error={!!errors.interval}
-            helperText={errors.interval || 'How often the plugin should run (in seconds)'}
+            helperText={
+              errors.interval || 'How often the plugin should run (in seconds)'
+            }
             required
             fullWidth
-            inputProps={{ min: 1 }}
+            slotProps={{
+              input: { min: 1 }
+            }}
             disabled={isLoading}
           />
 
@@ -119,4 +124,3 @@ export function CreatePluginModal({ open, onClose, onSubmit, isLoading }) {
     </Dialog>
   );
 }
-

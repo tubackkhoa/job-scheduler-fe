@@ -33,6 +33,7 @@ type JinjaEnvJson = {
 type Props = {
   data: JinjaEnvJson;
   pluginPackage: string;
+  params: Record<string, any>;
 };
 
 type RenderResult = {
@@ -113,16 +114,12 @@ const TryInput = memo(function TryInput({
 const DocItemAccordion = memo(function DocItemAccordion({
   name,
   item,
-  expanded,
-  onChange,
   onTry,
   renderResult,
   isFilter
 }: {
   name: string;
   item: DocItem;
-  expanded: boolean;
-  onChange: (_: any, isExpanded: boolean) => void;
   onTry: (name: string, inputStr: string) => void;
   renderResult?: RenderResult;
   isFilter?: boolean;
@@ -130,8 +127,6 @@ const DocItemAccordion = memo(function DocItemAccordion({
   return (
     <Accordion
       key={name}
-      expanded={expanded}
-      onChange={onChange}
       disableGutters
       square
       sx={(theme) => ({
@@ -238,7 +233,7 @@ const DocItemAccordion = memo(function DocItemAccordion({
           </Typography>
         )}
 
-        {expanded && item.type === 'function' && (
+        {item.type === 'function' && (
           <TryInput
             name={name}
             signature={item.signature}
@@ -291,17 +286,9 @@ function DocSection({
   pluginPackage: string;
   isFilter?: boolean;
 }) {
-  const [expanded, setExpanded] = useState<string | false>(false);
   const [renderResults, setRenderResults] = useState<
     Record<string, RenderResult>
   >({});
-
-  const handleAccordionChange = useCallback(
-    (panel: string) => (_: any, isExpanded: boolean) => {
-      setExpanded(isExpanded ? panel : false);
-    },
-    []
-  );
 
   const handleTryRender = useCallback(
     async (name: string, inputStr: string) => {
@@ -362,15 +349,12 @@ function DocSection({
       <Divider sx={{ mb: 2 }} />
 
       {Object.entries(items).map(([name, item]) => {
-        const isExpanded = expanded === name;
         const result = renderResults[name];
         return (
           <DocItemAccordion
             key={name}
             name={name}
             item={item}
-            expanded={isExpanded}
-            onChange={handleAccordionChange(name)}
             onTry={handleTryRender}
             renderResult={result}
             isFilter={isFilter}
@@ -384,7 +368,7 @@ function DocSection({
 /**
  * Main component
  */
-export default function JinjaEnvDocs({ data, pluginPackage }: Props) {
+export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
   const normalizedQuery = deferredQuery.trim().toLowerCase();
@@ -407,6 +391,24 @@ export default function JinjaEnvDocs({ data, pluginPackage }: Props) {
     );
   }, [data.filters, normalizedQuery]);
 
+  const filteredParams = useMemo(() => {
+    let rawParams = Object.entries(params);
+    if (normalizedQuery)
+      rawParams = rawParams.filter(([name]) =>
+        name.toLowerCase().includes(normalizedQuery)
+      );
+    return Object.fromEntries(
+      rawParams.map(([name, value]) => [
+        name,
+        {
+          type: 'variable',
+          doc:
+            typeof value === 'string' ? value : JSON.stringify(value, null, 2)
+        } as DocItem
+      ])
+    );
+  }, [params, normalizedQuery]);
+
   return (
     <Box
       p={3}
@@ -414,15 +416,6 @@ export default function JinjaEnvDocs({ data, pluginPackage }: Props) {
         backgroundColor: theme.palette.background.default
       })}
     >
-      <Typography
-        variant="h5"
-        fontWeight={700}
-        gutterBottom
-        sx={{ letterSpacing: 0.4 }}
-      >
-        Environment
-      </Typography>
-
       {/* 🔍 Search */}
       <TextField
         fullWidth
@@ -437,13 +430,22 @@ export default function JinjaEnvDocs({ data, pluginPackage }: Props) {
             backgroundColor: theme.palette.background.paper
           }
         })}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon fontSize="small" />
-            </InputAdornment>
-          )
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" />
+              </InputAdornment>
+            )
+          }
         }}
+      />
+
+      <DocSection
+        title="Config Params"
+        items={filteredParams}
+        pluginPackage={pluginPackage}
+        isFilter={true}
       />
 
       <DocSection

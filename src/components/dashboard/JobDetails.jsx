@@ -10,17 +10,12 @@ import {
   Stack,
   Tabs,
   Tab,
-  IconButton,
-  Tooltip,
   Divider
 } from '@mui/material';
 import {
   PlayArrow,
   Pause,
-  ContentCopy,
-  Check,
   Settings,
-  Code,
   Terminal,
   Delete,
   Save,
@@ -31,8 +26,6 @@ import {
 import { ConfigForm } from './ConfigForm';
 import LogViewer from '../../LogViewer';
 import SignalsLogsViewer from '../../SignalsLogsViewer';
-import { json } from '@codemirror/lang-json';
-import CodeMirror, { EditorView } from '@uiw/react-codemirror';
 import JinjaEnvDocs from './JinjaEnvDocs';
 
 function TabPanel(props) {
@@ -61,23 +54,11 @@ export function JobDetails({
   isSubmitting
 }) {
   const [tabIndex, setTabIndex] = useState(0);
-  const [copied, setCopied] = useState(false);
   const [localFormData, setLocalFormData] = useState(formData);
 
   useEffect(() => {
     setLocalFormData(formData);
   }, [formData]);
-
-  const handleCopyJson = async () => {
-    if (!formData) return;
-    try {
-      await navigator.clipboard.writeText(JSON.stringify(formData, null, 2));
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch (err) {
-      console.error('Copy failed', err);
-    }
-  };
 
   if (!schema) {
     return (
@@ -191,11 +172,6 @@ export function JobDetails({
                 label="Config Form"
               />
               <Tab
-                icon={<Code sx={{ fontSize: 18 }} />}
-                iconPosition="start"
-                label="Config JSON"
-              />
-              <Tab
                 icon={<SettingsApplications sx={{ fontSize: 18 }} />}
                 iconPosition="start"
                 label="Environment"
@@ -227,60 +203,19 @@ export function JobDetails({
           </TabPanel>
 
           <TabPanel value={tabIndex} index={1}>
-            <Box sx={{ position: 'relative' }}>
-              <Tooltip title={copied ? 'Copied!' : 'Copy JSON'}>
-                <IconButton
-                  onClick={handleCopyJson}
-                  sx={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    zIndex: 1,
-                    bgcolor: 'action.hover'
-                  }}
-                  size="small"
-                >
-                  {copied ? (
-                    <Check color="success" fontSize="small" />
-                  ) : (
-                    <ContentCopy fontSize="small" />
-                  )}
-                </IconButton>
-              </Tooltip>
-
-              <CodeMirror
-                style={{
-                  maxHeight: 500,
-                  overflow: 'auto',
-                  resize: 'vertical',
-                  minHeight: 200,
-                  height: '100%'
-                }}
-                minHeight="200px"
-                height="100%"
-                editable={false}
-                value={JSON.stringify(formData, null, 2)}
-                extensions={[json(), EditorView.lineWrapping]}
-                basicSetup={{
-                  lineNumbers: true,
-                  highlightActiveLine: true,
-                  foldGutter: false
-                }}
-                theme="dark"
-              />
-            </Box>
+            <JinjaEnvDocs
+              data={env}
+              pluginPackage={pluginPackage}
+              params={formData}
+            />
           </TabPanel>
 
           <TabPanel value={tabIndex} index={2}>
-            <JinjaEnvDocs data={env} pluginPackage={pluginPackage} />
-          </TabPanel>
-
-          <TabPanel value={tabIndex} index={3}>
             <LogViewer jobId={jobId} description={jobDesc} />
           </TabPanel>
 
           {schema.keyword && (
-            <TabPanel value={tabIndex} index={4}>
+            <TabPanel value={tabIndex} index={3}>
               <SignalsLogsViewer
                 jobId={jobId}
                 description={jobDesc}
