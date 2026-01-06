@@ -177,8 +177,12 @@ const evalAstIterative = (root, context, maxSteps) => {
 
 export const extractUiSchema = (schema) => {
   if (!schema || !schema.properties) return {};
-
-  const uiSchema = {};
+  // default hide submit button
+  const uiSchema = {
+    'ui:submitButtonOptions': {
+      norender: true // hides the submit button
+    }
+  };
   const stack = [
     {
       props: schema.properties,
@@ -290,6 +294,7 @@ const applyFunction = (name) => {
 };
 
 export const evaluate = (expr, context, defaultValue, maxSteps = 256) => {
+  if (expr === undefined || expr === null) return defaultValue;
   try {
     const val = typeof expr === 'string' ? expr : expr.toString();
     let ast = cache.get(val);

@@ -22,20 +22,7 @@ export const ConfigForm = function ConfigForm({
     () => ({ formRef, pluginPackage, env }),
     [pluginPackage, env]
   );
-  const watchMap = useRef({});
-  const currentFormData = useRef(formData);
-  const updateExpressions = (data) => {
-    currentFormData.current = data;
-    for (const [cacheId, expr] of Object.entries(watchMap.current)) {
-      const el = document.getElementById(cacheId);
-      if (!el) continue;
-      const isHidden = evaluate(expr, data, false);
-      el.style.display = isHidden ? 'none' : 'block';
-    }
-  };
-  useEffect(() => {
-    updateExpressions(formData);
-  }, [formData]);
+  const hiddenRefs = useRef([]);
 
   // console.log({ formData, schema, env });
 
@@ -61,8 +48,11 @@ export const ConfigForm = function ConfigForm({
 
   const handleChange = ({ formData: newFormData }) => {
     if (onChange) {
-      updateExpressions(newFormData);
       onChange(newFormData);
+    }
+    for (const [el, expr] of hiddenRefs.current) {
+      const isHidden = evaluate(expr, newFormData, false);
+      el.style.display = isHidden ? 'none' : 'block';
     }
   };
 
@@ -84,6 +74,7 @@ export const ConfigForm = function ConfigForm({
 
       properties.forEach((prop) => {
         const fieldSchema = prop.content?.props?.schema;
+
         if (fieldSchema?.type === 'object' && fieldSchema?.properties) {
           objectFields.push(prop);
         } else {
@@ -123,17 +114,20 @@ export const ConfigForm = function ConfigForm({
                 </Typography>
               </Stack>
               <Grid container spacing={2}>
-                {regularFields.map((prop, index) => {
-                  const isEditor =
-                    prop.content.props.uiSchema?.['ui:field'] === 'Template';
+                {regularFields.map(({ content }) => {
+                  const uiSchema = content.props.uiSchema;
+                  const isEditor = uiSchema?.['ui:field'] === 'Template';
+                  // fowllowing: https://rjsf-team.github.io/react-jsonschema-form/docs/api-reference/LayoutGridField/
+                  const size =
+                    uiSchema?.['ui:row']?.size ?? (isEditor ? 12 : 3);
                   return (
                     <Grid
                       item
-                      size={isEditor ? 12 : 3}
-                      key={index}
+                      size={size}
+                      key={content.key}
                       className="config-field"
                     >
-                      {prop.content}
+                      {content}
                     </Grid>
                   );
                 })}
@@ -142,7 +136,7 @@ export const ConfigForm = function ConfigForm({
           )}
 
           {/* Object fields (sections) */}
-          {objectFields.map((prop) => prop.content)}
+          {objectFields.map(({ content }) => content)}
         </Box>
       );
     }
@@ -170,10 +164,14 @@ export const ConfigForm = function ConfigForm({
           )}
         </Box>
         <Grid container spacing={2}>
-          {properties.map((prop, index) => {
+          {properties.map(({ content }) => {
+            const uiSchema = content.props.uiSchema;
+            const isEditor = uiSchema?.['ui:field'] === 'Template';
+            // fowllowing: https://rjsf-team.github.io/react-jsonschema-form/docs/api-reference/LayoutGridField/
+            const size = uiSchema?.['ui:row']?.size ?? (isEditor ? 12 : 3);
             return (
-              <Grid item xs={12} size={3} key={index}>
-                {prop.content}
+              <Grid item xs={12} size={size} key={content.key}>
+                {content}
               </Grid>
             );
           })}
@@ -210,24 +208,23 @@ export const ConfigForm = function ConfigForm({
             templates={{
               ObjectFieldTemplate,
               FieldTemplate: (props) => {
-                const { help, errors, children, schema, fieldPathId } = props;
-                const cacheId = `cache_${
-                  fieldPathId?.path?.join('.') ?? props.id
-                }`;
+                const { help, errors, children, uiSchema } = props;
                 let isHidden = false;
-                if (schema['ui:options'] && schema['ui:options'].hidden) {
-                  isHidden = evaluate(
-                    schema['ui:options'].hidden,
-                    currentFormData.current ?? formData,
-                    false
-                  );
-                  // cache first time because schema won't change
-                  watchMap.current[cacheId] = schema['ui:options'].hidden;
+                const hiddenExpr = uiSchema?.['ui:options']?.hidden;
+                if (hiddenExpr) {
+                  const params = formRef.current
+                    ? formRef.current.state.formData
+                    : formData;
+                  isHidden = evaluate(hiddenExpr, params, false);
                 }
 
                 return (
                   <Box
-                    id={cacheId}
+                    ref={(el) => {
+                      if (hiddenExpr && el) {
+                        hiddenRefs.current.push([el, hiddenExpr]);
+                      }
+                    }}
                     sx={{ width: '100%', display: isHidden ? 'none' : 'block' }}
                   >
                     {children}
@@ -237,9 +234,7 @@ export const ConfigForm = function ConfigForm({
                 );
               }
             }}
-          >
-            <div style={{ display: 'none' }} />
-          </Form>
+          />
         </ErrorBoundary>
       )}
     </Box>
