@@ -205,11 +205,13 @@ export function JobDetails({
                 iconPosition="start"
                 label="Live Logs"
               />
-              <Tab
-                icon={<SignalCellularAlt sx={{ fontSize: 18 }} />}
-                iconPosition="start"
-                label="Signals Logs"
-              />
+              {schema.keyword && (
+                <Tab
+                  icon={<SignalCellularAlt sx={{ fontSize: 18 }} />}
+                  iconPosition="start"
+                  label="Signals Logs"
+                />
+              )}
             </Tabs>
           </Box>
 
@@ -277,9 +279,15 @@ export function JobDetails({
             <LogViewer jobId={jobId} description={jobDesc} />
           </TabPanel>
 
-          <TabPanel value={tabIndex} index={4}>
-            <SignalsLogsViewer jobId={jobId} description={jobDesc} />
-          </TabPanel>
+          {schema.keyword && (
+            <TabPanel value={tabIndex} index={4}>
+              <SignalsLogsViewer
+                jobId={jobId}
+                description={jobDesc}
+                keyword={schema.keyword}
+              />
+            </TabPanel>
+          )}
 
           {/* Actions */}
           <Divider />
