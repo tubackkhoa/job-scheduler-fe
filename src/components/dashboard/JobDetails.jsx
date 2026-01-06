@@ -270,7 +270,7 @@ export function JobDetails({
           </TabPanel>
 
           <TabPanel value={tabIndex} index={2}>
-            <JinjaEnvDocs data={env} />
+            <JinjaEnvDocs data={env} pluginPackage={pluginPackage} />
           </TabPanel>
 
           <TabPanel value={tabIndex} index={3}>

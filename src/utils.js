@@ -324,8 +324,7 @@ export class JinjaCompletionBuilder {
       type: 'function',
       detail: 'filter',
       section: 'Filters',
-      info: `${meta.signature}\n\n${meta.doc ?? ''}`,
-      apply: applyFunction(label)
+      info: `${meta.signature}\n\n${meta.doc ?? ''}`
     }));
   }
 
