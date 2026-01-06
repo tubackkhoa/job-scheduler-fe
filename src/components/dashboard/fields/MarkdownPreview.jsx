@@ -31,7 +31,7 @@ md.renderer.rules.fence = (tokens, idx, options, env, slf) => {
 
 /* ---------- Component ---------- */
 
-export const MarkdownPreview = ({ text = '' }) => {
+export const MarkdownPreview = ({ text = '', maxHeight }) => {
   const ref = useRef(null);
 
   // ✅ Memoize markdown → HTML → sanitize
@@ -77,8 +77,8 @@ export const MarkdownPreview = ({ text = '' }) => {
     <Box
       ref={ref}
       sx={{
-        pt: 3,
-        mb: 2,
+        height: '100%',
+        maxHeight,
         typography: 'body1',
         overflowX: 'auto',
         maxWidth: '100%',

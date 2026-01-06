@@ -543,7 +543,10 @@ export function TemplateField({
             </IconButton>
           </Tooltip>
           {languageType === 'markdown' ? (
-            <MarkdownPreview text={previewCode} />
+            <MarkdownPreview
+              text={previewCode}
+              maxHeight={fullscreen ? '100%' : 600}
+            />
           ) : (
             <CodeMirror
               {...codeMirrorStyle}
