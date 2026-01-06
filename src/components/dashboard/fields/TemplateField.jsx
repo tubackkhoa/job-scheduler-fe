@@ -25,7 +25,13 @@ import { EditorView } from '@codemirror/view';
 import { JinjaCompletionBuilder } from '../../../utils';
 import api from '../../../api';
 import _ from 'lodash';
-import { Check, ContentCopySharp, Save } from '@mui/icons-material';
+import {
+  Check,
+  ContentCopySharp,
+  Save,
+  Fullscreen,
+  FullscreenExit
+} from '@mui/icons-material';
 import { MarkdownPreview } from './MarkdownPreview';
 
 const resolveLanguageExtension = (type, schema) => {
@@ -48,26 +54,6 @@ const resolveLanguageExtension = (type, schema) => {
       return sql({ dialect: PostgreSQL, schema: schema.schema });
     default:
       return undefined;
-  }
-};
-
-const codeMirrorStyle = {
-  style: {
-    resize: 'vertical',
-    overflow: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: 200,
-    maxHeight: 600,
-    height: '100%'
-  },
-  minHeight: '200px',
-  height: '100%',
-  theme: 'dark',
-  basicSetup: {
-    lineNumbers: true,
-    highlightActiveLine: true,
-    foldGutter: false
   }
 };
 
@@ -103,6 +89,9 @@ export function TemplateField({
   const [tabIndex, setTabIndex] = useState(0);
   const [copied, setCopied] = useState(false);
 
+  // Fullscreen state
+  const [fullscreen, setFullscreen] = useState(false);
+
   // SQL Version management state (only for SQL type)
   const isSqlType = languageType === 'sql';
   const [sqlVersions, setSqlVersions] = useState([]);
@@ -124,6 +113,18 @@ export function TemplateField({
       console.error('Copy failed', err);
     }
   };
+
+  // Disable body scroll when fullscreen is active
+  useEffect(() => {
+    if (fullscreen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [fullscreen]);
 
   // Sync local state if formData changes externally
   useEffect(() => {
@@ -312,8 +313,44 @@ export function TemplateField({
     setTabIndex(newValue);
   };
 
+  // Fullscreen style object
+  const fullscreenStyles = fullscreen
+    ? {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: 'var(--mui-palette-background-default, #121212)',
+        zIndex: 1300,
+        p: 2,
+        display: 'flex',
+        flexDirection: 'column'
+      }
+    : {};
+
+  const codeMirrorStyle = {
+    style: {
+      resize: fullscreen ? 'none' : 'vertical',
+      overflow: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: fullscreen ? '100%' : 200,
+      maxHeight: fullscreen ? '100%' : 600,
+      height: '100%'
+    },
+    minHeight: fullscreen ? '100%' : '200px',
+    height: '100%',
+    theme: 'dark',
+    basicSetup: {
+      lineNumbers: true,
+      highlightActiveLine: true,
+      foldGutter: false
+    }
+  };
+
   return (
-    <Stack spacing={1}>
+    <Stack spacing={1} sx={fullscreenStyles}>
       <Typography variant="subtitle2">{schema.title}</Typography>
 
       {/* SQL Version Management Bar (only for SQL type) */}
@@ -408,10 +445,29 @@ export function TemplateField({
         </Box>
       )}
 
-      <Tabs value={tabIndex} onChange={handleTabChange}>
-        <Tab label="Code" />
-        <Tab label="Preview" onClick={() => updatePrewiewCode(localValue)} />
-      </Tabs>
+      {/* Tabs with fullscreen toggle button */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          userSelect: 'none'
+        }}
+      >
+        <Tabs value={tabIndex} onChange={handleTabChange} sx={{ flexGrow: 1 }}>
+          <Tab label="Code" />
+          <Tab label="Preview" onClick={() => updatePrewiewCode(localValue)} />
+        </Tabs>
+        <Tooltip title={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>
+          <IconButton
+            onClick={() => setFullscreen((f) => !f)}
+            size="small"
+            aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            sx={{ ml: 1 }}
+          >
+            {fullscreen ? <FullscreenExit /> : <Fullscreen />}
+          </IconButton>
+        </Tooltip>
+      </Box>
 
       {errorMessage && (
         <Alert variant="outlined" severity="error" sx={{ mb: 4 }}>
@@ -423,7 +479,8 @@ export function TemplateField({
         sx={{
           position: 'relative',
           minHeight: 200,
-          overflow: 'auto'
+          overflow: 'auto',
+          flexGrow: fullscreen ? 1 : 'unset'
         }}
       >
         {loadingPreview && (
@@ -443,7 +500,12 @@ export function TemplateField({
             <CircularProgress />
           </Box>
         )}
-        <Box sx={{ display: tabIndex === 1 ? 'none' : 'block' }}>
+        <Box
+          sx={{
+            display: tabIndex === 1 ? 'none' : 'block',
+            height: fullscreen ? '100%' : 'unset'
+          }}
+        >
           <CodeMirror
             {...codeMirrorStyle}
             value={localValue}
@@ -456,7 +518,8 @@ export function TemplateField({
         <Box
           sx={{
             position: 'relative',
-            display: tabIndex === 0 ? 'none' : 'block'
+            display: tabIndex === 0 ? 'none' : 'block',
+            height: fullscreen ? '100%' : 'unset'
           }}
         >
           <Tooltip title={copied ? 'Copied!' : 'Copy Code'}>
