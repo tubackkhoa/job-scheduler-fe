@@ -280,9 +280,18 @@ export const getLevelColor = (level) =>
 
 const cache = new Map();
 
+const applyFunction = (name) => {
+  return (view, completion, from, to) => {
+    view.dispatch({
+      changes: { from, to, insert: `${name}()` },
+      selection: { anchor: from + name.length + 1 }
+    });
+  };
+};
+
 export const evaluate = (expr, context, defaultValue, maxSteps = 256) => {
   try {
-    const val = typeof expr === "string" ? expr : expr.toString();
+    const val = typeof expr === 'string' ? expr : expr.toString();
     let ast = cache.get(val);
     if (!ast) {
       ast = jsep(val);
@@ -298,24 +307,25 @@ export const evaluate = (expr, context, defaultValue, maxSteps = 256) => {
 export class JinjaCompletionBuilder {
   /* ---------- Server symbols ---------- */
 
-  static buildGlobals(globals = []) {
-    return globals.map((name) => {
-      const [label, type = 'function'] = name.split(':');
-      return {
-        label,
-        type,
-        detail: 'global',
-        section: 'Globals'
-      };
-    });
+  static buildGlobals(globals = {}) {
+    return Object.entries(globals).map(([label, meta]) => ({
+      label,
+      type: meta.type,
+      detail: 'global',
+      section: 'Globals',
+      info: `${meta.signature}\n\n${meta.doc ?? ''}`,
+      apply: meta.type === 'function' ? applyFunction(label) : label
+    }));
   }
 
-  static buildFilters(filters = []) {
-    return filters.map((name) => ({
-      label: name,
+  static buildFilters(filters = {}) {
+    return Object.entries(filters).map(([label, meta]) => ({
+      label,
       type: 'function',
       detail: 'filter',
-      section: 'Filters'
+      section: 'Filters',
+      info: `${meta.signature}\n\n${meta.doc ?? ''}`,
+      apply: applyFunction(label)
     }));
   }
 

@@ -8,7 +8,6 @@ import {
   TextField,
   Typography,
   Stack,
-  Chip,
   Tabs,
   Tab,
   IconButton,
@@ -26,13 +25,15 @@ import {
   Delete,
   Save,
   AddCircleOutline,
-  SignalCellularAlt
+  SignalCellularAlt,
+  SettingsApplications
 } from '@mui/icons-material';
 import { ConfigForm } from './ConfigForm';
 import LogViewer from '../../LogViewer';
 import SignalsLogsViewer from '../../SignalsLogsViewer';
 import { json } from '@codemirror/lang-json';
 import CodeMirror, { EditorView } from '@uiw/react-codemirror';
+import JinjaEnvDocs from './JinjaEnvDocs';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -195,6 +196,11 @@ export function JobDetails({
                 label="Config JSON"
               />
               <Tab
+                icon={<SettingsApplications sx={{ fontSize: 18 }} />}
+                iconPosition="start"
+                label="Environment"
+              />
+              <Tab
                 icon={<Terminal sx={{ fontSize: 18 }} />}
                 iconPosition="start"
                 label="Live Logs"
@@ -264,10 +270,14 @@ export function JobDetails({
           </TabPanel>
 
           <TabPanel value={tabIndex} index={2}>
-            <LogViewer jobId={jobId} description={jobDesc} />
+            <JinjaEnvDocs data={env} />
           </TabPanel>
 
           <TabPanel value={tabIndex} index={3}>
+            <LogViewer jobId={jobId} description={jobDesc} />
+          </TabPanel>
+
+          <TabPanel value={tabIndex} index={4}>
             <SignalsLogsViewer jobId={jobId} description={jobDesc} />
           </TabPanel>
 
