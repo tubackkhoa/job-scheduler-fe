@@ -54,11 +54,7 @@ export function JobDetails({
   isSubmitting
 }) {
   const [tabIndex, setTabIndex] = useState(0);
-  const [localFormData, setLocalFormData] = useState(formData);
-
-  useEffect(() => {
-    setLocalFormData(formData);
-  }, [formData]);
+  const [localFormData, setLocalFormData] = useState();
 
   if (!schema) {
     return (
@@ -91,26 +87,6 @@ export function JobDetails({
         action={
           jobId !== 0 && (
             <Stack direction="row" spacing={1} alignItems="center">
-              {/* <Chip
-                label={isActive ? 'Active' : 'Paused'}
-                size="small"
-                color={isActive ? 'success' : 'default'}
-                variant={isActive ? 'filled' : 'outlined'}
-                icon={
-                  isActive ? (
-                    <Box
-                      sx={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: '50%',
-                        bgcolor: 'success.light',
-                        animation: 'pulse 2s infinite',
-                        ml: 1
-                      }}
-                    />
-                  ) : undefined
-                }
-              /> */}
               <Button
                 variant={isActive ? 'outlined' : 'contained'}
                 color={isActive ? 'warning' : 'success'}
@@ -197,7 +173,7 @@ export function JobDetails({
               pluginPackage={pluginPackage}
               schema={schema}
               env={env}
-              formData={localFormData}
+              formData={localFormData ?? formData}
               onChange={setLocalFormData}
             />
           </TabPanel>
