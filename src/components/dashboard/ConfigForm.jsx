@@ -100,7 +100,7 @@ export const ConfigForm = function ConfigForm({
                   const isEditor = uiSchema?.['ui:field'] === 'Template';
                   // fowllowing: https://rjsf-team.github.io/react-jsonschema-form/docs/api-reference/LayoutGridField/
                   const size =
-                    uiSchema?.['ui:row']?.size ?? (isEditor ? 12 : 3);
+                    uiSchema?.['ui:options']?.size ?? (isEditor ? 12 : 3);
                   return (
                     <Grid
                       item
@@ -149,7 +149,7 @@ export const ConfigForm = function ConfigForm({
             const uiSchema = content.props.uiSchema;
             const isEditor = uiSchema?.['ui:field'] === 'Template';
             // fowllowing: https://rjsf-team.github.io/react-jsonschema-form/docs/api-reference/LayoutGridField/
-            const size = uiSchema?.['ui:row']?.size ?? (isEditor ? 12 : 3);
+            const size = uiSchema?.['ui:options']?.size ?? (isEditor ? 12 : 3);
             return (
               <Grid item xs={12} size={size} key={content.key}>
                 {content}
