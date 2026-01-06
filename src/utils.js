@@ -281,9 +281,8 @@ export const getLevelColor = (level) =>
 const cache = new Map();
 
 export const evaluate = (expr, context, defaultValue, maxSteps = 256) => {
-  if (!expr) return defaultValue;
-  const val = typeof expr === 'string' ? expr : expr.toString();
   try {
+    const val = typeof expr === "string" ? expr : expr.toString();
     let ast = cache.get(val);
     if (!ast) {
       ast = jsep(val);
