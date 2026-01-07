@@ -1,4 +1,5 @@
 import { useLayoutEffect, useMemo, useRef } from 'react';
+import json5 from 'json5';
 import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
 import { Box } from '@mui/material';
@@ -54,8 +55,8 @@ export const MarkdownPreview = ({ text = '', maxHeight }) => {
       try {
         const raw = canvas.textContent?.trim();
         if (!raw) return;
-
-        const config = JSON.parse(raw);
+        // this is for human typing, not serialization
+        const config = json5.parse(raw);
         canvas.textContent = '';
 
         const ctx = canvas.getContext('2d');
