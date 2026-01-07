@@ -232,16 +232,18 @@ export function JobDetails({
               >
                 {isSubmitting ? 'Saving...' : 'Save'}
               </Button>
-              <Button
-                variant="outlined"
-                startIcon={<AddCircleOutline />}
-                onClick={() => {
-                  onSaveAsNew(localFormData);
-                }}
-                disabled={isSubmitting}
-              >
-                Save as new
-              </Button>
+              {jobId > 0 && (
+                <Button
+                  variant="outlined"
+                  startIcon={<AddCircleOutline />}
+                  onClick={() => {
+                    onSaveAsNew(localFormData);
+                  }}
+                  disabled={isSubmitting}
+                >
+                  Save as new
+                </Button>
+              )}
             </Stack>
 
             {jobId !== 0 && (
