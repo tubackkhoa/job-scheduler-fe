@@ -24,6 +24,13 @@ export const ConfigForm = function ConfigForm({
   );
   const hiddenRefs = useRef([]);
 
+  // Memoize hidden states for each [el, expr] pair based on formData
+  const hiddenStates = useMemo(() => {
+    return hiddenRefs.current.map(([el, expr]) =>
+      evaluate(expr, formData, false)
+    );
+  }, [formData]);
+
   const handleChange = ({ formData: newFormData }) => {
     if (onChange) {
       onChange(newFormData);
@@ -31,11 +38,13 @@ export const ConfigForm = function ConfigForm({
   };
 
   useEffect(() => {
-    for (const [el, expr] of hiddenRefs.current) {
-      const isHidden = evaluate(expr, formData, false);
-      el.style.display = isHidden ? 'none' : 'block';
-    }
-  }, [formData]);
+    hiddenStates.forEach((isHidden, i) => {
+      const el = hiddenRefs.current[i][0];
+      if (el) {
+        el.style.display = isHidden ? 'none' : 'block';
+      }
+    });
+  }, [hiddenStates]);
 
   if (!schema) {
     return null;
