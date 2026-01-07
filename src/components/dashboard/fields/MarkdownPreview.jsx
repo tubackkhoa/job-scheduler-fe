@@ -5,6 +5,15 @@ import DOMPurify from 'dompurify';
 import { Box } from '@mui/material';
 import { Chart } from 'chart.js/auto';
 
+import {
+  CandlestickController,
+  CandlestickElement
+} from 'chartjs-chart-financial';
+
+import 'chartjs-adapter-luxon';
+
+Chart.register(CandlestickController, CandlestickElement);
+
 /* ---------- Markdown instance (singleton) ---------- */
 
 const md = new MarkdownIt({
