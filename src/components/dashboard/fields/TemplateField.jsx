@@ -168,26 +168,6 @@ export function TemplateField({
     };
   }, [isSqlType, versionSearchInput]);
 
-  useEffect(() => {
-    if (!isSqlType) return;
-
-    let mounted = true;
-    api
-      .listSqlVersions({ limit: 20, offset: 0 })
-      .then((result) => {
-        if (mounted) {
-          setSqlVersions(result.versions || []);
-        }
-      })
-      .catch((err) => {
-        console.error('Failed to load SQL versions:', err);
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, [isSqlType]);
-
   const handleVersionSelect = async (version) => {
     if (!version) {
       setSelectedVersion(null);
