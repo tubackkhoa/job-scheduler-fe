@@ -56,6 +56,10 @@ export function JobDetails({
   const [tabIndex, setTabIndex] = useState(0);
   const [localFormData, setLocalFormData] = useState();
 
+  useEffect(() => {
+    setLocalFormData(formData);
+  }, [formData]);
+
   if (!schema) {
     return (
       <Card

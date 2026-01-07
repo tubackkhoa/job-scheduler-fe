@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { Box, Container, Grid, CssBaseline } from '@mui/material';
 import { Header } from './components/dashboard/Header';
@@ -99,7 +99,7 @@ export default function App() {
   const [jobId, setJobId] = useState(0);
   const [jobDesc, setJobDesc] = useState('');
   const [newJobDraft, setNewJobDraft] = useState(null);
-  const [configVersions, setConfigVersions] = useState([]);
+  const [jobConfigs, setJobConfigs] = useState([]);
   const [schema, setSchema] = useState(null);
   const [env, setEnv] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -141,7 +141,7 @@ export default function App() {
       } = await api.fetchSchema(currentSessionId ?? sessionId, currentPluginId);
       setSchema(fetchedSchema);
       setEnv(env);
-      setConfigVersions(configs);
+      setJobConfigs(configs);
       const templateConfig =
         configs.find((c) => c.id === 0)?.config ?? configs[0]?.config ?? '{}';
       setNewJobDraft({
@@ -198,14 +198,14 @@ export default function App() {
       const response = await api.activateJob(targetJobId, activation);
       if (response.success) {
         // update the config at local to sync with server
-        const newConfigVersions = [...configVersions];
+        const newConfigVersions = [...jobConfigs];
         for (const version of newConfigVersions) {
           if (version.id === targetJobId) {
             version.active = activation ? 1 : 0;
           }
           // Don't deactivate other jobs - allow multiple active jobs
         }
-        setConfigVersions(newConfigVersions);
+        setJobConfigs(newConfigVersions);
         setJobId(targetJobId);
       }
       handleSetResult(response);
@@ -216,7 +216,7 @@ export default function App() {
 
   const handleChangeJob = (newJobId, configs) => {
     setJobId(newJobId);
-    const collection = configs ?? configVersions;
+    const collection = configs ?? jobConfigs;
     const found = collection.find((version) => version.id === newJobId);
     setJobDesc(found?.description ?? '');
   };
@@ -292,15 +292,14 @@ export default function App() {
     }
   };
 
-  const currentConfig = configVersions.find((version) => version.id === jobId);
-  const displayedConfig = jobId === 0 ? newJobDraft : currentConfig;
   const pluginInfo = plugins.find((p) => p.id === pluginId);
-  const formData = displayedConfig
-    ? JSON.parse(displayedConfig.config ?? '{}')
-    : null;
-  const isActive = (currentConfig?.active ?? 0) === 1;
+  const currentConfig = jobConfigs.find((version) => version.id === jobId);
+  const displayedConfig = jobId === 0 ? newJobDraft : currentConfig;
+  const formData = useMemo(() => {
+    return displayedConfig?.config ? JSON.parse(displayedConfig.config) : null;
+  }, [displayedConfig]); // ← Only recompute when the jobId actually changes, or currentConfig is update when reloading
 
-  const jobs = configVersions;
+  const isActive = !!currentConfig?.active;
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -342,7 +341,7 @@ export default function App() {
                 />
 
                 <JobsList
-                  jobs={jobs}
+                  jobs={jobConfigs}
                   selectedJobId={jobId}
                   pluginPackage={pluginInfo?.package}
                   onSelectJob={(id) => {
