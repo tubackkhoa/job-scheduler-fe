@@ -190,11 +190,7 @@ export const ConfigForm = function ConfigForm({
               ObjectFieldTemplate,
               FieldTemplate: (props) => {
                 const { help, errors, children, uiSchema } = props;
-                let isHidden = false;
                 const hiddenExpr = uiSchema?.['ui:options']?.hidden;
-                if (hiddenExpr && formRef.current) {
-                  isHidden = evaluate(hiddenExpr, formData, false);
-                }
 
                 return (
                   <Box
@@ -203,7 +199,7 @@ export const ConfigForm = function ConfigForm({
                         hiddenRefs.current.push([el, hiddenExpr]);
                       }
                     }}
-                    sx={{ width: '100%', display: isHidden ? 'none' : 'block' }}
+                    sx={{ width: '100%' }}
                   >
                     {children}
                     {errors}
