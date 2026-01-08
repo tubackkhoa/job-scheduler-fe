@@ -20,19 +20,9 @@ const parseJsonResponse = async (res: Response, url: string) => {
   return res.json();
 };
 
-const validateApiConfig = (endpoint: string) => {
-  if (!API_BASE_URL) {
-    throw new Error(
-      `API_BASE_URL is not configured. Please set VITE_API_BASE_URL environment variable.\n` +
-        `Current value: ${API_BASE_URL}`
-    );
-  }
-};
-
 export default {
   async fetchSchema(sessionId: number, pluginId: number) {
     const url = `${API_BASE_URL}/schema/${sessionId}/${pluginId}`;
-    validateApiConfig(url);
 
     const res = await fetch(url);
 
@@ -46,7 +36,6 @@ export default {
 
   async fetchPlugins() {
     const url = `${API_BASE_URL}/plugins`;
-    validateApiConfig(url);
 
     const res = await fetch(url);
 
@@ -59,7 +48,6 @@ export default {
   },
   async updateConfig(jobId: number, payload: Object) {
     const url = `${API_BASE_URL}/config/${jobId}`;
-    validateApiConfig(url);
 
     const res = await fetch(url, {
       method: 'POST',
@@ -78,7 +66,6 @@ export default {
   },
   async activateJob(jobId: number, activation: boolean) {
     const url = `${API_BASE_URL}/activate/${jobId}/${activation}`;
-    validateApiConfig(url);
 
     const res = await fetch(url, {
       method: 'POST',
@@ -96,7 +83,6 @@ export default {
   },
   async deleteJob(jobId: number) {
     const url = `${API_BASE_URL}/delete/${jobId}`;
-    validateApiConfig(url);
 
     const res = await fetch(url, {
       method: 'POST',
@@ -114,7 +100,6 @@ export default {
   },
   async reloadPlugin(pkg: string) {
     const url = `${API_BASE_URL}/reload/${pkg}`;
-    validateApiConfig(url);
 
     const res = await fetch(url, {
       method: 'POST',
@@ -136,7 +121,6 @@ export default {
     description?: string
   ) {
     const url = `${API_BASE_URL}/plugins`;
-    validateApiConfig(url);
 
     const res = await fetch(url, {
       method: 'POST',
@@ -159,7 +143,6 @@ export default {
   },
   async renderTemplate(packageName: string, template: string, params: object) {
     const url = `${API_BASE_URL}/template/${packageName}`;
-    validateApiConfig(url);
 
     const res = await fetch(url, {
       method: 'POST',
@@ -192,8 +175,9 @@ export default {
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.offset) queryParams.append('offset', params.offset.toString());
 
-    const url = `${API_BASE_URL}/api/sql-versions${queryParams.toString() ? `?${queryParams}` : ''}`;
-    validateApiConfig(url);
+    const url = `${API_BASE_URL}/api/sql-versions${
+      queryParams.toString() ? `?${queryParams}` : ''
+    }`;
 
     const res = await fetch(url);
 
@@ -207,7 +191,6 @@ export default {
 
   async getSqlVersion(versionId: number) {
     const url = `${API_BASE_URL}/api/sql-versions/${versionId}`;
-    validateApiConfig(url);
 
     const res = await fetch(url);
 
@@ -226,7 +209,6 @@ export default {
     tags?: string | null;
   }) {
     const url = `${API_BASE_URL}/api/sql-versions`;
-    validateApiConfig(url);
 
     const res = await fetch(url, {
       method: 'POST',
@@ -254,7 +236,6 @@ export default {
     }
   ) {
     const url = `${API_BASE_URL}/api/sql-versions/${versionId}`;
-    validateApiConfig(url);
 
     const res = await fetch(url, {
       method: 'PUT',
