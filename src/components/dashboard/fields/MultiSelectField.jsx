@@ -12,22 +12,17 @@ import {
   Typography
 } from '@mui/material';
 
-export function MultiSelectField({
-  formData,
-  fieldPathId,
-  schema,
-  onChange,
-  registry
-}) {
+export function MultiSelectField({ formData, fieldPathId, schema, onChange }) {
   let options = schema?.enum || schema?.default || [];
-  // setInterval(() => {
-  //   console.log(registry.formContext.uiSchema, schema);
-  // }, 1000);
 
   if (typeof options === 'string') {
     options = options.split(',').map((token) => token.trim());
   }
-  const selectedValues = Array.isArray(formData) ? formData : [];
+  // Filter formData to only include values present in options
+  const selectedValues = Array.isArray(formData)
+    ? formData.filter((value) => options.includes(value))
+    : [];
+
   const allSelected =
     options.length > 0 && selectedValues.length === options.length;
   const someSelected =
