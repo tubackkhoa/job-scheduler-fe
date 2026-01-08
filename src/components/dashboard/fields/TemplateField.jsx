@@ -464,7 +464,7 @@ export function TemplateField({
           flexGrow: fullscreen ? 1 : 'unset'
         }}
       >
-        {loadingPreview && (
+        {loadingPreview && tabIndex === 1 && (
           <Box
             sx={{
               position: 'absolute',

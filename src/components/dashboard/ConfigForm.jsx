@@ -202,20 +202,7 @@ export const ConfigForm = function ConfigForm({
             liveValidate={false}
             showErrorList={false}
             templates={{
-              ObjectFieldTemplate,
-              FieldTemplate: (props) => {
-                const { help, errors, children, uiSchema } = props;
-                return (
-                  <Box
-                    className={uiSchema?.['ui:classNames']}
-                    sx={{ width: '100%' }}
-                  >
-                    {children}
-                    {errors}
-                    {help}
-                  </Box>
-                );
-              }
+              ObjectFieldTemplate
             }}
           />
         </ErrorBoundary>
