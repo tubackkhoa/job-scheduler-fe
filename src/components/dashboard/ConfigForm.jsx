@@ -18,7 +18,6 @@ export const ConfigForm = function ConfigForm({
   onChange,
   pluginPackage
 }) {
-  const [uiSchema, setUISchema] = useState({});
   const [localSchema, setLocalSchema] = useState({});
 
   const formRef = useRef();
@@ -48,9 +47,10 @@ export const ConfigForm = function ConfigForm({
       }
     }).then((newSchema) => {
       setLocalSchema(newSchema);
-      setUISchema(extractUiSchema(newSchema));
     });
   }, [formData]);
+
+  const uiSchema = useMemo(() => extractUiSchema(localSchema), [localSchema]);
 
   if (!schema) {
     return null;
