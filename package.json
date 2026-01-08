@@ -18,6 +18,8 @@
     "@codemirror/lang-yaml": "^6.1.2",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@jsep-plugin/async-await": "^1.0.3",
+    "@jsep-plugin/object": "^1.2.2",
     "@mui/icons-material": "^7.3.6",
     "@mui/material": "^7.3.6",
     "@rjsf/core": "^6.1.2",

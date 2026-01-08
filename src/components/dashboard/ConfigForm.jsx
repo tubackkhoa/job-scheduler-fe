@@ -1,12 +1,14 @@
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 
 import { Box, Paper, Stack, Typography, Grid } from '@mui/material';
 import { Settings } from '@mui/icons-material';
 import Form from '@rjsf/mui';
 import validator from '@rjsf/validator-ajv8';
-import { extractUiSchema, evaluate } from '../../utils';
+import { extractUiSchema, buildUiSchemaWithExpr } from '../../utils';
 import fields from './fields';
 import widgets from './widgets';
+import api from '../../api';
+import json5 from 'json5';
 import ErrorBoundary from './ErrorBound';
 
 export const ConfigForm = function ConfigForm({
@@ -16,13 +18,15 @@ export const ConfigForm = function ConfigForm({
   onChange,
   pluginPackage
 }) {
+  const [uiSchema, setUISchema] = useState({});
+  const [localSchema, setLocalSchema] = useState({});
+
   const formRef = useRef();
   // Pass a stable formContext object with the ref
   const formContext = useMemo(
     () => ({ formRef, pluginPackage, env }),
     [pluginPackage, env]
   );
-  const hiddenRefs = useRef([]);
 
   const handleChange = ({ formData: newFormData }) => {
     if (onChange) {
@@ -31,9 +35,20 @@ export const ConfigForm = function ConfigForm({
   };
 
   useEffect(() => {
-    hiddenRefs.current.forEach(([el, expr]) => {
-      const isHidden = evaluate(expr, formData, false);
-      el.style.display = isHidden ? 'none' : 'block';
+    buildUiSchemaWithExpr(schema, {
+      ...formData,
+      JSON: json5,
+      render: async (tmpl) => {
+        const { result } = await api.renderTemplate(
+          pluginPackage,
+          tmpl,
+          formData
+        );
+        return result;
+      }
+    }).then((newSchema) => {
+      setLocalSchema(newSchema);
+      setUISchema(extractUiSchema(newSchema));
     });
   }, [formData]);
 
@@ -175,8 +190,8 @@ export const ConfigForm = function ConfigForm({
       {formData && (
         <ErrorBoundary>
           <Form
-            schema={schema}
-            uiSchema={extractUiSchema(schema)}
+            schema={localSchema}
+            uiSchema={uiSchema}
             formContext={formContext}
             ref={formRef}
             fields={fields}
@@ -190,15 +205,9 @@ export const ConfigForm = function ConfigForm({
               ObjectFieldTemplate,
               FieldTemplate: (props) => {
                 const { help, errors, children, uiSchema } = props;
-                const hiddenExpr = uiSchema?.['ui:options']?.hidden;
-
                 return (
                   <Box
-                    ref={(el) => {
-                      if (hiddenExpr && el) {
-                        hiddenRefs.current.push([el, hiddenExpr]);
-                      }
-                    }}
+                    className={uiSchema?.['ui:classNames']}
                     sx={{ width: '100%' }}
                   >
                     {children}

@@ -9,11 +9,21 @@ import {
   Select,
   Divider,
   Box,
-  Typography,
+  Typography
 } from '@mui/material';
 
-export function MultiSelectField({ formData, fieldPathId, schema, onChange }) {
+export function MultiSelectField({
+  formData,
+  fieldPathId,
+  schema,
+  onChange,
+  registry
+}) {
   let options = schema?.enum || schema?.default || [];
+  // setInterval(() => {
+  //   console.log(registry.formContext.uiSchema, schema);
+  // }, 1000);
+
   if (typeof options === 'string') {
     options = options.split(',').map((token) => token.trim());
   }
@@ -92,17 +102,17 @@ export function MultiSelectField({ formData, fieldPathId, schema, onChange }) {
               borderRadius: 2,
               mt: 0.5,
               boxShadow:
-                '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-            },
+                '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+            }
           },
           anchorOrigin: {
             vertical: 'bottom',
-            horizontal: 'left',
+            horizontal: 'left'
           },
           transformOrigin: {
             vertical: 'top',
-            horizontal: 'left',
-          },
+            horizontal: 'left'
+          }
         }}
       >
         <Divider sx={{ my: 0.5 }} />
@@ -117,7 +127,7 @@ export function MultiSelectField({ formData, fieldPathId, schema, onChange }) {
                 py: 0.75,
                 '&:hover': { bgcolor: 'action.hover' },
                 '&.Mui-selected': { bgcolor: 'action.selected' },
-                '&.Mui-selected:hover': { bgcolor: 'action.selected' },
+                '&.Mui-selected:hover': { bgcolor: 'action.selected' }
               }}
             >
               <Checkbox
@@ -129,8 +139,8 @@ export function MultiSelectField({ formData, fieldPathId, schema, onChange }) {
                 slotProps={{
                   primary: {
                     fontSize: '0.875rem',
-                    fontWeight: selectedValues.includes(token) ? 500 : 400,
-                  },
+                    fontWeight: selectedValues.includes(token) ? 500 : 400
+                  }
                 }}
               />
             </MenuItem>

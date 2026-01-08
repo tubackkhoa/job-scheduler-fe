@@ -1,9 +1,12 @@
 import jsep, { Expression } from 'jsep';
+import jsepObject from '@jsep-plugin/object';
+import jsepAsyncAwait from '@jsep-plugin/async-await';
 import { linter, Diagnostic } from '@codemirror/lint';
 import { syntaxTree } from '@codemirror/language';
 import _ from 'lodash';
-import { SyntaxNode, TreeCursor } from '@lezer/common';
 
+// register object
+jsep.plugins.register(jsepObject, jsepAsyncAwait);
 /* ================================
  * AST Evaluation
  * ================================ */
@@ -15,11 +18,12 @@ interface StackItem {
   visited: boolean;
 }
 
-const evalAstIterative = (
+const evalAstIterative = async (
   root: any,
-  context: Context,
+  context: any,
   maxSteps: number
-): any => {
+): Promise<any> => {
+  type StackItem = { node: any; visited: boolean };
   const stack: StackItem[] = [{ node: root, visited: false }];
   const values = new Map<any, any>();
   let steps = 0;
@@ -36,6 +40,18 @@ const evalAstIterative = (
       stack.push({ node, visited: true });
 
       switch (node.type) {
+        case 'AwaitExpression':
+          stack.push({ node: node.argument, visited: false });
+          break;
+
+        case 'CallExpression':
+          // Push arguments in reverse order so they're evaluated left-to-right
+          for (let i = node.arguments.length - 1; i >= 0; i--) {
+            stack.push({ node: node.arguments[i], visited: false });
+          }
+          stack.push({ node: node.callee, visited: false });
+          break;
+
         case 'UnaryExpression':
           stack.push({ node: node.argument, visited: false });
           break;
@@ -66,11 +82,31 @@ const evalAstIterative = (
             throw new Error(`Unsupported node ${node.body?.[0]?.name}`);
           }
           break;
+
+        case 'ObjectExpression':
+          for (const prop of node.properties) {
+            stack.push({ node: prop.value, visited: false });
+          }
+          for (const prop of node.properties) {
+            if (prop.computed) {
+              stack.push({ node: prop.key, visited: false });
+            }
+          }
+          break;
+
+        default:
+          // No children to push
+          break;
       }
     } else {
       let result: any;
 
       switch (node.type) {
+        case 'AwaitExpression':
+          // Await the resolved value of the argument
+          result = await values.get(node.argument);
+          break;
+
         case 'Literal':
           result = node.value;
           break;
@@ -103,7 +139,6 @@ const evalAstIterative = (
         case 'BinaryExpression': {
           const left = values.get(node.left);
           const right = values.get(node.right);
-
           switch (node.operator) {
             case '+':
               result = left + right;
@@ -177,9 +212,43 @@ const evalAstIterative = (
           break;
         }
 
+        case 'CallExpression': {
+          // Evaluate callee and arguments then call it
+          const fn = values.get(node.callee);
+          const args = node.arguments.map((arg: any) => values.get(arg));
+
+          if (typeof fn !== 'function') {
+            throw new Error('CallExpression callee is not a function');
+          }
+
+          // Await if the function returns a Promise (handle async calls)
+          result = fn(...args);
+          if (result instanceof Promise) {
+            result = await result;
+          }
+          break;
+        }
+
         case 'Compound':
           result = values.get(node.body[1]);
           break;
+
+        case 'ObjectExpression': {
+          result = {};
+          for (const prop of node.properties) {
+            let key: string;
+            if (prop.key.type === 'Identifier') {
+              key = prop.key.name;
+            } else if (prop.key.type === 'Literal') {
+              key = String(prop.key.value);
+            } else {
+              throw new Error(`Unsupported object key type ${prop.key.type}`);
+            }
+            const value = values.get(prop.value);
+            result[key] = value;
+          }
+          break;
+        }
 
         default:
           throw new Error(`Unsupported node type ${node.type}`);
@@ -192,40 +261,66 @@ const evalAstIterative = (
   return values.get(root);
 };
 
-/* ================================
- * UI Schema Extraction
- * ================================ */
+// Helper to resolve $ref schema if present
+const resolveRef = (schema: any, ref: string) => {
+  if (!schema.$defs || !ref) return null;
+  const defKey = ref.replace('#/$defs/', '');
+  return schema.$defs[defKey] ?? null;
+};
+
+export const buildUiSchemaWithExpr = async (
+  schema: any,
+  data: any
+): Promise<any> => {
+  if (!schema) return schema;
+
+  const newSchema = _.cloneDeep(schema);
+  const stack = [{ node: newSchema }];
+
+  while (stack.length) {
+    const { node } = stack.pop()!;
+
+    if (node['ui:expr']) {
+      const extraOptions = await evaluate(node['ui:expr'], data, {});
+      _.merge(node, extraOptions);
+    }
+
+    if (node.type === 'object' && node.properties) {
+      for (const child of Object.values(node.properties)) {
+        stack.push({ node: child });
+      }
+    }
+
+    if (node.$ref) {
+      const refSchema = resolveRef(newSchema, node.$ref);
+      if (refSchema) stack.push({ node: refSchema });
+    }
+  }
+
+  return newSchema;
+};
 
 export const extractUiSchema = (schema: any): Record<string, any> => {
-  if (!schema || !schema.properties) return {};
+  if (!schema?.properties) return {};
 
   const uiSchema: Record<string, any> = {
-    'ui:submitButtonOptions': {
-      norender: true
-    }
+    'ui:submitButtonOptions': { norender: true }
   };
 
   const stack: Array<{
     props: Record<string, any>;
     target: Record<string, any>;
-    path: string[];
-  }> = [
-    {
-      props: schema.properties,
-      target: uiSchema,
-      path: []
-    }
-  ];
+  }> = [{ props: schema.properties, target: uiSchema }];
 
-  while (stack.length > 0) {
-    const { props, target, path } = stack.pop()!;
+  while (stack.length) {
+    const { props, target } = stack.pop()!;
 
-    for (const [key, prop] of Object.entries<any>(props)) {
+    for (const [key, prop] of Object.entries(props)) {
       const uiEntry: Record<string, any> = {};
 
-      for (const uiKey in prop) {
-        if (uiKey.startsWith('ui:')) {
-          uiEntry[uiKey] = prop[uiKey];
+      for (const [uiKey, uiValue] of Object.entries(prop)) {
+        if (uiKey.startsWith('ui:') && uiKey !== 'ui:expr') {
+          uiEntry[uiKey] = uiValue;
         }
       }
 
@@ -234,8 +329,7 @@ export const extractUiSchema = (schema: any): Record<string, any> => {
       if (prop.type === 'object' && prop.properties) {
         nestedProps = prop.properties;
       } else if (prop.$ref) {
-        const defKey = prop.$ref.replace('#/$defs/', '');
-        const defSchema = schema.$defs?.[defKey];
+        const defSchema = resolveRef(schema, prop.$ref);
         if (defSchema?.type === 'object' && defSchema.properties) {
           nestedProps = defSchema.properties;
         }
@@ -243,11 +337,7 @@ export const extractUiSchema = (schema: any): Record<string, any> => {
 
       if (nestedProps) {
         target[key] = uiEntry;
-        stack.push({
-          props: nestedProps,
-          target: target[key],
-          path: [...path, key]
-        });
+        stack.push({ props: nestedProps, target: target[key] });
       } else if (Object.keys(uiEntry).length > 0) {
         target[key] = uiEntry;
       }
@@ -327,12 +417,12 @@ const applyFunction = (name: string) => {
   };
 };
 
-export const evaluate = (
+export const evaluate = async (
   expr: unknown,
   context: Context,
   defaultValue: any,
   maxSteps = 256
-): any => {
+): Promise<any> => {
   if (expr === undefined || expr === null) return defaultValue;
 
   try {
@@ -344,7 +434,7 @@ export const evaluate = (
       cache.set(val, ast);
     }
 
-    return evalAstIterative(ast, context, maxSteps);
+    return await evalAstIterative(ast, context, maxSteps);
   } catch (err: any) {
     console.log('Evaluation error:', err.message);
     return defaultValue;
