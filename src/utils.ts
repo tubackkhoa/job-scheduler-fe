@@ -1,4 +1,5 @@
 import jsep, { Expression } from 'jsep';
+import nunjucks from 'nunjucks';
 import jsepObject from '@jsep-plugin/object';
 import jsepAsyncAwait from '@jsep-plugin/async-await';
 import { linter, Diagnostic } from '@codemirror/lint';
@@ -581,4 +582,90 @@ export const jinjaLinter = (symbols: JinjaSymbols) => {
 
     return diagnostics;
   });
+};
+
+// Walk the AST to find variable names (Symbol nodes usually represent variables)
+export const extractUndeclaredVariables = (
+  node: any,
+  declaredStack: Set<string>[] = [new Set()],
+  undeclared: Set<string> = new Set()
+): Set<string> => {
+  if (!node) return undeclared;
+  if (typeof node === 'string')
+    // @ts-ignore
+    return extractUndeclaredVariables(nunjucks.parser.parse(node));
+
+  const currentScope = declaredStack[declaredStack.length - 1];
+
+  // Detect declaration nodes and add to current scope
+  if (node.typename === 'For') {
+    // node.key and node.value are declared variables in the loop
+    if (node.key) {
+      currentScope.add(node.key.value);
+    }
+    if (node.value) {
+      currentScope.add(node.value.value);
+    }
+    // The iterable expression is evaluated but does not declare variables
+    // Recurse inside the loop body with new nested scope
+    declaredStack.push(new Set(currentScope)); // new scope inherits current
+    extractUndeclaredVariables(node.body, declaredStack, undeclared);
+    declaredStack.pop();
+    // Also recurse iterable expression outside scope
+    extractUndeclaredVariables(node.arr, declaredStack, undeclared);
+    return undeclared;
+  }
+
+  if (node.typename === 'Set') {
+    // {% set var = expr %} declares 'var'
+    if (node.targets && Array.isArray(node.targets)) {
+      node.targets.forEach((target: any) => {
+        if (target.typename === 'Symbol') {
+          currentScope.add(target.value);
+        }
+      });
+    }
+    // Recurse into value expressions to extract undeclared variables
+    extractUndeclaredVariables(node.value, declaredStack, undeclared);
+    return undeclared;
+  }
+
+  if (node.typename === 'Macro') {
+    // Macro parameters are declared variables
+    declaredStack.push(new Set(currentScope));
+    if (node.args && node.args.children) {
+      node.args.children.forEach((arg: any) => {
+        if (arg.typename === 'Symbol') {
+          declaredStack[declaredStack.length - 1].add(arg.value);
+        }
+      });
+    }
+    extractUndeclaredVariables(node.body, declaredStack, undeclared);
+    declaredStack.pop();
+    return undeclared;
+  }
+
+  if (node.typename === 'Symbol') {
+    // Check if variable is declared in any scope
+    const isDeclared = declaredStack.some((scope) => scope.has(node.value));
+    if (!isDeclared) {
+      undeclared.add(node.value);
+    }
+    return undeclared;
+  }
+
+  // Generic recursion on children properties
+  for (const key in node) {
+    if (node[key] && typeof node[key] === 'object') {
+      if (Array.isArray(node[key])) {
+        node[key].forEach((child: any) =>
+          extractUndeclaredVariables(child, declaredStack, undeclared)
+        );
+      } else {
+        extractUndeclaredVariables(node[key], declaredStack, undeclared);
+      }
+    }
+  }
+
+  return undeclared;
 };

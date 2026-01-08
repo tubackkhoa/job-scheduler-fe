@@ -1,10 +1,14 @@
 import { useEffect, useRef, useMemo, useState } from 'react';
-
+import _ from 'lodash';
 import { Box, Paper, Stack, Typography, Grid } from '@mui/material';
 import { Settings } from '@mui/icons-material';
 import Form from '@rjsf/mui';
 import validator from '@rjsf/validator-ajv8';
-import { extractUiSchema, buildUiSchemaWithExpr } from '../../utils';
+import {
+  extractUiSchema,
+  buildUiSchemaWithExpr,
+  extractUndeclaredVariables
+} from '../../utils';
 import fields from './fields';
 import widgets from './widgets';
 import api from '../../api';
@@ -37,12 +41,12 @@ export const ConfigForm = function ConfigForm({
     buildUiSchemaWithExpr(schema, {
       ...formData,
       JSON: json5,
-      render: async (tmpl) => {
-        const { result } = await api.renderTemplate(
-          pluginPackage,
-          tmpl,
-          formData
-        );
+      render: async (tmpl, data) => {
+        const includeKeys = Array.from(extractUndeclaredVariables(tmpl));
+        const { result } = await api.renderTemplate(pluginPackage, tmpl, {
+          ..._.pick(formData, includeKeys),
+          ...data
+        });
         return result;
       }
     }).then((newSchema) => {
