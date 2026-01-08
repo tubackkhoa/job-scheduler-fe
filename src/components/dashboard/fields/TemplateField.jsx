@@ -22,7 +22,7 @@ import { jinja } from '@codemirror/lang-jinja';
 import { markdown } from '@codemirror/lang-markdown';
 import { LanguageDescription } from '@codemirror/language';
 import { EditorView } from '@codemirror/view';
-import { JinjaCompletionBuilder } from '../../../utils';
+import { JinjaCompletionBuilder, jinjaLinter } from '../../../utils';
 import api from '../../../api';
 import _ from 'lodash';
 import {
@@ -77,7 +77,8 @@ export function TemplateField({
       jinja({
         base: resolveLanguageExtension(languageType, schema),
         ...completions
-      })
+      }),
+      jinjaLinter(completions)
     ];
   }, [languageType, registry.formContext.formRef.current]);
 
