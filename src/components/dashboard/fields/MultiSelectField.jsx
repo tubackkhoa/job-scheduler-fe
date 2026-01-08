@@ -36,6 +36,8 @@ export function MultiSelectField({ formData, fieldPathId, schema, onChange }) {
     } else {
       newValue = value;
     }
+    // Ensure newValue only contains valid options as well
+    newValue = newValue.filter((val) => options.includes(val));
     onChange(newValue, fieldPathId?.path);
   };
 
