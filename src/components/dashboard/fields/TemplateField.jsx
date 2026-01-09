@@ -149,6 +149,16 @@ export function TemplateField({
           offset: 0
         });
         setSqlVersions(result.versions || []);
+        if (schema.versionId) {
+          const versionId = _.get(
+            registry.formContext.formRef.current.state.formData,
+            schema.versionId
+          );
+          const selectedVersion = result.versions.find(
+            (v) => v.id === versionId
+          );
+          setSelectedVersion(selectedVersion);
+        }
       } catch (err) {
         console.error('Failed to load SQL versions:', err);
         setSqlVersions([]);
@@ -177,6 +187,9 @@ export function TemplateField({
     if (!version) {
       setSelectedVersion(null);
       setVersionName('');
+      if (schema.versionId) {
+        onChange(0, schema.versionId);
+      }
       setIsDirty(false);
       return;
     }
@@ -188,6 +201,10 @@ export function TemplateField({
       setSelectedVersion(fullVersion);
       setVersionName(fullVersion.name);
       setLocalValue(fullVersion.sql_query);
+      // update versionId
+      if (schema.versionId) {
+        onChange(fullVersion.id, schema.versionId);
+      }
       setIsDirty(false);
       // Update parent form data
       onChange(fullVersion.sql_query, fieldPathId?.path);
@@ -341,7 +358,7 @@ export function TemplateField({
       <Typography variant="subtitle2">{schema.title}</Typography>
 
       {/* SQL Version Management Bar (only for SQL type) */}
-      {isSqlType && (
+      {isSqlType && schema.versionId && (
         <Box
           sx={{
             p: 1.5,
