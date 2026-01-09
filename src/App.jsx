@@ -130,7 +130,9 @@ export default function App() {
     setPluginId(currentPluginId);
     setLoading(true);
     setError(null);
+    // schema and configs should be clear before processing
     setSchema(null);
+    setJobConfigs([]);
 
     try {
       const {
@@ -289,7 +291,7 @@ export default function App() {
 
   const formData = useMemo(() => {
     return currentConfig?.config ? JSON.parse(currentConfig.config) : null;
-  }, [currentConfig]); // ← Only recompute when the jobId actually changes, or currentConfig is update when reloading
+  }, [currentConfig, schema]); // ← Only recompute when the jobId actually changes, or currentConfig is update when reloading
 
   const isActive = !!currentConfig?.active;
 
