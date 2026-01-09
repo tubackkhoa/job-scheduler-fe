@@ -157,7 +157,7 @@ export function TemplateField({
           const selectedVersion = result.versions.find(
             (v) => v.id === versionId
           );
-          setSelectedVersion(selectedVersion);
+          if (selectedVersion) setSelectedVersion(selectedVersion);
         }
       } catch (err) {
         console.error('Failed to load SQL versions:', err);
