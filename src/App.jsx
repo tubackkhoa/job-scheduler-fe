@@ -192,14 +192,11 @@ export default function App() {
       const response = await api.activateJob(targetJobId, activation);
       if (response.success) {
         // update the config at local to sync with server
-        const newConfigVersions = [...jobConfigs];
-        for (const version of newConfigVersions) {
-          if (version.id === targetJobId) {
-            version.active = activation ? 1 : 0;
-          }
-          // Don't deactivate other jobs - allow multiple active jobs
-        }
-        setJobConfigs(newConfigVersions);
+        setJobConfigs((prev) =>
+          prev.map((v) =>
+            v.id === targetJobId ? { ...v, active: activation ? 1 : 0 } : v
+          )
+        );
         setJobId(targetJobId);
       }
       handleSetResult(response);
@@ -291,7 +288,7 @@ export default function App() {
 
   const formData = useMemo(() => {
     return currentConfig?.config ? JSON.parse(currentConfig.config) : null;
-  }, [currentConfig, schema]); // ← Only recompute when the jobId actually changes, or currentConfig is update when reloading
+  }, [currentConfig]); // ← Only recompute when the jobId actually changes, or currentConfig is update when reloading
 
   const isActive = !!currentConfig?.active;
 
@@ -338,9 +335,7 @@ export default function App() {
                   jobs={jobConfigs}
                   selectedJobId={jobId}
                   pluginPackage={pluginInfo?.package}
-                  onSelectJob={(id) => {
-                    handleChangeJob(id);
-                  }}
+                  onSelectJob={handleChangeJob}
                   onToggleJob={(id, active) => handleJobActivation(active, id)}
                   onNewJob={() => {
                     setJobId(0);
