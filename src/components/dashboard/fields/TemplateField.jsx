@@ -295,7 +295,7 @@ export function TemplateField({
       const includeKeys = Array.from(extractUndeclaredVariables(tpl));
       const data = _(registry.formContext.formRef.current.state.formData)
         .omit(fieldPathId?.path)
-        .pick(includeKeys)
+        // .pick(includeKeys)
         .value();
       const ret = await api.renderTemplate(
         registry.formContext.pluginPackage,
