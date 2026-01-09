@@ -130,7 +130,7 @@ export default function App() {
     setPluginId(currentPluginId);
     setLoading(true);
     setError(null);
-    // setSchema(null);
+    setSchema(null);
 
     try {
       const {
