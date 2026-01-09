@@ -292,7 +292,7 @@ export function TemplateField({
     setLoadingPreview(true);
     setErrorMessage('');
     try {
-      const includeKeys = Array.from(extractUndeclaredVariables(tpl));
+      // const includeKeys = Array.from(extractUndeclaredVariables(tpl));
       const data = _(registry.formContext.formRef.current.state.formData)
         .omit(fieldPathId?.path)
         // .pick(includeKeys)
