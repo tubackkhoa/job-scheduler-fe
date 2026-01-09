@@ -2,12 +2,13 @@ import jsep, { Expression } from 'jsep';
 import nunjucks from 'nunjucks';
 import jsepObject from '@jsep-plugin/object';
 import jsepAsyncAwait from '@jsep-plugin/async-await';
+import jsepTemplateLiteral from '@jsep-plugin/template';
 import { linter, Diagnostic } from '@codemirror/lint';
 import { syntaxTree } from '@codemirror/language';
 import _ from 'lodash';
 
 // register object
-jsep.plugins.register(jsepObject, jsepAsyncAwait);
+jsep.plugins.register(jsepObject, jsepAsyncAwait, jsepTemplateLiteral);
 /* ================================
  * AST Evaluation
  * ================================ */
@@ -41,6 +42,19 @@ const evalAstIterative = async (
       stack.push({ node, visited: true });
 
       switch (node.type) {
+        case 'TemplateLiteral':
+          // Push all expressions inside template literal for evaluation
+          for (let i = node.expressions.length - 1; i >= 0; i--) {
+            stack.push({ node: node.expressions[i], visited: false });
+          }
+          break;
+
+        case 'TaggedTemplateExpression':
+          // Push quasi (template literal) and tag
+          stack.push({ node: node.quasi, visited: false });
+          stack.push({ node: node.tag, visited: false });
+          break;
+
         case 'AwaitExpression':
           stack.push({ node: node.argument, visited: false });
           break;
@@ -103,6 +117,45 @@ const evalAstIterative = async (
       let result: any;
 
       switch (node.type) {
+        case 'TemplateLiteral': {
+          // Reconstruct the full string from quasis + evaluated expressions
+          const parts: any[] = [];
+
+          for (let i = 0; i < node.quasis.length; i++) {
+            parts.push(node.quasis[i].value.cooked); // static string part
+
+            if (i < node.expressions.length) {
+              parts.push(values.get(node.expressions[i])); // evaluated expr
+            }
+          }
+
+          result = parts.join('');
+
+          break;
+        }
+
+        case 'TaggedTemplateExpression': {
+          const tag = values.get(node.tag);
+
+          if (typeof tag !== 'function') {
+            throw new Error('TaggedTemplateExpression tag is not a function');
+          }
+
+          // Get the combined string result of the quasi (template literal) from cache
+          // do not pass expression, we just make it default string as param to function for simple
+          const quasiStr = values.get(node.quasi);
+
+          // Call the tag function similar to JS Tagged Template call:
+          // tag(quasis, ...expressions)
+          result = tag(quasiStr);
+
+          // If async, await
+          if (result instanceof Promise) {
+            result = await result;
+          }
+          break;
+        }
+
         case 'AwaitExpression':
           // Await the resolved value of the argument
           result = await values.get(node.argument);
@@ -421,7 +474,7 @@ const applyFunction = (name: string) => {
 export const evaluate = async (
   expr: unknown,
   context: Context,
-  defaultValue: any,
+  defaultValue: any = undefined,
   maxSteps = 256
 ): Promise<any> => {
   if (expr === undefined || expr === null) return defaultValue;
