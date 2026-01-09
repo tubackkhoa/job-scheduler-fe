@@ -352,7 +352,7 @@ export function TemplateField({
       <Typography variant="subtitle2">{schema.title}</Typography>
 
       {/* SQL Version Management Bar (only for SQL type) */}
-      {isSqlType && (
+      {isSqlType && schema.versionPath && (
         <Box
           sx={{
             p: 1.5,
