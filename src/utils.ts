@@ -42,6 +42,10 @@ const evalAstIterative = async (
       stack.push({ node, visited: true });
 
       switch (node.type) {
+        case 'ThisExpression':
+          // no children nodes, so nothing to push
+          break;
+
         case 'TemplateLiteral':
           // Push all expressions inside template literal for evaluation
           for (let i = node.expressions.length - 1; i >= 0; i--) {
@@ -117,6 +121,11 @@ const evalAstIterative = async (
       let result: any;
 
       switch (node.type) {
+        case 'ThisExpression':
+          // Return the whole context as the value of `this` if not found
+          result = context.this ?? context;
+          break;
+
         case 'TemplateLiteral': {
           // Reconstruct the full string from quasis + evaluated expressions
           const parts: any[] = [];
@@ -324,7 +333,7 @@ const resolveRef = (schema: any, ref: string) => {
 
 export const buildUiSchemaWithExpr = async (
   schema: any,
-  data: any
+  context: any
 ): Promise<any> => {
   if (!schema) return schema;
 
@@ -335,7 +344,10 @@ export const buildUiSchemaWithExpr = async (
     const { node } = stack.pop()!;
 
     if (node['ui:expr']) {
-      const extraOptions = await evaluate(node['ui:expr'], data, {});
+      const extraOptions = await evaluate(node['ui:expr'], {
+        ...context,
+        this: node // binding this context as well
+      });
       _.merge(node, extraOptions);
     }
 
