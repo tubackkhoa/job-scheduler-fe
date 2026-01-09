@@ -38,17 +38,19 @@ export const ConfigForm = function ConfigForm({
   };
 
   useEffect(() => {
+    const jinja = async (tmpl, data) => {
+      const includeKeys = Array.from(extractUndeclaredVariables(tmpl));
+      const { result } = await api.renderTemplate(pluginPackage, tmpl, {
+        ..._.pick(formData, includeKeys),
+        ...data
+      });
+      return result;
+    };
     buildUiSchemaWithExpr(schema, {
       ...formData,
       JSON: json5,
-      render: async (tmpl, data) => {
-        const includeKeys = Array.from(extractUndeclaredVariables(tmpl));
-        const { result } = await api.renderTemplate(pluginPackage, tmpl, {
-          ..._.pick(formData, includeKeys),
-          ...data
-        });
-        return result;
-      }
+      jinja,
+      j: jinja // shortcut for render like jinja
     }).then((newSchema) => {
       setLocalSchema(newSchema);
     });
