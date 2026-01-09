@@ -292,18 +292,21 @@ export function TemplateField({
     setLoadingPreview(true);
     setErrorMessage('');
     try {
+      const params = _.omit(
+        registry.formContext.formRef.current.state.formData,
+        fieldPathId?.path
+      );
       const includeKeys = await extractUndeclaredVariables(
         tpl,
+        params,
         new Set(Object.keys(registry.formContext.env.filters))
       );
-      const data = _(registry.formContext.formRef.current.state.formData)
-        .omit(fieldPathId?.path)
-        .pick(includeKeys)
-        .value();
+      if (typeof includeKeys === 'string') return setPreviewCode(includeKeys);
+
       const ret = await api.renderTemplate(
         registry.formContext.pluginPackage,
         tpl,
-        data
+        _.pick(params, includeKeys)
       );
       setPreviewCode(ret.result.trim());
     } catch (ex) {

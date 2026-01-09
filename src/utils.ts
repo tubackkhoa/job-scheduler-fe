@@ -658,12 +658,15 @@ export const initPyodide = new Promise(async (resolve) => {
   // Define Python code
   await pyodide.runPythonAsync(`
 from jinja2 import Environment, meta
-def extract_undeclared_variables(template_str, filters):
-    env = Environment()
-    identity = lambda x, *args, **kwargs: x
-    env.filters.update({name: identity for name in filters})
-    ast = env.parse(template_str)
-    return meta.find_undeclared_variables(ast)
+def extract_undeclared_variables(tpl_str, context, filters):
+    env = Environment(autoescape=False, trim_blocks=True, lstrip_blocks=True)
+    try:                
+        return env.from_string(tpl_str).render(context)
+    except:
+        identity = lambda x, *args, **kwargs: x
+        env.filters.update({name: identity for name in filters})
+        ast = env.parse(tpl_str)
+        return meta.find_undeclared_variables(ast)
   `);
   console.log('Pyodide initialized');
   resolve(pyodide);
@@ -671,13 +674,17 @@ def extract_undeclared_variables(template_str, filters):
 
 export const extractUndeclaredVariables = async (
   tpl: string,
+  data: {
+    [key: string]: any;
+  },
   filters: Set<string>
-): Promise<string[]> => {
+): Promise<string[] | string> => {
   const pyodide = await initPyodide;
   // @ts-ignore
   const extractFn = pyodide.globals.get('extract_undeclared_variables');
-  const params = extractFn(tpl, filters);
-  return Array.from(params.toJs());
+  // @ts-ignore
+  const params = extractFn(tpl, pyodide.toPy(data), filters);
+  return typeof params === 'string' ? params : Array.from(params.toJs());
 };
 
 // pre-init at background for faster load

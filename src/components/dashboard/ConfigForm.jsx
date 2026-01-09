@@ -40,15 +40,19 @@ export const ConfigForm = function ConfigForm({
   useEffect(() => {
     const jinja = async (tmpl, data) => {
       // extract includeKeys to pass to server
+      const params = { ...formData, ...data };
       const includeKeys = await extractUndeclaredVariables(
         tmpl,
+        params,
         new Set(Object.keys(env.filters))
       );
+      if (typeof includeKeys === 'string') return includeKeys;
 
-      const { result } = await api.renderTemplate(pluginPackage, tmpl, {
-        ..._.pick(formData, includeKeys),
-        ...data
-      });
+      const { result } = await api.renderTemplate(
+        pluginPackage,
+        tmpl,
+        _.pick(params, includeKeys)
+      );
       return result;
     };
     buildUiSchemaWithExpr(schema, {
