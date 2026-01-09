@@ -332,7 +332,8 @@ const resolveRef = (schema: any, ref: string) => {
 
 export const buildUiSchemaWithExpr = async (
   schema: any,
-  context: any
+  context: Record<string, any>,
+  changedFieldId: string
 ): Promise<any> => {
   if (!schema) return schema;
 
@@ -343,11 +344,20 @@ export const buildUiSchemaWithExpr = async (
     const { node } = stack.pop()!;
 
     if (node['ui:expr']) {
-      const extraOptions = await evaluate(node['ui:expr'], {
-        ...context,
-        this: node // binding this context as well
-      });
-      _.merge(node, extraOptions);
+      const [expr, ...deps]: string[] =
+        typeof node['ui:expr'] === 'string'
+          ? [node['ui:expr']]
+          : node['ui:expr'].map((c: string | string[]) =>
+              typeof c === 'string' ? c : c.join('.')
+            );
+      // only render if deps changed
+      if (deps.length === 0 || deps.includes(changedFieldId)) {
+        const extraOptions = await evaluate(expr, {
+          ...context,
+          this: node // binding this context as well
+        });
+        _.merge(node, extraOptions);
+      }
     }
 
     if (node.type === 'object' && node.properties) {

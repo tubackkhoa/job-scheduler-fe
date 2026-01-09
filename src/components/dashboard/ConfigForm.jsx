@@ -23,6 +23,7 @@ export const ConfigForm = function ConfigForm({
   pluginPackage
 }) {
   const [localSchema, setLocalSchema] = useState({});
+  const changedFieldId = useRef();
 
   const formRef = useRef();
   // Pass a stable formContext object with the ref
@@ -31,10 +32,12 @@ export const ConfigForm = function ConfigForm({
     [pluginPackage, env]
   );
 
-  const handleChange = ({ formData: newFormData }) => {
+  const handleChange = ({ formData: newFormData }, fieldPathId) => {
     if (onChange) {
       onChange(newFormData);
     }
+    // strip first segment, seperator is "."
+    changedFieldId.current = fieldPathId.replace(/^[^.]+\./, '');
   };
 
   useEffect(() => {
@@ -55,12 +58,16 @@ export const ConfigForm = function ConfigForm({
       );
       return result;
     };
-    buildUiSchemaWithExpr(schema, {
-      ...formData,
-      JSON: json5,
-      jinja,
-      j: jinja // shortcut for render like jinja
-    }).then((newSchema) => {
+    buildUiSchemaWithExpr(
+      schema,
+      {
+        ...formData,
+        JSON: json5,
+        jinja,
+        j: jinja // shortcut for render like jinja
+      },
+      changedFieldId.current
+    ).then((newSchema) => {
       setLocalSchema(newSchema);
     });
   }, [formData]);
@@ -208,6 +215,7 @@ export const ConfigForm = function ConfigForm({
             schema={localSchema}
             uiSchema={uiSchema}
             formContext={formContext}
+            idSeparator="."
             ref={formRef}
             fields={fields}
             widgets={widgets}
