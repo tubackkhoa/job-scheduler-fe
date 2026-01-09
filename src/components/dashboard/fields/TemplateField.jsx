@@ -22,11 +22,7 @@ import { jinja } from '@codemirror/lang-jinja';
 import { markdown } from '@codemirror/lang-markdown';
 import { LanguageDescription } from '@codemirror/language';
 import { EditorView } from '@codemirror/view';
-import {
-  JinjaCompletionBuilder,
-  jinjaLinter,
-  extractUndeclaredVariables
-} from '../../../utils';
+import { JinjaCompletionBuilder, jinjaLinter } from '../../../utils';
 import api from '../../../api';
 import _ from 'lodash';
 import {
@@ -292,15 +288,13 @@ export function TemplateField({
     setLoadingPreview(true);
     setErrorMessage('');
     try {
-      // const includeKeys = Array.from(extractUndeclaredVariables(tpl));
-      const data = _(registry.formContext.formRef.current.state.formData)
-        .omit(fieldPathId?.path)
-        // .pick(includeKeys)
-        .value();
       const ret = await api.renderTemplate(
         registry.formContext.pluginPackage,
         tpl,
-        data
+        _.omit(
+          registry.formContext.formRef.current.state.formData,
+          fieldPathId?.path
+        )
       );
       setPreviewCode(ret.result.trim());
     } catch (ex) {

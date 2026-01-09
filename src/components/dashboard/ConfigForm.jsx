@@ -4,11 +4,7 @@ import { Box, Paper, Stack, Typography, Grid } from '@mui/material';
 import { Settings } from '@mui/icons-material';
 import Form from '@rjsf/mui';
 import validator from '@rjsf/validator-ajv8';
-import {
-  extractUiSchema,
-  buildUiSchemaWithExpr,
-  extractUndeclaredVariables
-} from '../../utils';
+import { extractUiSchema, buildUiSchemaWithExpr } from '../../utils';
 import fields from './fields';
 import widgets from './widgets';
 import api from '../../api';
@@ -39,9 +35,7 @@ export const ConfigForm = function ConfigForm({
 
   useEffect(() => {
     const jinja = async (tmpl, data) => {
-      // const includeKeys = Array.from(extractUndeclaredVariables(tmpl));
       const { result } = await api.renderTemplate(pluginPackage, tmpl, {
-        // ..._.pick(formData, includeKeys),
         ...formData,
         ...data
       });
