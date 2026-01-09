@@ -22,7 +22,7 @@ export const ConfigForm = function ConfigForm({
   onChange,
   pluginPackage
 }) {
-  const [localSchema, setLocalSchema] = useState({});
+  const [localSchema, setLocalSchema] = useState(schema);
   const changedFieldId = useRef();
 
   const formRef = useRef();
@@ -59,7 +59,7 @@ export const ConfigForm = function ConfigForm({
       return result;
     };
     buildUiSchemaWithExpr(
-      schema,
+      localSchema, // remain state
       {
         ...formData,
         JSON: json5,

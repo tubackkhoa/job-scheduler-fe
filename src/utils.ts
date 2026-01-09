@@ -350,8 +350,13 @@ export const buildUiSchemaWithExpr = async (
           : node['ui:expr'].map((c: string | string[]) =>
               typeof c === 'string' ? c : c.join('.')
             );
-      // only render if deps changed
-      if (deps.length === 0 || deps.includes(changedFieldId)) {
+
+      // only render if deps changed, or first time when no changedFieldId
+      if (
+        deps.length === 0 ||
+        !changedFieldId ||
+        deps.includes(changedFieldId)
+      ) {
         const extraOptions = await evaluate(expr, {
           ...context,
           this: node // binding this context as well
