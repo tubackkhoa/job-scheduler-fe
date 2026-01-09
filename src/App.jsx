@@ -98,7 +98,6 @@ export default function App() {
   const [pluginId, setPluginId] = useState(0);
   const [jobId, setJobId] = useState(0);
   const [jobDesc, setJobDesc] = useState('');
-  const [newJobDraft, setNewJobDraft] = useState(null);
   const [jobConfigs, setJobConfigs] = useState([]);
   const [schema, setSchema] = useState(null);
   const [env, setEnv] = useState(null);
@@ -131,7 +130,7 @@ export default function App() {
     setPluginId(currentPluginId);
     setLoading(true);
     setError(null);
-    setSchema(null);
+    // setSchema(null);
 
     try {
       const {
@@ -142,14 +141,7 @@ export default function App() {
       setSchema(fetchedSchema);
       setEnv(env);
       setJobConfigs(configs);
-      const templateConfig =
-        configs.find((c) => c.id === 0)?.config ?? configs[0]?.config ?? '{}';
-      setNewJobDraft({
-        id: 0,
-        description: '',
-        active: 0,
-        config: templateConfig
-      });
+
       const newJobId = currentJobId ?? configs[0]?.id ?? 0;
       handleChangeJob(newJobId, configs);
     } catch (err) {
@@ -294,10 +286,10 @@ export default function App() {
 
   const pluginInfo = plugins.find((p) => p.id === pluginId);
   const currentConfig = jobConfigs.find((version) => version.id === jobId);
-  const displayedConfig = jobId === 0 ? newJobDraft : currentConfig;
+
   const formData = useMemo(() => {
-    return displayedConfig?.config ? JSON.parse(displayedConfig.config) : null;
-  }, [displayedConfig]); // ← Only recompute when the jobId actually changes, or currentConfig is update when reloading
+    return currentConfig?.config ? JSON.parse(currentConfig.config) : null;
+  }, [currentConfig]); // ← Only recompute when the jobId actually changes, or currentConfig is update when reloading
 
   const isActive = !!currentConfig?.active;
 
