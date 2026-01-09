@@ -24,7 +24,6 @@ const evalAstIterative = async (
   context: any,
   maxSteps: number
 ): Promise<any> => {
-  type StackItem = { node: any; visited: boolean };
   const stack: StackItem[] = [{ node: root, visited: false }];
   const values = new Map<any, any>();
   let steps = 0;
@@ -648,3 +647,38 @@ export const jinjaLinter = (symbols: JinjaSymbols) => {
     return diagnostics;
   });
 };
+
+export const initPyodide = new Promise(async (resolve) => {
+  // @ts-ignore
+  const pyodide = await loadPyodide();
+
+  // Ensure Jinja2 is available
+  await pyodide.loadPackage('jinja2');
+
+  // Define Python code
+  await pyodide.runPythonAsync(`
+from jinja2 import Environment, meta
+def extract_undeclared_variables(template_str, filters):
+    env = Environment()
+    identity = lambda x, *args, **kwargs: x
+    env.filters.update({name: identity for name in filters})
+    ast = env.parse(template_str)
+    return meta.find_undeclared_variables(ast)
+  `);
+  console.log('Pyodide initialized');
+  resolve(pyodide);
+});
+
+export const extractUndeclaredVariables = async (
+  tpl: string,
+  filters: Set<string>
+): Promise<string[]> => {
+  const pyodide = await initPyodide;
+  // @ts-ignore
+  const extractFn = pyodide.globals.get('extract_undeclared_variables');
+  const params = extractFn(tpl, filters);
+  return Array.from(params.toJs());
+};
+
+// pre-init at background for faster load
+initPyodide;
