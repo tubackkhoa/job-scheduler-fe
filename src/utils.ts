@@ -242,6 +242,15 @@ const evalAstIterative = async (
             case '>=':
               result = left >= right;
               break;
+            case '&&':
+              result = left && right;
+              break;
+            case '||':
+              result = left || right;
+              break;
+            case '??':
+              result = left !== null && left !== undefined ? left : right;
+              break;
             default:
               throw new Error(`Unsupported operator ${node.operator}`);
           }
@@ -249,15 +258,7 @@ const evalAstIterative = async (
         }
 
         case 'LogicalExpression': {
-          const left = values.get(node.left);
-          if (node.operator === '&&') {
-            result = left && values.get(node.right);
-          } else if (node.operator === '||') {
-            result = left || values.get(node.right);
-          } else {
-            throw new Error(`Unsupported logical ${node.operator}`);
-          }
-          break;
+          throw new Error(`Unsupported logical ${node.operator}`);
         }
 
         case 'ConditionalExpression':
