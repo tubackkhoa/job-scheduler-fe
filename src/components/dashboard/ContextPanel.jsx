@@ -77,7 +77,16 @@ export function ContextPanel({
               <InputLabel>Plugin</InputLabel>
               <Select
                 value={pluginId}
-                onChange={(e) => onPluginChange(Number(e.target.value))}
+                onChange={(e) => {
+                  // Get current URL
+                  const url = new URL(window.location);
+                  const pluginId = Number(e.target.value);
+                  // Set or update the plugin_id parameter
+                  url.searchParams.set('plugin_id', pluginId);
+                  // Update the browser address bar without reloading the page
+                  window.history.replaceState({}, '', url);
+                  onPluginChange(pluginId);
+                }}
                 label="Plugin"
                 startAdornment={
                   <InputAdornment position="start">

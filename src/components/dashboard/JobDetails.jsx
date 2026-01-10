@@ -56,6 +56,7 @@ export function JobDetails({
 }) {
   const [tabIndex, setTabIndex] = useState(0);
   const [localFormData, setLocalFormData] = useState();
+  const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
     setLocalFormData(formData);
@@ -189,7 +190,10 @@ export function JobDetails({
               schema={schema}
               env={env}
               formData={localFormData ?? formData}
-              onChange={setLocalFormData}
+              onChange={(data) => {
+                setIsDirty(true);
+                setLocalFormData(data);
+              }}
             />
           </TabPanel>
 
@@ -217,6 +221,11 @@ export function JobDetails({
 
           {/* Actions */}
           <Divider />
+          {isDirty && (
+            <Typography variant="caption" color="warning.main">
+              You have unsaved changes
+            </Typography>
+          )}
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             alignItems={{ xs: 'stretch', sm: 'center' }}
@@ -226,6 +235,7 @@ export function JobDetails({
               variant="contained"
               startIcon={<Save />}
               onClick={() => {
+                setIsDirty(false);
                 onSave(localFormData);
               }}
               disabled={isSubmitting}
@@ -244,6 +254,7 @@ export function JobDetails({
                 variant="outlined"
                 startIcon={<AddCircleOutline />}
                 onClick={() => {
+                  setIsDirty(false);
                   onSaveAsNew(localFormData);
                 }}
                 disabled={isSubmitting}
