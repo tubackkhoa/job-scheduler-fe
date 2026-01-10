@@ -9,6 +9,7 @@ import {
   Typography,
   Stack,
   Tabs,
+  CircularProgress,
   Tab,
   Divider
 } from '@mui/material';
@@ -72,9 +73,13 @@ export function JobDetails({
           p: 3
         }}
       >
-        <Typography variant="body1" color="text.secondary">
-          Pick a plugin to load its schema and jobs.
-        </Typography>
+        {pluginPackage ? (
+          <CircularProgress />
+        ) : (
+          <Typography variant="body1" color="text.secondary">
+            Pick a plugin to load its schema and jobs.
+          </Typography>
+        )}
       </Card>
     );
   }
@@ -131,6 +136,9 @@ export function JobDetails({
           {/* Tabs */}
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
               value={tabIndex}
               onChange={(_, v) => {
                 setTabIndex(v);
@@ -207,44 +215,39 @@ export function JobDetails({
           {/* Actions */}
           <Divider />
           <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            flexWrap="wrap"
+            direction={{ xs: 'column', sm: 'row' }}
+            alignItems={{ xs: 'stretch', sm: 'center' }}
             gap={2}
           >
-            <Stack direction="row" spacing={1.5}>
+            <Button
+              variant="contained"
+              startIcon={<Save />}
+              onClick={() => {
+                onSave(localFormData);
+              }}
+              disabled={isSubmitting}
+              sx={{
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                '&:hover': {
+                  background:
+                    'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)'
+                }
+              }}
+            >
+              {isSubmitting ? 'Saving...' : 'Save'}
+            </Button>
+            {jobId > 0 && (
               <Button
-                variant="contained"
-                startIcon={<Save />}
+                variant="outlined"
+                startIcon={<AddCircleOutline />}
                 onClick={() => {
-                  onSave(localFormData);
+                  onSaveAsNew(localFormData);
                 }}
                 disabled={isSubmitting}
-                sx={{
-                  background:
-                    'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                  '&:hover': {
-                    background:
-                      'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)'
-                  }
-                }}
               >
-                {isSubmitting ? 'Saving...' : 'Save'}
+                Save new
               </Button>
-              {jobId > 0 && (
-                <Button
-                  variant="outlined"
-                  startIcon={<AddCircleOutline />}
-                  onClick={() => {
-                    onSaveAsNew(localFormData);
-                  }}
-                  disabled={isSubmitting}
-                >
-                  Save as new
-                </Button>
-              )}
-            </Stack>
+            )}
 
             {jobId !== 0 && (
               <Button

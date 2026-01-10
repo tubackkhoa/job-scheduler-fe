@@ -375,7 +375,11 @@ export function TemplateField({
           }}
         >
           <Stack spacing={1.5}>
-            <Stack direction="row" spacing={1} alignItems="center">
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={1}
+              alignItems={{ xs: 'stretch', sm: 'center' }}
+            >
               <Autocomplete
                 size="small"
                 options={sqlVersions}

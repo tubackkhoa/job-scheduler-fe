@@ -13,7 +13,7 @@ import {
   OutlinedInput,
   InputAdornment,
   Avatar,
-  Button,
+  Button
 } from '@mui/material';
 import { Refresh, Person, Add } from '@mui/icons-material';
 
@@ -26,14 +26,14 @@ export function ContextPanel({
   onPluginChange,
   onReloadPlugin,
   onCreatePlugin,
-  isLoading,
+  isLoading
 }) {
   return (
     <Card
       sx={{
         bgcolor: 'background.paper',
         backgroundImage:
-          'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%)',
+          'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%)'
       }}
     >
       <CardContent sx={{ p: 3 }}>
@@ -42,7 +42,7 @@ export function ContextPanel({
             sx={{
               bgcolor: 'primary.main',
               width: 44,
-              height: 44,
+              height: 44
             }}
           >
             <Person />
@@ -95,8 +95,8 @@ export function ContextPanel({
                               sx={{
                                 bgcolor: 'rgba(245, 158, 11, 0.1)',
                                 '&:hover': {
-                                  bgcolor: 'rgba(245, 158, 11, 0.2)',
-                                },
+                                  bgcolor: 'rgba(245, 158, 11, 0.2)'
+                                }
                               }}
                             >
                               <Refresh
@@ -106,8 +106,8 @@ export function ContextPanel({
                                     : 'none',
                                   '@keyframes spin': {
                                     '0%': { transform: 'rotate(0deg)' },
-                                    '100%': { transform: 'rotate(360deg)' },
-                                  },
+                                    '100%': { transform: 'rotate(360deg)' }
+                                  }
                                 }}
                               />
                             </IconButton>
@@ -129,7 +129,7 @@ export function ContextPanel({
                         sx={{
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
+                          whiteSpace: 'nowrap'
                         }}
                       >
                         {plugin.package}
@@ -157,8 +157,8 @@ export function ContextPanel({
               color: 'primary.main',
               '&:hover': {
                 borderStyle: 'solid',
-                bgcolor: 'rgba(99, 102, 241, 0.08)',
-              },
+                bgcolor: 'rgba(99, 102, 241, 0.08)'
+              }
             }}
           >
             Create New Plugin

@@ -15,6 +15,26 @@ import api from '../../api';
 import json5 from 'json5';
 import ErrorBoundary from './ErrorBound';
 
+const calculateItemSize = (uiSchema) => {
+  const isEditor = uiSchema?.['ui:field'] === 'Template';
+  const size = uiSchema?.['ui:options']?.size;
+  const calSize = { xs: 12 };
+  if (typeof size === 'object') {
+    Object.assign(calSize, size);
+  } else {
+    calSize.md = size ?? (isEditor ? 12 : 3);
+  }
+  return calSize;
+};
+
+const fieldWrapperStyle = {
+  p: { xs: 0, sm: 3.5 },
+  bgcolor: { xs: 'transparent', sm: 'rgba(99, 102, 241, 0.04)' },
+  border: { xs: 'none', sm: 1 },
+  borderColor: { xs: 'transparent', sm: 'divider' },
+  borderRadius: { xs: 0, sm: 3 }
+};
+
 export const ConfigForm = function ConfigForm({
   schema,
   env,
@@ -37,7 +57,7 @@ export const ConfigForm = function ConfigForm({
       onChange(newFormData);
     }
     // strip first segment, seperator is "."
-    changedFieldId.current = fieldPathId.replace(/^[^.]+\./, '');
+    changedFieldId.current = fieldPathId?.replace(/^[^.]+\./, '');
   };
 
   useEffect(() => {
@@ -110,16 +130,7 @@ export const ConfigForm = function ConfigForm({
         >
           {/* General Settings section for non-object fields */}
           {regularFields.length > 0 && (
-            <Paper
-              elevation={0}
-              sx={{
-                p: 3.5,
-                bgcolor: 'rgba(99, 102, 241, 0.04)',
-                border: 1,
-                borderColor: 'divider',
-                borderRadius: 3
-              }}
-            >
+            <Paper elevation={0} sx={fieldWrapperStyle}>
               <Stack
                 direction="row"
                 alignItems="center"
@@ -133,11 +144,7 @@ export const ConfigForm = function ConfigForm({
               </Stack>
               <Grid container spacing={2}>
                 {regularFields.map(({ content }) => {
-                  const uiSchema = content.props.uiSchema;
-                  const isEditor = uiSchema?.['ui:field'] === 'Template';
-                  // fowllowing: https://rjsf-team.github.io/react-jsonschema-form/docs/api-reference/LayoutGridField/
-                  const size =
-                    uiSchema?.['ui:options']?.size ?? (isEditor ? 12 : 3);
+                  const size = calculateItemSize(content.props.uiSchema);
                   return (
                     <Grid
                       item
@@ -161,16 +168,7 @@ export const ConfigForm = function ConfigForm({
 
     // Nested object - render as Paper section
     return (
-      <Paper
-        elevation={0}
-        sx={{
-          p: 3.5,
-          bgcolor: 'rgba(236, 72, 153, 0.04)',
-          border: 1,
-          borderColor: 'divider',
-          borderRadius: 3
-        }}
-      >
+      <Paper elevation={0} sx={fieldWrapperStyle}>
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle1" fontWeight={600}>
             {title || schema?.title}
@@ -183,12 +181,9 @@ export const ConfigForm = function ConfigForm({
         </Box>
         <Grid container spacing={2}>
           {properties.map(({ content }) => {
-            const uiSchema = content.props.uiSchema;
-            const isEditor = uiSchema?.['ui:field'] === 'Template';
-            // fowllowing: https://rjsf-team.github.io/react-jsonschema-form/docs/api-reference/LayoutGridField/
-            const size = uiSchema?.['ui:options']?.size ?? (isEditor ? 12 : 3);
+            const size = calculateItemSize(content.props.uiSchema);
             return (
-              <Grid item xs={12} size={size} key={content.key}>
+              <Grid item size={size} key={content.key}>
                 {content}
               </Grid>
             );
