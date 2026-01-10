@@ -60,6 +60,7 @@ export function JobDetails({
 
   useEffect(() => {
     setLocalFormData(formData);
+    setIsDirty(false);
   }, [formData]);
 
   if (!schema) {
