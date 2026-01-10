@@ -115,7 +115,10 @@ export function JobDetails({
             fontWeight: 600
           },
           subheader: {
-            variant: 'body2'
+            variant: 'body2',
+            sx: {
+              wordBreak: 'break-word'
+            }
           }
         }}
       />
