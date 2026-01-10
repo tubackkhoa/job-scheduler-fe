@@ -19,9 +19,10 @@ import { sql, PostgreSQL } from '@codemirror/lang-sql';
 import { json } from '@codemirror/lang-json';
 import { yaml } from '@codemirror/lang-yaml';
 import { jinja } from '@codemirror/lang-jinja';
+import { javascript } from '@codemirror/lang-javascript';
 import { markdown } from '@codemirror/lang-markdown';
 import { LanguageDescription } from '@codemirror/language';
-import { EditorView } from '@codemirror/view';
+import { TemplatePreview } from './TemplatePreview';
 import {
   JinjaCompletionBuilder,
   jinjaLinter,
@@ -36,7 +37,8 @@ import {
   Fullscreen,
   FullscreenExit
 } from '@mui/icons-material';
-import { MarkdownPreview } from './MarkdownPreview';
+
+import { getCodeMirrorStyle } from './TemplatePreview';
 
 const resolveLanguageExtension = (type, schema) => {
   switch (type) {
@@ -56,6 +58,8 @@ const resolveLanguageExtension = (type, schema) => {
       });
     case 'sql':
       return sql({ dialect: PostgreSQL, schema: schema.schema });
+    case 'js':
+      return javascript({ jsx: true, typescript: true });
     default:
       return undefined;
   }
@@ -339,26 +343,6 @@ export function TemplateField({
       }
     : {};
 
-  const codeMirrorStyle = {
-    style: {
-      resize: fullscreen ? 'none' : 'vertical',
-      overflow: 'auto',
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: fullscreen ? '100%' : 200,
-      maxHeight: fullscreen ? '100%' : 600,
-      height: '100%'
-    },
-    minHeight: fullscreen ? '100%' : '200px',
-    height: '100%',
-    theme: 'dark',
-    basicSetup: {
-      lineNumbers: true,
-      highlightActiveLine: true,
-      foldGutter: false
-    }
-  };
-
   return (
     <Stack spacing={1} sx={fullscreenStyles}>
       <Typography variant="subtitle2">{schema.title}</Typography>
@@ -521,7 +505,7 @@ export function TemplateField({
           }}
         >
           <CodeMirror
-            {...codeMirrorStyle}
+            {...getCodeMirrorStyle(fullscreen)}
             value={localValue}
             extensions={extensions}
             onChange={handleEditorChange}
@@ -556,19 +540,12 @@ export function TemplateField({
               )}
             </IconButton>
           </Tooltip>
-          {languageType === 'markdown' ? (
-            <MarkdownPreview
-              text={previewCode}
-              maxHeight={fullscreen ? '100%' : 600}
-            />
-          ) : (
-            <CodeMirror
-              {...codeMirrorStyle}
-              readOnly
-              value={previewCode}
-              extensions={[...extensions, EditorView.lineWrapping]}
-            />
-          )}
+          <TemplatePreview
+            lang={languageType}
+            fullscreen={fullscreen}
+            text={previewCode}
+            extensions={extensions}
+          />
         </Box>
       </Box>
     </Stack>
