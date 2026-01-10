@@ -102,7 +102,7 @@ export function VersionField({
         }
       } catch (e) {
         setVersions([]);
-        setError('Failed to load versions');
+        setError(e.message || 'Failed to load versions');
         console.error(e);
       } finally {
         setLoading(false);
