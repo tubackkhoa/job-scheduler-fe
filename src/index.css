@@ -254,3 +254,10 @@ body {
 .hidden {
   display: none;
 }
+
+/* Smaller font on mobile */
+@media (max-width: 600px) {
+  .cm-editor {
+    font-size: 12px;
+  }
+}
