@@ -112,7 +112,14 @@ export default function App() {
   useEffect(() => {
     api
       .fetchPlugins()
-      .then(setPlugins)
+      .then((data) => {
+        setPlugins(data);
+        const params = new URLSearchParams(window.location.search);
+        const pluginId = params.get('plugin_id');
+        if (data.some((p) => p.id == pluginId)) {
+          loadSchema(Number(pluginId));
+        }
+      })
       .catch((err) => setError(err.message));
   }, []);
 
