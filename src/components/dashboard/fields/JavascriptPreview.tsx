@@ -25,21 +25,18 @@ const runCode = (
         return `window.${provider} = parent.${provider};`;
       })
       .join('\n')}
-    (function () {
+    
     const METHODS = ['log', 'info', 'warn', 'error', 'debug'];
 
     METHODS.forEach(function (method) {
         const original = console[method];
         console[method] = function () {
-        parent.postMessage(
-            {
-            type: 'console',
-            method: method,
-            args: Array.from(arguments)
-            },
-            '*'
-        );
-        ${hideConsole ? '' : 'original.apply(console, arguments);'}
+            parent.postMessage({
+                type: 'console',
+                method: method,
+                args: Array.from(arguments)
+            }, '*');
+            ${hideConsole ? '' : 'original.apply(console, arguments);'}
         };
     });
 
@@ -49,9 +46,7 @@ const runCode = (
             type: 'console',
             method: 'error',
             args: [message, error && error.stack]
-        },
-        '*'
-        );
+        }, '*');
     };
 
     window.onunhandledrejection = function (event) {
@@ -60,11 +55,8 @@ const runCode = (
             type: 'console',
             method: 'error',
             args: [event.reason]
-        },
-        '*'
-        );
+        }, '*');
     };
-    })();
 </script>
 
 <script type="module">
