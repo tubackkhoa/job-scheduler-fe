@@ -19,191 +19,172 @@ export function VersionField({
   fieldPathId,
   registry
 }) {
-  // Added missing states
   const [versions, setVersions] = useState([]);
   const [selectedVersion, setSelectedVersion] = useState(null);
   const [versionName, setVersionName] = useState('');
-  const [versionSearchInput, setVersionSearchInput] = useState('');
-  const [loadingVersions, setLoadingVersions] = useState(false);
-  const [savingVersion, setSavingVersion] = useState(false);
-  const [versionMessage, setVersionMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
   const getContext = useCallback(
-    (data) => {
-      return Object.assign(
+    (extraData = {}) =>
+      Object.assign(
         buildJinjaContext(
           registry.formContext.pluginPackage,
           registry.formContext.env.filters,
           registry.formContext.formRef.current?.state.formData
         ),
-        data
-      );
-    },
+        extraData
+      ),
     [registry]
   );
 
-  const listSqlVersions = useCallback(
-    (searchTerm, limit = 20, offset = 0) => {
-      return evaluate(
-        schema['model:expr'].list,
-        getContext({
-          search: searchTerm,
-          limit,
-          offset
-        })
-      );
-    },
-    [schema]
+  // Generic evaluate wrapper
+  const evaluateExpr = useCallback(
+    (exprKey, data) =>
+      evaluate(schema['model:expr'][exprKey], getContext(data)),
+    [schema, getContext]
   );
 
-  const updateSqlVersion = useCallback(
-    (id, payload) => {
-      return evaluate(
-        schema['model:expr'].update,
-        getContext({
-          id,
-          payload: JSON.stringify(payload)
-        })
-      );
-    },
-    [schema]
+  const listVersions = useCallback(
+    (searchTerm = '', limit = 20, offset = 0) =>
+      evaluateExpr('list', { search: searchTerm, limit, offset }),
+    [evaluateExpr]
   );
 
-  const createSqlVersion = useCallback(
-    (payload) => {
-      return evaluate(
-        schema['model:expr'].create,
-        getContext({
-          payload: JSON.stringify(payload)
-        })
-      );
-    },
-    [schema]
+  const getVersion = useCallback(
+    (id) => evaluateExpr('detail', { id }),
+    [evaluateExpr]
   );
 
-  const getSqlVersion = useCallback(
-    (id) => {
-      return evaluate(
-        schema['model:expr'].detail,
-        getContext({
-          id
-        })
-      );
-    },
-    [schema]
+  const updateVersion = useCallback(
+    (id, payload) =>
+      evaluateExpr('update', { id, payload: JSON.stringify(payload) }),
+    [evaluateExpr]
   );
 
-  const searchDebounceRef = useRef(null);
+  const createVersion = useCallback(
+    (payload) => evaluateExpr('create', { payload: JSON.stringify(payload) }),
+    [evaluateExpr]
+  );
 
-  const getLocalValue = useCallback(() => {
-    return _.get(
-      registry.formContext.formRef.current?.state.formData,
-      schema.binding
-    );
-  }, [registry, schema.binding]);
+  const localValue = useCallback(
+    () =>
+      _.get(
+        registry.formContext.formRef.current?.state.formData,
+        schema.binding
+      ) || '',
+    [registry, schema.binding]
+  );
+
+  const debounceTimeout = useRef(null);
 
   useEffect(() => {
-    const searchVersions = async (searchTerm = '') => {
-      setLoadingVersions(true);
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+
+    debounceTimeout.current = setTimeout(async () => {
+      setLoading(true);
+      setError('');
       try {
-        const result = await listSqlVersions(searchTerm);
-        setVersions(result.versions || []);
+        const result = await listVersions(searchInput);
+        const items = result?.versions || [];
+        setVersions(items);
+
+        // If formData exists, select corresponding version
         if (formData) {
-          const selected = result.versions.find((v) => v.id === formData);
-          if (selected) setSelectedVersion(selected);
+          const matched = items.find((v) => v.id === formData);
+          if (matched) {
+            setSelectedVersion(matched);
+            setVersionName(matched.name);
+          }
         }
-      } catch (err) {
-        console.error('Failed to load SQL versions:', err);
+      } catch (e) {
         setVersions([]);
+        setError('Failed to load versions');
+        console.error(e);
       } finally {
-        setLoadingVersions(false);
+        setLoading(false);
       }
-    };
-
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
-
-    searchDebounceRef.current = setTimeout(() => {
-      searchVersions(versionSearchInput);
     }, 300);
 
     return () => {
-      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     };
-  }, [versionSearchInput, formData]);
+  }, [searchInput, formData, listVersions]);
 
-  const handleVersionSelect = async (version) => {
+  const handleSelect = async (version) => {
     if (!version) {
       setSelectedVersion(null);
       setVersionName('');
-
-      // clear binding?
       onChange('', schema.binding);
-      onChange(0, fieldPathId?.path);
-
+      if (fieldPathId?.path) onChange(0, fieldPathId.path);
       return;
     }
 
-    setLoadingVersions(true);
-    setVersionMessage('');
-    setErrorMessage('');
+    setLoading(true);
+    setError('');
+    setMessage('');
+
     try {
-      const fullVersion = await getSqlVersion(version.id);
+      const fullVersion = await getVersion(version.id);
       setSelectedVersion(fullVersion);
       setVersionName(fullVersion.name);
-      onChange(fullVersion.sql_query, schema.binding);
-      onChange(fullVersion.id, fieldPathId?.path);
-    } catch (err) {
-      setErrorMessage(err.message || 'Failed to load SQL version');
+      onChange(fullVersion.value, schema.binding);
+      if (fieldPathId?.path) onChange(fullVersion.id, fieldPathId.path);
+    } catch (e) {
+      setError(e.message || 'Failed to load version details');
     } finally {
-      setLoadingVersions(false);
+      setLoading(false);
     }
   };
 
-  const handleSaveVersion = async () => {
-    if (!versionName.trim()) {
-      setVersionMessage('Version name is required');
+  const handleSave = async () => {
+    const nameTrimmed = versionName.trim();
+    const value = localValue().trim();
+
+    if (!nameTrimmed) {
+      setMessage('Version name is required');
       return;
     }
-    if (!getLocalValue().trim()) {
-      setVersionMessage('SQL query cannot be empty');
+    if (!value) {
+      setMessage('Version value cannot be empty');
       return;
     }
 
-    setSavingVersion(true);
-    setVersionMessage('');
-    setErrorMessage('');
+    setSaving(true);
+    setError('');
+    setMessage('');
 
     try {
-      if (selectedVersion) {
-        // Update existing version
-        const updated = await updateSqlVersion(selectedVersion.id, {
-          name: versionName.trim(),
-          sql_query: getLocalValue()
-        });
-        setSelectedVersion(updated);
-        setVersionMessage(`Updated version #${updated.id}`);
+      let savedVersion;
 
-        const result = await listSqlVersions(versionSearchInput);
-        setVersions(result.versions || []);
+      if (selectedVersion) {
+        savedVersion = await updateVersion(selectedVersion.id, {
+          name: nameTrimmed,
+          value
+        });
+        setMessage(`Updated version #${savedVersion.id}`);
       } else {
-        // Create new version
-        const newVersion = await createSqlVersion({
-          name: versionName.trim(),
-          sql_query: getLocalValue(),
+        savedVersion = await createVersion({
+          name: nameTrimmed,
+          value,
           description: '',
           tags: ''
         });
-        setSelectedVersion(newVersion);
-        setVersionMessage(`Saved as version #${newVersion.id}`);
-
-        const result = await listSqlVersions(versionSearchInput);
-        setVersions(result.versions || []);
+        setMessage(`Saved as version #${savedVersion.id}`);
       }
-    } catch (err) {
-      setErrorMessage(err.message || 'Failed to save SQL version');
+
+      setSelectedVersion(savedVersion);
+
+      // Refresh list
+      const updatedList = await listVersions(searchInput);
+      setVersions(updatedList?.versions || []);
+    } catch (e) {
+      setError(e.message || 'Failed to save version');
     } finally {
-      setSavingVersion(false);
+      setSaving(false);
     }
   };
 
@@ -228,12 +209,10 @@ export function VersionField({
             options={versions}
             getOptionLabel={(option) => option.name || ''}
             value={selectedVersion}
-            onChange={(_, newValue) => handleVersionSelect(newValue)}
-            inputValue={versionSearchInput}
-            onInputChange={(_, newInputValue) =>
-              setVersionSearchInput(newInputValue)
-            }
-            loading={loadingVersions}
+            onChange={(_, v) => handleSelect(v)}
+            inputValue={searchInput}
+            onInputChange={(_, val) => setSearchInput(val)}
+            loading={loading}
             sx={{ flex: 1, minWidth: 200 }}
             renderInput={(params) => (
               <TextField
@@ -242,7 +221,7 @@ export function VersionField({
                 placeholder="Type to search..."
               />
             )}
-            renderOption={({ key, ...props }, option) => (
+            renderOption={(props, option) => (
               <Box component="li" key={option.id} {...props}>
                 <Stack
                   direction="row"
@@ -275,25 +254,23 @@ export function VersionField({
             variant="contained"
             size="small"
             startIcon={<Save />}
-            onClick={handleSaveVersion}
-            disabled={
-              savingVersion || !versionName.trim() || !getLocalValue().trim()
-            }
+            onClick={handleSave}
+            disabled={saving || !versionName.trim() || !localValue().trim()}
             sx={{ minWidth: 100 }}
           >
-            {savingVersion ? 'Saving...' : selectedVersion ? 'Update' : 'Save'}
+            {saving ? 'Saving...' : selectedVersion ? 'Update' : 'Save'}
           </Button>
         </Stack>
 
-        {versionMessage && (
+        {message && (
           <Typography variant="caption" color="success.main">
-            {versionMessage}
+            {message}
           </Typography>
         )}
 
-        {errorMessage && (
+        {error && (
           <Typography variant="caption" color="error.main">
-            {errorMessage}
+            {error}
           </Typography>
         )}
       </Stack>
