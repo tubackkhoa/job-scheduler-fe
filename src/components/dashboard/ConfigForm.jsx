@@ -11,8 +11,6 @@ import {
 } from '../../utils';
 import fields from './fields';
 import widgets from './widgets';
-import api from '../../api';
-import json5 from 'json5';
 import ErrorBoundary from './ErrorBound';
 
 const calculateItemSize = (uiSchema) => {
@@ -44,13 +42,6 @@ export const ConfigForm = function ConfigForm({
 }) {
   const [localSchema, setLocalSchema] = useState(schema);
   const changedFieldId = useRef();
-
-  const formRef = useRef();
-  // Pass a stable formContext object with the ref
-  const formContext = useMemo(
-    () => ({ formRef, pluginPackage, env }),
-    [pluginPackage, env]
-  );
 
   const handleChange = ({ formData: newFormData }, fieldPathId) => {
     if (onChange) {
@@ -188,9 +179,8 @@ export const ConfigForm = function ConfigForm({
           <Form
             schema={localSchema}
             uiSchema={uiSchema}
-            formContext={formContext}
+            formContext={{ formData, pluginPackage, env }}
             idSeparator="."
-            ref={formRef}
             fields={fields}
             widgets={widgets}
             formData={formData}

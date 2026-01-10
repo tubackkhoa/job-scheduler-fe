@@ -34,11 +34,11 @@ export function VersionField({
         buildJinjaContext(
           registry.formContext.pluginPackage,
           registry.formContext.env.filters,
-          registry.formContext.formRef.current?.state.formData
+          registry.formContext.formData
         ),
         extraData
       ),
-    [registry]
+    [registry.formContext]
   );
 
   // Generic evaluate wrapper
@@ -71,11 +71,7 @@ export function VersionField({
   );
 
   const localValue = useCallback(
-    () =>
-      _.get(
-        registry.formContext.formRef.current?.state.formData,
-        schema.binding
-      ) || '',
+    () => _.get(registry.formContext.formData, schema.binding) || '',
     [registry, schema.binding]
   );
 

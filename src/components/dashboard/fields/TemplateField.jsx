@@ -35,8 +35,8 @@ import {
 
 import { getCodeMirrorStyle } from './TemplatePreview';
 
-const resolveLanguageExtension = (type, schema) => {
-  switch (type) {
+const resolveLanguageExtension = (schema) => {
+  switch (schema.type) {
     case 'json':
       return json();
     case 'yaml':
@@ -67,23 +67,21 @@ export function TemplateField({
   fieldPathId,
   registry
 }) {
-  const languageType = schema?.type ?? 'jinja';
   const extensions = useMemo(() => {
+    const params = _.omit(registry.formContext.formData, fieldPathId?.path);
     const completions = JinjaCompletionBuilder.build(
-      _.omit(
-        registry.formContext.formRef.current?.state.formData,
-        fieldPathId?.path
-      ),
+      params,
       registry.formContext.env
     );
+
     return [
       jinja({
-        base: resolveLanguageExtension(languageType, schema),
+        base: resolveLanguageExtension(schema),
         ...completions
       }),
-      jinjaLinter(completions)
+      jinjaLinter(params, registry.formContext.env)
     ];
-  }, [languageType, registry.formContext.formRef.current]);
+  }, [schema, registry.formContext]);
 
   // Local state for editor content during typing
   const [localValue, setLocalValue] = useState(formData);
@@ -141,10 +139,7 @@ export function TemplateField({
     setLoadingPreview(true);
     setErrorMessage('');
     try {
-      const params = _.omit(
-        registry.formContext.formRef.current.state.formData,
-        fieldPathId?.path
-      );
+      const params = _.omit(registry.formContext.formData, fieldPathId?.path);
       const includeKeys = await extractUndeclaredVariables(
         tpl,
         params,
@@ -289,7 +284,7 @@ export function TemplateField({
             </IconButton>
           </Tooltip>
           <TemplatePreview
-            lang={languageType}
+            lang={schema.type}
             fullscreen={fullscreen}
             text={previewCode}
             extensions={extensions}

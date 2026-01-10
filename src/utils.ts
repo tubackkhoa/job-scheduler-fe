@@ -596,13 +596,15 @@ export class JinjaCompletionBuilder {
   }
 }
 
-type JinjaSymbols = ReturnType<typeof JinjaCompletionBuilder.build>;
+type JinjaSymbols = {
+  globals: Record<string, any>;
+  filters: Record<string, any>;
+};
 
-export const jinjaLinter = (symbols: JinjaSymbols) => {
-  // Cache symbols lookups in Sets for O(1) checking
-  const variableLabels = new Set(symbols.variables.map((v) => v.label));
-  const filterLabels = new Set(symbols.filters.map((f) => f.label));
-
+export const jinjaLinter = (
+  params: Record<string, any>,
+  symbols: JinjaSymbols
+) => {
   return linter((view) => {
     const diagnostics: Diagnostic[] = [];
     const definitions = new Set<string>();
@@ -630,7 +632,11 @@ export const jinjaLinter = (symbols: JinjaSymbols) => {
             }
           }
 
-          if (!definitions.has(text) && !variableLabels.has(text)) {
+          if (
+            !definitions.has(text) &&
+            !params[text] &&
+            !symbols.globals[text]
+          ) {
             diagnostics.push({
               from: node.from,
               to: node.to,
@@ -641,7 +647,7 @@ export const jinjaLinter = (symbols: JinjaSymbols) => {
           break;
 
         case 'FilterName':
-          if (!filterLabels.has(text)) {
+          if (!symbols.filters[text]) {
             diagnostics.push({
               from: node.from,
               to: node.to,
