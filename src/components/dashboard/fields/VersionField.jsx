@@ -84,9 +84,12 @@ export function VersionField({
 
   const getSqlVersion = useCallback(
     (id) => {
-      return evaluate(schema['model:expr'].detail, {
-        id
-      });
+      return evaluate(
+        schema['model:expr'].detail,
+        getContext({
+          id
+        })
+      );
     },
     [schema]
   );
@@ -189,7 +192,7 @@ export function VersionField({
           name: versionName.trim(),
           sql_query: getLocalValue(),
           description: '',
-          tags: null
+          tags: ''
         });
         setSelectedVersion(newVersion);
         setVersionMessage(`Saved as version #${newVersion.id}`);

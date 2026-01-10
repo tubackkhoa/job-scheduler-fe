@@ -502,25 +502,17 @@ const applyFunction = (name: string) => {
 export const evaluate = async (
   expr: unknown,
   context: Context,
-  defaultValue: any = undefined,
   maxSteps = 256
 ): Promise<any> => {
-  if (expr === undefined || expr === null) return defaultValue;
+  const val = typeof expr === 'string' ? expr : String(expr);
+  let ast = cache.get(val);
 
-  try {
-    const val = typeof expr === 'string' ? expr : String(expr);
-    let ast = cache.get(val);
-
-    if (!ast) {
-      ast = jsep(val);
-      cache.set(val, ast);
-    }
-
-    return await evalAstIterative(ast, context, maxSteps);
-  } catch (err: any) {
-    console.log('Evaluation error:', err.message);
-    return defaultValue;
+  if (!ast) {
+    ast = jsep(val);
+    cache.set(val, ast);
   }
+
+  return await evalAstIterative(ast, context, maxSteps);
 };
 
 /* ================================
