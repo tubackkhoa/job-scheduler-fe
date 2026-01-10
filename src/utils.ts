@@ -1,10 +1,12 @@
 import jsep, { Expression } from 'jsep';
+import json5 from 'json5';
 import jsepObject from '@jsep-plugin/object';
 import jsepAsyncAwait from '@jsep-plugin/async-await';
 import jsepTemplateLiteral from '@jsep-plugin/template';
 import { linter, Diagnostic } from '@codemirror/lint';
 import { syntaxTree } from '@codemirror/language';
 import _ from 'lodash';
+import api from './api';
 
 // register object
 jsep.plugins.register(jsepObject, jsepAsyncAwait, jsepTemplateLiteral);
@@ -702,5 +704,35 @@ export const extractUndeclaredVariables = async (
   return typeof params === 'string' ? params : Array.from(params.toJs());
 };
 
+export const buildJinjaContext = (
+  packageName: string,
+  filters: string[],
+  formData: any
+) => {
+  const jinja = async (tmpl: string, data: any) => {
+    // extract includeKeys to pass to server
+    const params = { ...formData, ...data };
+    const includeKeys = await extractUndeclaredVariables(
+      tmpl,
+      params,
+      new Set(Object.keys(filters))
+    );
+    if (typeof includeKeys === 'string') return includeKeys;
+
+    const { result } = await api.renderTemplate(
+      packageName,
+      tmpl,
+      _.pick(params, includeKeys)
+    );
+    return result;
+  };
+
+  return {
+    ...formData,
+    JSON: json5,
+    jinja,
+    j: jinja // shortcut for render like jinja
+  };
+};
 // pre-init at background for faster load
 initPyodide;

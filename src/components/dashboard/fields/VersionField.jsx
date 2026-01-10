@@ -9,8 +9,8 @@ import {
   Button,
   Chip
 } from '@mui/material';
-import api from '../../../api';
 import { Save } from '@mui/icons-material';
+import { buildJinjaContext, evaluate } from '../../../utils';
 
 export function VersionField({
   formData,
@@ -29,6 +29,68 @@ export function VersionField({
   const [versionMessage, setVersionMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
+  const getContext = useCallback(
+    (data) => {
+      return Object.assign(
+        buildJinjaContext(
+          registry.formContext.pluginPackage,
+          registry.formContext.env.filters,
+          registry.formContext.formRef.current?.state.formData
+        ),
+        data
+      );
+    },
+    [registry]
+  );
+
+  const listSqlVersions = useCallback(
+    (searchTerm, limit = 20, offset = 0) => {
+      return evaluate(
+        schema['model:expr'].list,
+        getContext({
+          search: searchTerm,
+          limit,
+          offset
+        })
+      );
+    },
+    [schema]
+  );
+
+  const updateSqlVersion = useCallback(
+    (id, payload) => {
+      return evaluate(
+        schema['model:expr'].update,
+        getContext({
+          id,
+          payload: JSON.stringify(payload)
+        })
+      );
+    },
+    [schema]
+  );
+
+  const createSqlVersion = useCallback(
+    (payload) => {
+      return evaluate(
+        schema['model:expr'].create,
+        getContext({
+          payload: JSON.stringify(payload)
+        })
+      );
+    },
+    [schema]
+  );
+
+  const getSqlVersion = useCallback(
+    (id) => {
+      return evaluate(schema['model:expr'].detail, {
+        id
+      });
+    },
+    [schema]
+  );
+
   const searchDebounceRef = useRef(null);
 
   const getLocalValue = useCallback(() => {
@@ -42,11 +104,7 @@ export function VersionField({
     const searchVersions = async (searchTerm = '') => {
       setLoadingVersions(true);
       try {
-        const result = await api.listSqlVersions({
-          search: searchTerm,
-          limit: 20,
-          offset: 0
-        });
+        const result = await listSqlVersions(searchTerm);
         setVersions(result.versions || []);
         if (formData) {
           const selected = result.versions.find((v) => v.id === formData);
@@ -87,7 +145,7 @@ export function VersionField({
     setVersionMessage('');
     setErrorMessage('');
     try {
-      const fullVersion = await api.getSqlVersion(version.id);
+      const fullVersion = await getSqlVersion(version.id);
       setSelectedVersion(fullVersion);
       setVersionName(fullVersion.name);
       onChange(fullVersion.sql_query, schema.binding);
@@ -116,22 +174,18 @@ export function VersionField({
     try {
       if (selectedVersion) {
         // Update existing version
-        const updated = await api.updateSqlVersion(selectedVersion.id, {
+        const updated = await updateSqlVersion(selectedVersion.id, {
           name: versionName.trim(),
           sql_query: getLocalValue()
         });
         setSelectedVersion(updated);
         setVersionMessage(`Updated version #${updated.id}`);
 
-        const result = await api.listSqlVersions({
-          search: versionSearchInput,
-          limit: 20,
-          offset: 0
-        });
+        const result = await listSqlVersions(versionSearchInput);
         setVersions(result.versions || []);
       } else {
         // Create new version
-        const newVersion = await api.createSqlVersion({
+        const newVersion = await createSqlVersion({
           name: versionName.trim(),
           sql_query: getLocalValue(),
           description: '',
@@ -140,11 +194,7 @@ export function VersionField({
         setSelectedVersion(newVersion);
         setVersionMessage(`Saved as version #${newVersion.id}`);
 
-        const result = await api.listSqlVersions({
-          search: versionSearchInput,
-          limit: 20,
-          offset: 0
-        });
+        const result = await listSqlVersions(versionSearchInput);
         setVersions(result.versions || []);
       }
     } catch (err) {

@@ -7,7 +7,7 @@ import validator from '@rjsf/validator-ajv8';
 import {
   extractUiSchema,
   buildUiSchemaWithExpr,
-  extractUndeclaredVariables
+  buildJinjaContext
 } from '../../utils';
 import fields from './fields';
 import widgets from './widgets';
@@ -61,31 +61,10 @@ export const ConfigForm = function ConfigForm({
   };
 
   useEffect(() => {
-    const jinja = async (tmpl, data) => {
-      // extract includeKeys to pass to server
-      const params = { ...formData, ...data };
-      const includeKeys = await extractUndeclaredVariables(
-        tmpl,
-        params,
-        new Set(Object.keys(env.filters))
-      );
-      if (typeof includeKeys === 'string') return includeKeys;
-
-      const { result } = await api.renderTemplate(
-        pluginPackage,
-        tmpl,
-        _.pick(params, includeKeys)
-      );
-      return result;
-    };
+    const context = buildJinjaContext(pluginPackage, env.filters, formData);
     buildUiSchemaWithExpr(
       localSchema, // remain state
-      {
-        ...formData,
-        JSON: json5,
-        jinja,
-        j: jinja // shortcut for render like jinja
-      },
+      context,
       changedFieldId.current
     ).then((newSchema) => {
       setLocalSchema(newSchema);
