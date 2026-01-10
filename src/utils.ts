@@ -724,6 +724,13 @@ export const buildJinjaContext = (
       tmpl,
       _.pick(params, includeKeys)
     );
+
+    if (typeof result === 'string') {
+      try {
+        return json5.parse(result);
+      } catch {}
+    }
+    // not a string, return as is
     return result;
   };
 
