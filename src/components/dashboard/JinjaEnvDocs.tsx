@@ -48,13 +48,11 @@ type RenderResult = {
 const TryInput = memo(function TryInput({
   name,
   signature,
-  onTry,
-  isFilter
+  onTry
 }: {
   name: string;
   signature?: string | null;
   onTry: (name: string, inputStr: string) => void;
-  isFilter?: boolean;
 }) {
   const [input, setInput] = useState('');
 
@@ -74,33 +72,15 @@ const TryInput = memo(function TryInput({
 
   return (
     <Box mt={2} display="flex" alignItems="center" gap={1} flexWrap="nowrap">
-      {isFilter ? (
-        <>
-          <TextField
-            size="small"
-            placeholder={placeholder}
-            value={input}
-            onChange={handleInputChange}
-            sx={{ flexGrow: 1 }}
-          />
-          <Typography sx={{ fontFamily: 'monospace' }}>|</Typography>
-          <Typography sx={{ fontFamily: 'monospace', minWidth: 80 }}>
-            {name}
-          </Typography>
-        </>
-      ) : (
-        <>
-          <Typography sx={{ fontFamily: 'monospace' }}>{name} (</Typography>
-          <TextField
-            size="small"
-            placeholder={placeholder}
-            value={input}
-            onChange={handleInputChange}
-            sx={{ flexGrow: 1 }}
-          />
-          <Typography sx={{ fontFamily: 'monospace' }}>)</Typography>
-        </>
-      )}
+      <TextField
+        size="small"
+        variant="standard"
+        placeholder={placeholder}
+        value={input}
+        onChange={handleInputChange}
+        sx={{ flexGrow: 1 }}
+      />
+
       <Button size="small" variant="contained" onClick={handleClick}>
         Try
       </Button>
@@ -115,14 +95,12 @@ const DocItemAccordion = memo(function DocItemAccordion({
   name,
   item,
   onTry,
-  renderResult,
-  isFilter
+  renderResult
 }: {
   name: string;
   item: DocItem;
   onTry: (name: string, inputStr: string) => void;
   renderResult?: RenderResult;
-  isFilter?: boolean;
 }) {
   return (
     <Accordion
@@ -194,6 +172,7 @@ const DocItemAccordion = memo(function DocItemAccordion({
               sx={(theme) => ({
                 margin: 0,
                 padding: '8px 10px',
+                whiteSpace: 'break-spaces',
                 fontSize: 12,
                 lineHeight: 1.6,
                 fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
@@ -234,12 +213,7 @@ const DocItemAccordion = memo(function DocItemAccordion({
         )}
 
         {item.type === 'function' && (
-          <TryInput
-            name={name}
-            signature={item.signature}
-            onTry={onTry}
-            isFilter={isFilter}
-          />
+          <TryInput name={name} signature={item.signature} onTry={onTry} />
         )}
 
         {renderResult && (
@@ -357,7 +331,6 @@ function DocSection({
             item={item}
             onTry={handleTryRender}
             renderResult={result}
-            isFilter={isFilter}
           />
         );
       })}
@@ -410,12 +383,7 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
   }, [params, normalizedQuery]);
 
   return (
-    <Box
-      p={3}
-      sx={(theme) => ({
-        backgroundColor: theme.palette.background.default
-      })}
-    >
+    <Box>
       {/* 🔍 Search */}
       <TextField
         fullWidth

@@ -148,10 +148,6 @@ export function JobDetails({
               value={tabIndex}
               onChange={(_, v) => {
                 setTabIndex(v);
-                // Prevent scroll jump
-                setTimeout(() => {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }, 0);
               }}
               sx={{
                 '& .MuiTab-root': {
