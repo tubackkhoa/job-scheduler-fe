@@ -49,7 +49,7 @@ export const TemplatePreview: React.FC<Props> = ({
         <JavascriptPreview
           text={text}
           fullscreen={fullscreen}
-          providers={['phantom', 'ethereum', 'keplr']}
+          providers={['solana', 'ethereum', 'keplr']}
         />
       );
     default:
