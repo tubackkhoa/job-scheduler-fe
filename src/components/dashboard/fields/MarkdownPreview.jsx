@@ -2,7 +2,7 @@ import { useLayoutEffect, useMemo, useRef } from 'react';
 import json5 from 'json5';
 import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
-import { Box } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 import { Chart } from 'chart.js/auto';
 
 import {
@@ -41,9 +41,46 @@ md.renderer.rules.fence = (tokens, idx, options, env, slf) => {
 
 /* ---------- Component ---------- */
 
+const renderAlertHTML = (message) => `
+  <div
+    role="alert"
+    class="MuiAlert-root MuiAlert-standardError MuiAlert-standard"
+    style="
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 16px;
+      margin: 8px 0;
+      border-radius: 4px;
+      background-color: var(--alert-bg);
+      color: var(--alert-text);
+      font-family: Roboto, Helvetica, Arial, sans-serif;
+      font-size: 0.875rem;
+      line-height: 1.43;
+    "
+  >
+    <div
+      class="MuiAlert-icon"
+      style="
+        margin-top: 2px;
+        color: var(--alert-icon);
+        font-size: 22px;
+        display: flex;
+      "
+    >
+      &#9888;
+    </div>
+
+    <div class="MuiAlert-message">
+      <strong style="font-weight: 500;">Chart error</strong><br />
+      ${DOMPurify.sanitize(message)}
+    </div>
+  </div>
+`;
+
 export const MarkdownPreview = ({ text = '', maxHeight }) => {
   const ref = useRef(null);
-
+  const theme = useTheme();
   // ✅ Memoize markdown → HTML → sanitize
   const htmlContent = useMemo(() => {
     return DOMPurify.sanitize(md.render(text), {
@@ -60,7 +97,7 @@ export const MarkdownPreview = ({ text = '', maxHeight }) => {
     const charts = [];
     const canvases = root.querySelectorAll('canvas.chartjs');
 
-    canvases.forEach((canvas) => {
+    canvases.forEach((canvas, index) => {
       try {
         const raw = canvas.textContent?.trim();
         if (!raw) return;
@@ -74,6 +111,13 @@ export const MarkdownPreview = ({ text = '', maxHeight }) => {
         charts.push(new Chart(ctx, config));
       } catch (err) {
         console.error('Invalid chart JSON:', err);
+        const alertHTML = renderAlertHTML(
+          err instanceof Error ? err.message : 'Invalid chart configuration'
+        );
+
+        canvas.replaceWith(
+          document.createRange().createContextualFragment(alertHTML)
+        );
       }
     });
 
@@ -91,6 +135,12 @@ export const MarkdownPreview = ({ text = '', maxHeight }) => {
         maxHeight,
         typography: 'body1',
         overflowX: 'auto',
+        '--alert-bg':
+          theme.palette.mode === 'dark'
+            ? theme.palette.error.main + '29' // ~16% alpha
+            : theme.palette.error.light,
+        '--alert-text': theme.palette.error.contrastText,
+        '--alert-icon': theme.palette.error.main,
         maxWidth: '100%',
         '&::-webkit-scrollbar': {
           height: '8px'
