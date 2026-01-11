@@ -40,6 +40,7 @@ function TabPanel(props) {
 
 export function JobDetails({
   jobId,
+  pluginId,
   jobDesc,
   pluginPackage,
   pluginInterval,
@@ -187,6 +188,7 @@ export function JobDetails({
           {/* Tab panels */}
           <TabPanel value={tabIndex} index={0}>
             <ConfigForm
+              pluginId={pluginId}
               pluginPackage={pluginPackage}
               schema={schema}
               env={env}

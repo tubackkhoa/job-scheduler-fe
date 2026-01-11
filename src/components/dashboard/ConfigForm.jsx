@@ -38,7 +38,8 @@ export const ConfigForm = function ConfigForm({
   env,
   formData,
   onChange,
-  pluginPackage
+  pluginPackage,
+  pluginId
 }) {
   const [localSchema, setLocalSchema] = useState(schema);
   const changedFieldId = useRef();
@@ -71,7 +72,7 @@ export const ConfigForm = function ConfigForm({
   // Custom ObjectFieldTemplate to create sections with Paper
   const ObjectFieldTemplate = (props) => {
     const { title, description, properties, schema } = props;
-    const isRoot = !props.idSchema || props.idSchema.$id === 'root';
+    const isRoot = !props.idSchema || props.idSchema.$id === pluginId;
 
     // Check if this is a nested object (like strategy_config)
 
@@ -180,6 +181,7 @@ export const ConfigForm = function ConfigForm({
             schema={localSchema}
             uiSchema={uiSchema}
             formContext={{ formData, pluginPackage, env }}
+            idPrefix={pluginId}
             idSeparator="."
             fields={fields}
             widgets={widgets}

@@ -49,8 +49,8 @@ export function VersionField({
   );
 
   const listVersions = useCallback(
-    (searchTerm = '', limit = 20, offset = 0) =>
-      evaluateExpr('list', { search: searchTerm, limit, offset }),
+    (field_id, searchTerm = '', limit = 20, offset = 0) =>
+      evaluateExpr('list', { field_id, search: searchTerm, limit, offset }),
     [evaluateExpr]
   );
 
@@ -84,7 +84,7 @@ export function VersionField({
       setLoading(true);
       setError('');
       try {
-        const result = await listVersions(searchInput);
+        const result = await listVersions(fieldPathId?.$id, searchInput);
         const items = result?.versions || [];
         setVersions(items);
 
@@ -164,6 +164,7 @@ export function VersionField({
         setMessage(`Updated version #${savedVersion.id}`);
       } else {
         savedVersion = await createVersion({
+          field_id: fieldPathId?.$id,
           name: nameTrimmed,
           value,
           description: '',
