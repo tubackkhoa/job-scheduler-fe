@@ -71,8 +71,8 @@ export function VersionField({
   );
 
   const localValue = useCallback(
-    () => _.get(registry.formContext.formData, schema.binding) || '',
-    [registry, schema.binding]
+    () => _.get(registry.formContext.formData, schema['model:binding']) || '',
+    [registry, schema['model:binding']]
   );
 
   const debounceTimeout = useRef(null);
@@ -114,7 +114,7 @@ export function VersionField({
     if (!version) {
       setSelectedVersion(null);
       setVersionName('');
-      onChange('', schema.binding);
+      onChange('', schema['model:binding']);
       if (fieldPathId?.path) onChange(0, fieldPathId.path);
       return;
     }
@@ -127,7 +127,7 @@ export function VersionField({
       const fullVersion = await getVersion(version.id);
       setSelectedVersion(fullVersion);
       setVersionName(fullVersion.name);
-      onChange(fullVersion.value, schema.binding);
+      onChange(fullVersion.value, schema['model:binding']);
       if (fieldPathId?.path) onChange(fullVersion.id, fieldPathId.path);
     } catch (e) {
       setError(e.message || 'Failed to load version details');

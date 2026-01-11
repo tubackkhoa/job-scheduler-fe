@@ -52,7 +52,7 @@ const resolveLanguageExtension = (schema) => {
         ]
       });
     case 'sql':
-      return sql({ dialect: PostgreSQL, schema: schema.schema });
+      return sql({ dialect: PostgreSQL, schema: schema.meta });
     case 'js':
       return javascript({ jsx: true, typescript: true });
     default:
