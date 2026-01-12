@@ -114,7 +114,7 @@ export function VersionField({
     if (!version) {
       setSelectedVersion(null);
       setVersionName('');
-      onChange('', schema['model:binding']);
+      // onChange('', schema['model:binding']);
       if (fieldPathId?.path) onChange(0, fieldPathId.path);
       return;
     }
