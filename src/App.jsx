@@ -19,6 +19,10 @@ const sessions = [
   {
     id: 2,
     name: 'Production'
+  },
+  {
+    id: 3,
+    name: 'Develop'
   }
 ];
 
