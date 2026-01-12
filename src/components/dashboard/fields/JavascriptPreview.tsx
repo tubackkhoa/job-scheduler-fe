@@ -102,50 +102,43 @@ export const JavascriptPreview: React.FC<Props> = ({
   }, [text]);
 
   return (
-    <>
-      <iframe
-        ref={iframeRef}
-        sandbox="allow-scripts allow-same-origin"
-        style={{ display: 'none' }}
-      />
+    <Paper
+      elevation={2}
+      sx={{
+        maxHeight: fullscreen ? '100%' : 600,
+        minHeight: 300,
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
+      <iframe ref={iframeRef} style={{ display: 'none' }} />
+      {/* Header */}
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ px: 2, py: 1 }}
+      >
+        <Typography variant="subtitle2" color="grey.300">
+          Console
+        </Typography>
+      </Stack>
 
-      <Paper
-        elevation={2}
+      <Divider sx={{ borderColor: 'grey.800' }} />
+
+      {/* Console Output */}
+      <Box
         sx={{
-          maxHeight: fullscreen ? '100%' : 600,
-          minHeight: 300,
-          display: 'flex',
-          flexDirection: 'column'
+          flex: 1,
+          overflow: 'auto',
+          px: 1,
+          py: 0.5,
+          fontFamily: 'Roboto Mono, monospace',
+          fontSize: 13
         }}
       >
-        {/* Header */}
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ px: 2, py: 1 }}
-        >
-          <Typography variant="subtitle2" color="grey.300">
-            Console
-          </Typography>
-        </Stack>
-
-        <Divider sx={{ borderColor: 'grey.800' }} />
-
-        {/* Console Output */}
-        <Box
-          sx={{
-            flex: 1,
-            overflow: 'auto',
-            px: 1,
-            py: 0.5,
-            fontFamily: 'Roboto Mono, monospace',
-            fontSize: 13
-          }}
-        >
-          <Console logs={logs} variant="dark" />
-        </Box>
-      </Paper>
-    </>
+        <Console logs={logs} variant="dark" />
+      </Box>
+    </Paper>
   );
 };
