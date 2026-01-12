@@ -126,21 +126,26 @@ export function ContextPanel({
                 </MenuItem>
                 {plugins.map((plugin) => (
                   <MenuItem key={plugin.id} value={plugin.id}>
-                    <Stack>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
-                        }}
-                      >
-                        {plugin.package}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        interval {plugin.interval}s
-                      </Typography>
-                    </Stack>
+                    <Tooltip
+                      title={plugin.description}
+                      placement="bottom-start"
+                    >
+                      <Stack>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {plugin.package}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          interval {plugin.interval}s
+                        </Typography>
+                      </Stack>
+                    </Tooltip>
                   </MenuItem>
                 ))}
               </Select>
