@@ -10,10 +10,9 @@ import {
   Typography,
   IconButton,
   Tooltip,
-  OutlinedInput,
   InputAdornment,
   Avatar,
-  Button,
+  Button
 } from '@mui/material';
 import { Refresh, Person, Add } from '@mui/icons-material';
 
@@ -26,14 +25,14 @@ export function ContextPanel({
   onPluginChange,
   onReloadPlugin,
   onCreatePlugin,
-  isLoading,
+  isLoading
 }) {
   return (
     <Card
       sx={{
         bgcolor: 'background.paper',
         backgroundImage:
-          'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%)',
+          'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%)'
       }}
     >
       <CardContent sx={{ p: 3 }}>
@@ -42,7 +41,7 @@ export function ContextPanel({
             sx={{
               bgcolor: 'primary.main',
               width: 44,
-              height: 44,
+              height: 44
             }}
           >
             <Person />
@@ -78,44 +77,48 @@ export function ContextPanel({
               <InputLabel>Plugin</InputLabel>
               <Select
                 value={pluginId}
-                onChange={(e) => onPluginChange(Number(e.target.value))}
+                onChange={(e) => {
+                  // Get current URL
+                  const url = new URL(window.location);
+                  const pluginId = Number(e.target.value);
+                  // Set or update the plugin_id parameter
+                  url.searchParams.set('plugin_id', pluginId);
+                  // Update the browser address bar without reloading the page
+                  window.history.replaceState({}, '', url);
+                  onPluginChange(pluginId);
+                }}
                 label="Plugin"
-                input={
-                  <OutlinedInput
-                    notched={false}
-                    startAdornment={
-                      <InputAdornment position="start">
-                        {pluginId > 0 && (
-                          <Tooltip title="Reload plugin (development)">
-                            <IconButton
-                              onClick={onReloadPlugin}
-                              disabled={isLoading}
-                              size="small"
-                              color="warning"
-                              sx={{
-                                bgcolor: 'rgba(245, 158, 11, 0.1)',
-                                '&:hover': {
-                                  bgcolor: 'rgba(245, 158, 11, 0.2)',
-                                },
-                              }}
-                            >
-                              <Refresh
-                                sx={{
-                                  animation: isLoading
-                                    ? 'spin 1s linear infinite'
-                                    : 'none',
-                                  '@keyframes spin': {
-                                    '0%': { transform: 'rotate(0deg)' },
-                                    '100%': { transform: 'rotate(360deg)' },
-                                  },
-                                }}
-                              />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                      </InputAdornment>
-                    }
-                  />
+                startAdornment={
+                  <InputAdornment position="start">
+                    {pluginId > 0 && (
+                      <Tooltip title="Reload plugin (development)">
+                        <IconButton
+                          onClick={onReloadPlugin}
+                          disabled={isLoading}
+                          size="small"
+                          color="warning"
+                          sx={{
+                            bgcolor: 'rgba(245, 158, 11, 0.1)',
+                            '&:hover': {
+                              bgcolor: 'rgba(245, 158, 11, 0.2)'
+                            }
+                          }}
+                        >
+                          <Refresh
+                            sx={{
+                              animation: isLoading
+                                ? 'spin 1s linear infinite'
+                                : 'none',
+                              '@keyframes spin': {
+                                '0%': { transform: 'rotate(0deg)' },
+                                '100%': { transform: 'rotate(360deg)' }
+                              }
+                            }}
+                          />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </InputAdornment>
                 }
               >
                 <MenuItem value={0}>
@@ -123,21 +126,26 @@ export function ContextPanel({
                 </MenuItem>
                 {plugins.map((plugin) => (
                   <MenuItem key={plugin.id} value={plugin.id}>
-                    <Stack>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {plugin.package}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        interval {plugin.interval}s
-                      </Typography>
-                    </Stack>
+                    <Tooltip
+                      title={plugin.description}
+                      placement="bottom-start"
+                    >
+                      <Stack>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {plugin.package}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          interval {plugin.interval}s
+                        </Typography>
+                      </Stack>
+                    </Tooltip>
                   </MenuItem>
                 ))}
               </Select>
@@ -157,8 +165,8 @@ export function ContextPanel({
               color: 'primary.main',
               '&:hover': {
                 borderStyle: 'solid',
-                bgcolor: 'rgba(99, 102, 241, 0.08)',
-              },
+                bgcolor: 'rgba(99, 102, 241, 0.08)'
+              }
             }}
           >
             Create New Plugin

@@ -1,10 +1,12 @@
 import jsep, { Expression } from 'jsep';
+import json5 from 'json5';
 import jsepObject from '@jsep-plugin/object';
 import jsepAsyncAwait from '@jsep-plugin/async-await';
 import jsepTemplateLiteral from '@jsep-plugin/template';
 import { linter, Diagnostic } from '@codemirror/lint';
 import { syntaxTree } from '@codemirror/language';
 import _ from 'lodash';
+import api from './api';
 
 // register object
 jsep.plugins.register(jsepObject, jsepAsyncAwait, jsepTemplateLiteral);
@@ -24,7 +26,6 @@ const evalAstIterative = async (
   context: any,
   maxSteps: number
 ): Promise<any> => {
-  type StackItem = { node: any; visited: boolean };
   const stack: StackItem[] = [{ node: root, visited: false }];
   const values = new Map<any, any>();
   let steps = 0;
@@ -333,7 +334,8 @@ const resolveRef = (schema: any, ref: string) => {
 
 export const buildUiSchemaWithExpr = async (
   schema: any,
-  context: any
+  context: Record<string, any>,
+  changedFieldId: string
 ): Promise<any> => {
   if (!schema) return schema;
 
@@ -344,11 +346,25 @@ export const buildUiSchemaWithExpr = async (
     const { node } = stack.pop()!;
 
     if (node['ui:expr']) {
-      const extraOptions = await evaluate(node['ui:expr'], {
-        ...context,
-        this: node // binding this context as well
-      });
-      _.merge(node, extraOptions);
+      const [expr, ...deps]: string[] =
+        typeof node['ui:expr'] === 'string'
+          ? [node['ui:expr']]
+          : node['ui:expr'].map((c: string | string[]) =>
+              typeof c === 'string' ? c : c.join('.')
+            );
+
+      // only render if deps changed, or first time when no changedFieldId
+      if (
+        deps.length === 0 ||
+        !changedFieldId ||
+        deps.includes(changedFieldId)
+      ) {
+        const extraOptions = await evaluate(expr, {
+          ...context,
+          this: node // binding this context as well
+        });
+        _.merge(node, extraOptions);
+      }
     }
 
     if (node.type === 'object' && node.properties) {
@@ -486,25 +502,17 @@ const applyFunction = (name: string) => {
 export const evaluate = async (
   expr: unknown,
   context: Context,
-  defaultValue: any = undefined,
   maxSteps = 256
 ): Promise<any> => {
-  if (expr === undefined || expr === null) return defaultValue;
+  const val = typeof expr === 'string' ? expr : String(expr);
+  let ast = cache.get(val);
 
-  try {
-    const val = typeof expr === 'string' ? expr : String(expr);
-    let ast = cache.get(val);
-
-    if (!ast) {
-      ast = jsep(val);
-      cache.set(val, ast);
-    }
-
-    return await evalAstIterative(ast, context, maxSteps);
-  } catch (err: any) {
-    console.log('Evaluation error:', err.message);
-    return defaultValue;
+  if (!ast) {
+    ast = jsep(val);
+    cache.set(val, ast);
   }
+
+  return await evalAstIterative(ast, context, maxSteps);
 };
 
 /* ================================
@@ -588,13 +596,15 @@ export class JinjaCompletionBuilder {
   }
 }
 
-type JinjaSymbols = ReturnType<typeof JinjaCompletionBuilder.build>;
+type JinjaSymbols = {
+  globals: Record<string, any>;
+  filters: Record<string, any>;
+};
 
-export const jinjaLinter = (symbols: JinjaSymbols) => {
-  // Cache symbols lookups in Sets for O(1) checking
-  const variableLabels = new Set(symbols.variables.map((v) => v.label));
-  const filterLabels = new Set(symbols.filters.map((f) => f.label));
-
+export const jinjaLinter = (
+  params: Record<string, any>,
+  symbols: JinjaSymbols
+) => {
   return linter((view) => {
     const diagnostics: Diagnostic[] = [];
     const definitions = new Set<string>();
@@ -622,7 +632,11 @@ export const jinjaLinter = (symbols: JinjaSymbols) => {
             }
           }
 
-          if (!definitions.has(text) && !variableLabels.has(text)) {
+          if (
+            !definitions.has(text) &&
+            !params[text] &&
+            !symbols.globals[text]
+          ) {
             diagnostics.push({
               from: node.from,
               to: node.to,
@@ -633,7 +647,7 @@ export const jinjaLinter = (symbols: JinjaSymbols) => {
           break;
 
         case 'FilterName':
-          if (!filterLabels.has(text)) {
+          if (!symbols.filters[text]) {
             diagnostics.push({
               from: node.from,
               to: node.to,
@@ -648,3 +662,82 @@ export const jinjaLinter = (symbols: JinjaSymbols) => {
     return diagnostics;
   });
 };
+
+export const initPyodide = new Promise(async (resolve) => {
+  // @ts-ignore
+  const pyodide = await loadPyodide();
+
+  // Ensure Jinja2 is available
+  await pyodide.loadPackage('jinja2');
+
+  // Define Python code
+  await pyodide.runPythonAsync(`
+from jinja2 import Environment, meta
+def extract_undeclared_variables(tpl_str, context, filters):
+    env = Environment(autoescape=False, trim_blocks=True, lstrip_blocks=True)
+    try:                
+        return env.from_string(tpl_str).render(context)
+    except:
+        identity = lambda x, *args, **kwargs: x
+        env.filters.update({name: identity for name in filters})
+        ast = env.parse(tpl_str)
+        return meta.find_undeclared_variables(ast)
+  `);
+  console.log('Pyodide initialized');
+  resolve(pyodide);
+});
+
+export const extractUndeclaredVariables = async (
+  tpl: string,
+  data: {
+    [key: string]: any;
+  },
+  filters: Set<string>
+): Promise<string[] | string> => {
+  const pyodide = await initPyodide;
+  // @ts-ignore
+  const extractFn = pyodide.globals.get('extract_undeclared_variables');
+  // @ts-ignore
+  const params = extractFn(tpl, pyodide.toPy(data), filters);
+  return typeof params === 'string' ? params : Array.from(params.toJs());
+};
+
+export const buildJinjaContext = (
+  packageName: string,
+  filters: string[],
+  formData: any
+) => {
+  const jinja = async (tmpl: string, data: any) => {
+    // extract includeKeys to pass to server
+    const params = { ...formData, ...data };
+    const includeKeys = await extractUndeclaredVariables(
+      tmpl,
+      params,
+      new Set(Object.keys(filters))
+    );
+    if (typeof includeKeys === 'string') return includeKeys;
+
+    const { result } = await api.renderTemplate(
+      packageName,
+      tmpl,
+      _.pick(params, includeKeys)
+    );
+
+    if (typeof result === 'string') {
+      try {
+        return json5.parse(result);
+      } catch {}
+    }
+    // not a string, return as is
+    return result;
+  };
+
+  return {
+    ...formData,
+    JSON: json5,
+    jinja,
+    j: jinja // shortcut for render like jinja
+  };
+};
+// pre-init at background for faster load
+initPyodide;

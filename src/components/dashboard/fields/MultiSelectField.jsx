@@ -4,7 +4,6 @@ import {
   InputLabel,
   ListItemText,
   MenuItem,
-  OutlinedInput,
   InputAdornment,
   Select,
   Divider,
@@ -50,32 +49,26 @@ export function MultiSelectField({ formData, fieldPathId, schema, onChange }) {
     }
   };
 
+  const labelId = `${fieldPathId?.$id}-label`;
+
   return (
     <FormControl fullWidth size="small">
-      <InputLabel id={`multi-select-label-${fieldPathId?.path || 'default'}`}>
-        {schema.title}
-      </InputLabel>
-
+      <InputLabel id={labelId}>{schema.title}</InputLabel>
       <Select
-        labelId={`multi-select-label-${fieldPathId?.path || 'default'}`}
+        labelId={labelId}
         multiple
+        label={schema.title}
         value={selectedValues}
         onChange={handleChange}
-        input={
-          <OutlinedInput
-            notched={false}
-            label={schema.label}
-            startAdornment={
-              <InputAdornment position="start" sx={{ m: 0 }}>
-                <Checkbox
-                  onClick={handleSelectAll}
-                  edge="start"
-                  checked={allSelected}
-                  indeterminate={someSelected}
-                />
-              </InputAdornment>
-            }
-          />
+        startAdornment={
+          <InputAdornment position="start">
+            <Checkbox
+              onClick={handleSelectAll}
+              edge="start"
+              checked={allSelected}
+              indeterminate={someSelected}
+            />
+          </InputAdornment>
         }
         renderValue={(selected) => (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
