@@ -9,9 +9,9 @@ import {
   Button,
   Chip
 } from '@mui/material';
-import { Save } from '@mui/icons-material';
+import { Save, PublishedWithChanges } from '@mui/icons-material';
 import { buildJinjaContext, evaluate } from '../../../utils';
-
+import { ConfirmationDialog } from '../ConfirmationDialog';
 export function VersionField({
   formData,
   onChange,
@@ -25,8 +25,11 @@ export function VersionField({
   const [searchInput, setSearchInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [applying, setApplying] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [applyConfirmDialogOpen, setApplyConfirmDialogOpen] = useState(false);
 
   const getContext = useCallback(
     (extraData = {}) =>
@@ -67,6 +70,11 @@ export function VersionField({
 
   const createVersion = useCallback(
     (payload) => evaluateExpr('create', { payload: JSON.stringify(payload) }),
+    [evaluateExpr]
+  );
+
+  const applyVersion = useCallback(
+    (id, session_id) => evaluateExpr('apply', { id, session_id }),
     [evaluateExpr]
   );
 
@@ -136,7 +144,7 @@ export function VersionField({
     }
   };
 
-  const handleSave = async () => {
+  const handleSaveClick = () => {
     const nameTrimmed = versionName.trim();
     const value = localValue().trim();
 
@@ -148,6 +156,14 @@ export function VersionField({
       setMessage('Version value cannot be empty');
       return;
     }
+
+    setConfirmDialogOpen(true);
+  };
+
+  const doSave = async () => {
+    setConfirmDialogOpen(false);
+    const nameTrimmed = versionName.trim();
+    const value = localValue().trim();
 
     setSaving(true);
     setError('');
@@ -182,6 +198,33 @@ export function VersionField({
       setError(e.message || 'Failed to save version');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleApplyClick = () => {
+    if (!selectedVersion) {
+      setError('Please select a version to apply');
+      return;
+    }
+    setApplyConfirmDialogOpen(true);
+  };
+
+  const doApply = async () => {
+    setApplyConfirmDialogOpen(false);
+    if (!selectedVersion) return;
+
+    setApplying(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const sessionId = registry.formContext.sessionId;
+      await applyVersion(selectedVersion.id, sessionId);
+      setMessage(`Applied version "${selectedVersion.name}" to all jobs`);
+    } catch (e) {
+      setError(e.message || 'Failed to apply version');
+    } finally {
+      setApplying(false);
     }
   };
 
@@ -251,12 +294,25 @@ export function VersionField({
             variant="contained"
             size="small"
             startIcon={<Save />}
-            onClick={handleSave}
-            disabled={saving || !versionName.trim() || !localValue().trim()}
+            onClick={handleSaveClick}
+            disabled={saving || applying || !versionName.trim() || !localValue().trim()}
             sx={{ minWidth: 100 }}
           >
             {saving ? 'Saving...' : selectedVersion ? 'Update' : 'Save'}
           </Button>
+          {selectedVersion && (
+            <Button
+              variant="contained"
+              size="small"
+              color="info"
+              startIcon={<PublishedWithChanges />}
+              onClick={handleApplyClick}
+              disabled={applying || saving}
+              sx={{ minWidth: 100 }}
+            >
+              {applying ? 'Applying...' : 'Apply All'}
+            </Button>
+          )}
         </Stack>
 
         {message && (
@@ -271,6 +327,30 @@ export function VersionField({
           </Typography>
         )}
       </Stack>
+
+      <ConfirmationDialog
+        open={confirmDialogOpen}
+        onClose={() => setConfirmDialogOpen(false)}
+        onConfirm={doSave}
+        title={selectedVersion ? 'Update SQL Version' : 'Save SQL Version'}
+        message="Are you sure you want to proceed?"
+        details={`When you ${selectedVersion ? 'update' : 'save'} this version "${versionName.trim()}", the SQL value from this version will be used to run jobs.\n\nNote: The preview value in the editor will be replaced by the saved SQL version value.`}
+        severity="warning"
+        confirmText={selectedVersion ? 'Update Version' : 'Save Version'}
+        isLoading={saving}
+      />
+
+      <ConfirmationDialog
+        open={applyConfirmDialogOpen}
+        onClose={() => setApplyConfirmDialogOpen(false)}
+        onConfirm={doApply}
+        title="Apply Version to All Jobs"
+        message="Are you sure you want to apply this version to all jobs?"
+        details={`This action will apply the SQL version "${selectedVersion?.name || ''}" to ALL jobs in this plugin.\n\n⚠️ Important:\n• All jobs will use the SQL value from this version\n• This will override any custom SQL configurations in individual jobs\n• The change takes effect immediately for all jobs`}
+        severity="warning"
+        confirmText="Apply to All Jobs"
+        isLoading={applying}
+      />
     </Box>
   );
 }
