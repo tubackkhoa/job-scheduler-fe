@@ -218,7 +218,7 @@ export function VersionField({
                 placeholder="Type to search..."
               />
             )}
-            renderOption={(props, option) => (
+            renderOption={({ key, ...props }, option) => (
               <Box component="li" key={option.id} {...props}>
                 <Stack
                   direction="row"
