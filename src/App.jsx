@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { Box, Container, Grid, CssBaseline } from '@mui/material';
 import { Header } from './components/dashboard/Header';
@@ -111,6 +111,30 @@ export default function App() {
   const [sessionId, setSessionId] = useState(sessions[0].id);
   const [error, setError] = useState(null);
   const [createPluginModalOpen, setCreatePluginModalOpen] = useState(false);
+  const [isNewJobMode, setIsNewJobMode] = useState(false);
+
+  // Extract default values from JSON Schema
+  const getDefaultsFromSchema = useCallback((schemaObj) => {
+    if (!schemaObj || !schemaObj.properties) return {};
+    
+    const defaults = {};
+    for (const [key, propSchema] of Object.entries(schemaObj.properties)) {
+      if (propSchema.default !== undefined) {
+        defaults[key] = propSchema.default;
+      } else if (propSchema.type === 'object' && propSchema.properties) {
+        defaults[key] = getDefaultsFromSchema(propSchema);
+      } else if (propSchema.type === 'array') {
+        defaults[key] = [];
+      } else if (propSchema.type === 'string') {
+        defaults[key] = '';
+      } else if (propSchema.type === 'number' || propSchema.type === 'integer') {
+        defaults[key] = 0;
+      } else if (propSchema.type === 'boolean') {
+        defaults[key] = false;
+      }
+    }
+    return defaults;
+  }, []);
 
   // Load plugin list
   useEffect(() => {
@@ -218,10 +242,17 @@ export default function App() {
 
   const handleChangeJob = (newJobId, configs) => {
     setJobId(newJobId);
+    setIsNewJobMode(false);
     const collection = configs ?? jobConfigs;
     const found = collection.find((version) => version.id === newJobId);
     setJobDesc(found?.description ?? '');
   };
+
+  const handleNewJob = useCallback(() => {
+    setIsNewJobMode(true);
+    setJobId(0);
+    setJobDesc('');
+  }, []);
 
   const handleChangeSession = async (currentSessionId) => {
     setSessionId(currentSessionId);
@@ -298,8 +329,15 @@ export default function App() {
   const currentConfig = jobConfigs.find((version) => version.id === jobId);
 
   const formData = useMemo(() => {
-    return currentConfig?.config ? JSON.parse(currentConfig.config) : null;
-  }, [currentConfig]); // ← Only recompute when the jobId actually changes, or currentConfig is update when reloading
+    if (currentConfig?.config) {
+      return JSON.parse(currentConfig.config);
+    }
+    // When in new job mode, use schema defaults instead of null
+    if (isNewJobMode && schema) {
+      return getDefaultsFromSchema(schema);
+    }
+    return null;
+  }, [currentConfig, isNewJobMode, schema, getDefaultsFromSchema]);
 
   const isActive = !!currentConfig?.active;
 
@@ -348,10 +386,8 @@ export default function App() {
                   pluginPackage={pluginInfo?.package}
                   onSelectJob={handleChangeJob}
                   onToggleJob={(id, active) => handleJobActivation(active, id)}
-                  onNewJob={() => {
-                    setJobId(0);
-                    setJobDesc('');
-                  }}
+                  onNewJob={handleNewJob}
+                  isNewJobMode={isNewJobMode}
                   disabled={!schema}
                 />
               </Box>
