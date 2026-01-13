@@ -95,6 +95,9 @@ export function SelectField({ formData, fieldPathId, schema, onChange }) {
               slotProps={{
                 primary: {
                   fontSize: '0.875rem',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                   fontWeight: id === selectedValue ? 500 : 400
                 }
               }}

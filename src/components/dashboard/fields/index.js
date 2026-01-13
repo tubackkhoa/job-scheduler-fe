@@ -1,7 +1,7 @@
 import { CrudField } from './CrudField';
 import { MLThresholdsTableField } from './MLThresholdsTableField';
 import { MultiSelectField } from './MultiSelectField';
-import { SelectField } from './Select';
+import { SelectField } from './SelectField';
 import { TemplateField } from './TemplateField';
 import { VersionField } from './VersionField';
 
