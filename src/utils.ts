@@ -378,7 +378,8 @@ export const jinjaEvaluate = async (
   filters: string[] | { [key: string]: any },
   params: {
     [key: string]: any;
-  }
+  },
+  parse = true
 ) => {
   // extract includeKeys to pass to server
   let includeKeys = await extractUndeclaredVariables(
@@ -396,7 +397,7 @@ export const jinjaEvaluate = async (
           includeKeys.includes('this') ? params : _.pick(params, includeKeys)
         );
 
-  if (typeof result === 'string') {
+  if (parse && typeof result === 'string') {
     try {
       return json5.parse(result);
     } catch {}

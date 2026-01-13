@@ -280,7 +280,13 @@ function DocSection({
       }));
 
       try {
-        const output = await jinjaEvaluate(pluginPackage, tpl, filters, {});
+        const output = await jinjaEvaluate(
+          pluginPackage,
+          tpl,
+          filters,
+          {},
+          false
+        );
         setRenderResults((prev) => ({
           ...prev,
           [name]: { loading: false, output }

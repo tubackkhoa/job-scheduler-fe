@@ -143,7 +143,8 @@ export function TemplateField({
         registry.formContext.pluginPackage,
         tpl,
         new Set(Object.keys(registry.formContext.env.filters)),
-        params
+        params,
+        false
       );
 
       setPreviewCode(result);
