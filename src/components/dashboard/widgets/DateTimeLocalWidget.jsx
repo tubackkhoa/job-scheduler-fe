@@ -37,7 +37,10 @@ export const DateTimeLocalWidget = (props) => {
     }
     // Parse input as local time (dayjs without utc plugin here),
     // then convert to UTC ISO string
-    const utcValue = dayjs(inputValue).utc().toISOString();
+    const utcValue = dayjs(inputValue)
+      .utc()
+      .toISOString()
+      .replace(/Z$/, '+00:00');
     onChange(utcValue);
   };
 
