@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import _ from 'lodash';
 import {
   Stack,
@@ -10,7 +10,7 @@ import {
   Chip
 } from '@mui/material';
 import { Save, PublishedWithChanges } from '@mui/icons-material';
-import { buildJinjaContext, evaluate } from '../../../utils';
+import { buildJinjaContext } from '../../../utils';
 import { ConfirmationDialog } from '../ConfirmationDialog';
 export function VersionField({
   formData,
@@ -31,24 +31,19 @@ export function VersionField({
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [applyConfirmDialogOpen, setApplyConfirmDialogOpen] = useState(false);
 
-  const getContext = useCallback(
-    (extraData = {}) =>
-      Object.assign(
-        buildJinjaContext(
-          registry.formContext.pluginPackage,
-          registry.formContext.env.filters,
-          registry.formContext.formData
-        ),
-        extraData
-      ),
+  const render = useCallback(
+    buildJinjaContext(
+      registry.formContext.pluginPackage,
+      registry.formContext.env.filters,
+      registry.formContext.formData
+    ),
     [registry.formContext]
   );
 
   // Generic evaluate wrapper
   const evaluateExpr = useCallback(
-    (exprKey, data) =>
-      evaluate(schema['model:expr'][exprKey], getContext(data)),
-    [schema, getContext]
+    (exprKey, data) => render(schema['model:expr'][exprKey], data),
+    [schema, render]
   );
 
   const listVersions = useCallback(
@@ -295,7 +290,9 @@ export function VersionField({
             size="small"
             startIcon={<Save />}
             onClick={handleSaveClick}
-            disabled={saving || applying || !versionName.trim() || !localValue().trim()}
+            disabled={
+              saving || applying || !versionName.trim() || !localValue().trim()
+            }
             sx={{ minWidth: 100 }}
           >
             {saving ? 'Saving...' : selectedVersion ? 'Update' : 'Save'}
@@ -334,7 +331,9 @@ export function VersionField({
         onConfirm={doSave}
         title={selectedVersion ? 'Update SQL Version' : 'Save SQL Version'}
         message="Are you sure you want to proceed?"
-        details={`When you ${selectedVersion ? 'update' : 'save'} this version "${versionName.trim()}", the SQL value from this version will be used to run jobs.\n\nNote: The preview value in the editor will be replaced by the saved SQL version value.`}
+        details={`When you ${
+          selectedVersion ? 'update' : 'save'
+        } this version "${versionName.trim()}", the SQL value from this version will be used to run jobs.\n\nNote: The preview value in the editor will be replaced by the saved SQL version value.`}
         severity="warning"
         confirmText={selectedVersion ? 'Update Version' : 'Save Version'}
         isLoading={saving}
@@ -346,7 +345,9 @@ export function VersionField({
         onConfirm={doApply}
         title="Apply Version to All Jobs"
         message="Are you sure you want to apply this version to all jobs?"
-        details={`This action will apply the SQL version "${selectedVersion?.name || ''}" to ALL jobs in this plugin.\n\n⚠️ Important:\n• All jobs will use the SQL value from this version\n• This will override any custom SQL configurations in individual jobs\n• The change takes effect immediately for all jobs`}
+        details={`This action will apply the SQL version "${
+          selectedVersion?.name || ''
+        }" to ALL jobs in this plugin.\n\n⚠️ Important:\n• All jobs will use the SQL value from this version\n• This will override any custom SQL configurations in individual jobs\n• The change takes effect immediately for all jobs`}
         severity="warning"
         confirmText="Apply to All Jobs"
         isLoading={applying}

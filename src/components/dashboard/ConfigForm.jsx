@@ -4,11 +4,7 @@ import { Box, Paper, Stack, Typography, Grid } from '@mui/material';
 import { Settings } from '@mui/icons-material';
 import Form from '@rjsf/mui';
 import validator from '@rjsf/validator-ajv8';
-import {
-  extractUiSchema,
-  buildUiSchemaWithExpr,
-  buildJinjaContext
-} from '../../utils';
+import { extractUiSchema, buildUiSchemaWithExpr } from '../../utils';
 import fields from './fields';
 import widgets from './widgets';
 import ErrorBoundary from './ErrorBound';
@@ -53,10 +49,11 @@ export const ConfigForm = function ConfigForm({
   };
 
   useEffect(() => {
-    const context = buildJinjaContext(pluginPackage, env.filters, formData);
     buildUiSchemaWithExpr(
+      pluginPackage,
+      env.filters,
+      formData,
       localSchema, // remain state
-      context,
       changedFieldId.current
     ).then((newSchema) => {
       setLocalSchema(newSchema);

@@ -14,7 +14,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SearchIcon from '@mui/icons-material/Search';
 import { useMemo, useDeferredValue } from 'react';
-import api from '../../api';
+import { jinjaEvaluate } from '../../utils';
 
 /**
  * Types
@@ -32,6 +32,7 @@ type JinjaEnvJson = {
 
 type Props = {
   data: JinjaEnvJson;
+  filters: string[];
   pluginPackage: string;
   params: Record<string, any>;
 };
@@ -252,11 +253,13 @@ const DocItemAccordion = memo(function DocItemAccordion({
 function DocSection({
   title,
   items,
+  filters,
   pluginPackage,
   isFilter = false
 }: {
   title: string;
   items: Record<string, DocItem>;
+  filters: string[];
   pluginPackage: string;
   isFilter?: boolean;
 }) {
@@ -277,7 +280,7 @@ function DocSection({
       }));
 
       try {
-        const output = await api.renderTemplate(pluginPackage, tpl, {});
+        const output = await jinjaEvaluate(pluginPackage, tpl, filters, {});
         setRenderResults((prev) => ({
           ...prev,
           [name]: { loading: false, output }
@@ -341,7 +344,12 @@ function DocSection({
 /**
  * Main component
  */
-export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
+export default function JinjaEnvDocs({
+  data,
+  pluginPackage,
+  filters,
+  params
+}: Props) {
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
   const normalizedQuery = deferredQuery.trim().toLowerCase();
@@ -411,6 +419,7 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
 
       <DocSection
         title="Config Params"
+        filters={filters}
         items={filteredParams}
         pluginPackage={pluginPackage}
         isFilter={true}
@@ -418,12 +427,14 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
 
       <DocSection
         title="Globals"
+        filters={filters}
         items={filteredGlobals}
         pluginPackage={pluginPackage}
         isFilter={false}
       />
       <DocSection
         title="Filters"
+        filters={filters}
         items={filteredFilters}
         pluginPackage={pluginPackage}
         isFilter={true}
