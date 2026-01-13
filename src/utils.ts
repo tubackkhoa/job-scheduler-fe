@@ -362,14 +362,16 @@ export const buildJinjaContext = (
   filters: string[] | { [key: string]: any },
   params: {
     [key: string]: any;
-  }
+  },
+  raw: boolean
 ) => {
   return (
     tmpl: string,
     context: {
       [key: string]: any;
     }
-  ) => jinjaEvaluate(packageName, tmpl, filters, { ...params, ...context });
+  ) =>
+    jinjaEvaluate(packageName, tmpl, filters, { ...params, ...context }, raw);
 };
 
 export const jinjaEvaluate = async (
@@ -379,7 +381,7 @@ export const jinjaEvaluate = async (
   params: {
     [key: string]: any;
   },
-  parse = true
+  raw = false
 ) => {
   // extract includeKeys to pass to server
   let includeKeys = await extractUndeclaredVariables(
@@ -397,7 +399,7 @@ export const jinjaEvaluate = async (
           includeKeys.includes('this') ? params : _.pick(params, includeKeys)
         );
 
-  if (parse && typeof result === 'string') {
+  if (!raw && typeof result === 'string') {
     try {
       return json5.parse(result);
     } catch {}

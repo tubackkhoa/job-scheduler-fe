@@ -139,12 +139,13 @@ export function TemplateField({
     setErrorMessage('');
     try {
       const params = _.omit(registry.formContext.formData, fieldPathId?.path);
+      // render raw output
       const result = await jinjaEvaluate(
         registry.formContext.pluginPackage,
         tpl,
         new Set(Object.keys(registry.formContext.env.filters)),
         params,
-        false
+        true
       );
 
       setPreviewCode(result);

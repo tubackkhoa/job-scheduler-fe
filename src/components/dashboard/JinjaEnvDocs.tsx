@@ -280,12 +280,13 @@ function DocSection({
       }));
 
       try {
+        // render raw output
         const output = await jinjaEvaluate(
           pluginPackage,
           tpl,
           filters,
           {},
-          false
+          true
         );
         setRenderResults((prev) => ({
           ...prev,
