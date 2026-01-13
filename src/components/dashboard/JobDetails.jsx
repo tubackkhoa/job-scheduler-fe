@@ -65,12 +65,13 @@ export function JobDetails({
   });
 
   const openConfirmDialog = (type) => setConfirmDialog({ open: true, type });
-  const closeConfirmDialog = () => setConfirmDialog({ open: false, type: null });
+  const closeConfirmDialog = () =>
+    setConfirmDialog({ open: false, type: null });
 
   const handleConfirm = () => {
     closeConfirmDialog();
     setIsDirty(false);
-    
+
     switch (confirmDialog.type) {
       case 'save':
         onSave(localFormData);
@@ -92,15 +93,18 @@ export function JobDetails({
         return {
           title: 'Save Job Configuration',
           message: 'Are you sure you want to save these changes?',
-          details: 'This will update the job configuration. If you have selected a SQL version, the SQL value from that version will be used to run the job.\n\nNote: The preview value will be replaced by the saved version value.',
+          details:
+            'This will update the job configuration. If you have selected a SQL version, the SQL value from that version will be used to run the job.\n\nNote: The preview value will be replaced by the saved version value.',
           severity: 'warning',
           confirmText: 'Save Changes'
         };
       case 'saveAsNew':
         return {
           title: 'Create New Job',
-          message: 'Are you sure you want to create a new job with this configuration?',
-          details: 'This will create a new job entry. If you have selected a SQL version, the SQL value from that version will be used to run the new job.\n\nNote: The preview value will be replaced by the saved version value.',
+          message:
+            'Are you sure you want to create a new job with this configuration?',
+          details:
+            'This will create a new job entry. If you have selected a SQL version, the SQL value from that version will be used to run the new job.\n\nNote: The preview value will be replaced by the saved version value.',
           severity: 'info',
           confirmText: 'Create New Job'
         };
@@ -108,7 +112,8 @@ export function JobDetails({
         return {
           title: 'Delete Job',
           message: 'Are you sure you want to delete this job?',
-          details: 'This action cannot be undone. The job and all its configuration will be permanently deleted.',
+          details:
+            'This action cannot be undone. The job and all its configuration will be permanently deleted.',
           severity: 'error',
           confirmText: 'Delete Job'
         };
@@ -258,6 +263,7 @@ export function JobDetails({
             <JinjaEnvDocs
               data={env}
               pluginPackage={pluginPackage}
+              filters={env.filters}
               params={formData}
             />
           </TabPanel>

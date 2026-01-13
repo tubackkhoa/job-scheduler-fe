@@ -22,9 +22,8 @@ import { TemplatePreview } from './TemplatePreview';
 import {
   JinjaCompletionBuilder,
   jinjaLinter,
-  extractUndeclaredVariables
+  jinjaEvaluate
 } from '../../../utils';
-import api from '../../../api';
 import _ from 'lodash';
 import {
   Check,
@@ -140,19 +139,14 @@ export function TemplateField({
     setErrorMessage('');
     try {
       const params = _.omit(registry.formContext.formData, fieldPathId?.path);
-      const includeKeys = await extractUndeclaredVariables(
+      const result = await jinjaEvaluate(
+        registry.formContext.pluginPackage,
         tpl,
         params,
         new Set(Object.keys(registry.formContext.env.filters))
       );
-      if (typeof includeKeys === 'string') return setPreviewCode(includeKeys);
 
-      const ret = await api.renderTemplate(
-        registry.formContext.pluginPackage,
-        tpl,
-        _.pick(params, includeKeys)
-      );
-      setPreviewCode(ret.result.trim());
+      setPreviewCode(result);
     } catch (ex) {
       setErrorMessage(ex.message);
     } finally {
