@@ -27,19 +27,13 @@ export const buildUiSchemaWithExpr = async (
     const { node } = stack.pop()!;
 
     if (node['ui:expr']) {
-      const [expr, ...deps]: string[] =
+      const [expr, deps]: string[] =
         typeof node['ui:expr'] === 'string'
           ? [node['ui:expr']]
-          : node['ui:expr'].map((c: string | string[]) =>
-              typeof c === 'string' ? c : c.join('.')
-            );
+          : node['ui:expr'];
 
       // only render if deps changed, or first time when no changedFieldId
-      if (
-        deps.length === 0 ||
-        !changedFieldId ||
-        deps.includes(changedFieldId)
-      ) {
+      if (!deps || !changedFieldId || deps.includes(changedFieldId)) {
         const extraOptions = await jinjaEvaluate(
           packageName,
           expr,
