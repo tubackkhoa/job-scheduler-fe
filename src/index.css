@@ -249,6 +249,17 @@ body {
   input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     filter: invert(1);
   }
+  /* Chrome, Safari, Edge, Opera */
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
 }
 
 .hidden {

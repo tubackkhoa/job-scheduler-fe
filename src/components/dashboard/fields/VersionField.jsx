@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import _ from 'lodash';
 import {
   Stack,
@@ -12,7 +12,6 @@ import {
   ListItem,
   Checkbox,
   ListItemButton,
-  ListItemIcon,
   ListItemText
 } from '@mui/material';
 import { Save, PublishedWithChanges } from '@mui/icons-material';
