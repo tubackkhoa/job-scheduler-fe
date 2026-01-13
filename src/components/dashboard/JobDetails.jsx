@@ -42,6 +42,7 @@ function TabPanel(props) {
 export function JobDetails({
   jobId,
   pluginId,
+  sessionId,
   jobDesc,
   pluginPackage,
   pluginInterval,
@@ -250,6 +251,7 @@ export function JobDetails({
               pluginId={pluginId}
               pluginPackage={pluginPackage}
               schema={schema}
+              sessionId={sessionId}
               env={env}
               formData={localFormData ?? formData}
               onChange={(data) => {

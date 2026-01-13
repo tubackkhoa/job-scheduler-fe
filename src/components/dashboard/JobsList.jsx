@@ -12,7 +12,7 @@ import {
   Chip,
   Switch,
 } from '@mui/material';
-import { Add } from '@mui/icons-material';
+import { Add, NoteAdd } from '@mui/icons-material';
 
 export function JobsList({
   jobs,
@@ -21,6 +21,7 @@ export function JobsList({
   onSelectJob,
   onToggleJob,
   onNewJob,
+  isNewJobMode,
   disabled,
 }) {
   const filteredJobs = jobs.filter((j) => j.id !== 0);
@@ -59,19 +60,57 @@ export function JobsList({
       />
       <CardContent sx={{ pt: 0, maxHeight: 450, overflowY: 'auto' }}>
         <List disablePadding>
+          {/* New Job Mode Indicator */}
+          {isNewJobMode && (
+            <ListItemButton
+              selected
+              sx={{
+                mb: 1,
+                borderRadius: 2,
+                border: 2,
+                borderColor: 'secondary.main',
+                bgcolor: 'rgba(236, 72, 153, 0.12)',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <NoteAdd sx={{ mr: 1.5, color: 'secondary.main' }} />
+              <ListItemText
+                primary={
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <Typography variant="body1" fontWeight={600} color="secondary.main">
+                      ✨ Creating New Job
+                    </Typography>
+                    <Chip
+                      label="Draft"
+                      size="small"
+                      color="secondary"
+                      variant="filled"
+                      sx={{ height: 24 }}
+                    />
+                  </Stack>
+                }
+                secondary={
+                  <Typography variant="caption" color="text.secondary">
+                    Fill in the form and save to create this job
+                  </Typography>
+                }
+              />
+            </ListItemButton>
+          )}
+
           {filteredJobs.map((job) => (
             <ListItemButton
               key={job.id}
-              selected={selectedJobId === job.id}
+              selected={selectedJobId === job.id && !isNewJobMode}
               onClick={() => onSelectJob(job.id)}
               sx={{
                 mb: 1,
                 borderRadius: 2,
                 border: 1,
                 borderColor:
-                  selectedJobId === job.id ? 'primary.main' : 'divider',
+                  selectedJobId === job.id && !isNewJobMode ? 'primary.main' : 'divider',
                 bgcolor:
-                  selectedJobId === job.id
+                  selectedJobId === job.id && !isNewJobMode
                     ? 'rgba(99, 102, 241, 0.08)'
                     : 'transparent',
                 '&:hover': {

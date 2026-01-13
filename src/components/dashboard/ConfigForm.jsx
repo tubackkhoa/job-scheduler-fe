@@ -29,14 +29,15 @@ const fieldWrapperStyle = {
   borderRadius: { xs: 0, sm: 3 }
 };
 
-export const ConfigForm = function ConfigForm({
+export const ConfigForm = ({
   schema,
   env,
+  sessionId,
   formData,
   onChange,
   pluginPackage,
   pluginId
-}) {
+}) => {
   const [localSchema, setLocalSchema] = useState(schema);
   const changedFieldId = useRef();
 
@@ -177,8 +178,8 @@ export const ConfigForm = function ConfigForm({
           <Form
             schema={localSchema}
             uiSchema={uiSchema}
-            formContext={{ formData, pluginPackage, env }}
-            idPrefix={pluginId}
+            formContext={{ formData, pluginPackage, env, sessionId }}
+            idPrefix={localSchema.pluginId ?? pluginId}
             idSeparator="."
             fields={fields}
             widgets={widgets}
