@@ -212,41 +212,58 @@ jobs:
             • Run: ${{ env.RUN_URL }}
             ${{ job.status != 'success' && format('<@{}> please check deploy failure!', env.PIC, env.PIC_1, env.PIC_INFRA) || '' }}
 
-
       - &get_pr_info
         name: Check Push Type
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
+          set -euo pipefail
+
           IS_FORCE="${{ github.event.forced }}"
+          SHA="${{ github.sha }}"
+          REPO="${{ github.repository }}"
+          ACTOR="${{ github.actor }}"
 
-          # Check if there is a merged PR associated with this commit
-          PR_COUNT=$(gh pr list --repo ${{ github.repository }} --search "${{ github.sha }}" --state merged --json number --jq length || echo "0")
-          
-          # Fallback: Check commit message for standard merge pattern
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          if [[ "$COMMIT_MSG" =~ ^Merge\ pull\ request\ \# ]]; then
-             echo "Commit message indicates a PR merge."
-             IS_PR_MERGE_MSG=true
-          else
-             IS_PR_MERGE_MSG=false
-          fi
+          # 1) Detect PR(s) associated with commit SHA (if PR exists)
+          PR_JSON="$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "Accept: application/vnd.github.groot-preview+json" \
+            "/repos/${REPO}/commits/${SHA}/pulls" 2>/dev/null || echo '[]')"
 
-          if [[ "$IS_FORCE" == "true" ]]; then
+          PR_MERGED_COUNT="$(echo "${PR_JSON}" | jq -r '
+            map(select(.merged_at != null))
+            | map(select(.base.ref == "main" or .base.ref == "master"))
+            | length
+          ' 2>/dev/null || echo "0")"
+
+          # 2) Detect merge commit (CLI merge -> push) by counting parents
+          COMMIT_JSON="$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${REPO}/commits/${SHA}" 2>/dev/null || echo '{}')"
+
+          PARENTS_COUNT="$(echo "${COMMIT_JSON}" | jq -r '.parents | length' 2>/dev/null || echo "0")"
+
+          if [[ "${IS_FORCE}" == "true" ]]; then
             echo "Force push detected."
-            echo "SHOULD_NOTIFY=true" >> $GITHUB_ENV
-            echo "IS_FORCE_PUSH=true" >> $GITHUB_ENV
-          elif [[ "$PR_COUNT" -gt 0 ]] || [[ "$IS_PR_MERGE_MSG" == "true" ]]; then
-            echo "PR merge detected. Skipping notification."
-            echo "SHOULD_NOTIFY=false" >> $GITHUB_ENV
+            echo "SHOULD_NOTIFY=true" >> "$GITHUB_ENV"
+            echo "IS_FORCE_PUSH=true" >> "$GITHUB_ENV"
+
+          elif [[ "${PR_MERGED_COUNT}" -gt 0 ]]; then
+            echo "PR merge detected (commit belongs to merged PR). Skipping notification."
+            echo "SHOULD_NOTIFY=false" >> "$GITHUB_ENV"
+
+          elif [[ "${PARENTS_COUNT}" -gt 1 ]]; then
+            echo "Merge commit detected (likely CLI merge then push). Skipping notification."
+            echo "SHOULD_NOTIFY=false" >> "$GITHUB_ENV"
+
           else
             echo "Direct push detected."
-            echo "SHOULD_NOTIFY=true" >> $GITHUB_ENV
+            echo "SHOULD_NOTIFY=true" >> "$GITHUB_ENV"
           fi
 
-          echo "PUSHER_NAME=${{ github.actor }}" >> $GITHUB_ENV
-
+          echo "PUSHER_NAME=${ACTOR}" >> "$GITHUB_ENV"
+          echo "PARENTS_COUNT=${PARENTS_COUNT}" >> "$GITHUB_ENV"
+          echo "PR_MERGED_COUNT=${PR_MERGED_COUNT}" >> "$GITHUB_ENV"
 
       - &notify_discord_enhanced
         name: Notify Discord (Alert)
@@ -328,5 +345,6 @@ jobs:
       - *set_short_commit
       - *run_deploy_vm_prod
       - *notify_single_prod
+
 
 
