@@ -142,8 +142,8 @@ export function TemplateField({
       const result = await jinjaEvaluate(
         registry.formContext.pluginPackage,
         tpl,
-        params,
-        new Set(Object.keys(registry.formContext.env.filters))
+        new Set(Object.keys(registry.formContext.env.filters)),
+        params
       );
 
       setPreviewCode(result);
