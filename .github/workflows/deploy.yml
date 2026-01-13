@@ -3,7 +3,7 @@ run-name: deploy-${{ github.repository }}-${{ github.ref_name }}-${{ github.run_
 
 on:
   push:
-    branches: [staging, master]
+    branches: [staging, main]
     tags: ['v*']
 
 permissions:
@@ -20,6 +20,7 @@ env:
   PIC: "684700353148747791"
   # PIC_1: "596272320247758868"
   PIC_INFRA: "769401829540102154"
+  PIC_ADMIN: "266200643730014218"
 
 
 jobs:
@@ -150,6 +151,7 @@ jobs:
             sed -E \"s|^( *image:).*|\\1 $FULL_IMAGE|\" docker-compose.yml > docker-compose.yml.new
             mv docker-compose.yml.new docker-compose.yml
 
+            docker compose down
             docker compose pull
             docker compose up -d
           "
@@ -211,6 +213,66 @@ jobs:
             ${{ job.status != 'success' && format('<@{}> please check deploy failure!', env.PIC, env.PIC_1, env.PIC_INFRA) || '' }}
 
 
+      - &get_pr_info
+        name: Check Push Type
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          IS_FORCE="${{ github.event.forced }}"
+
+          # Check if there is a merged PR associated with this commit
+          PR_COUNT=$(gh pr list --repo ${{ github.repository }} --search "${{ github.sha }}" --state merged --json number --jq length || echo "0")
+
+          if [[ "$IS_FORCE" == "true" ]]; then
+            echo "Force push detected."
+            echo "SHOULD_NOTIFY=true" >> $GITHUB_ENV
+            echo "IS_FORCE_PUSH=true" >> $GITHUB_ENV
+          elif [[ "$PR_COUNT" -gt 0 ]]; then
+            echo "PR merge detected. Skipping notification."
+            echo "SHOULD_NOTIFY=false" >> $GITHUB_ENV
+          else
+            echo "Direct push detected."
+            echo "SHOULD_NOTIFY=true" >> $GITHUB_ENV
+          fi
+
+          echo "PUSHER_NAME=${{ github.actor }}" >> $GITHUB_ENV
+
+      - &notify_discord_enhanced
+        name: Notify Discord (Alert)
+        if: always() && env.SHOULD_NOTIFY == 'true'
+        uses: appleboy/discord-action@master
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_QUANT_ID }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_QUANT_TOKEN }}
+          username: GitBot
+          message: |
+            <@${{ env.PIC_ADMIN }}> ${{ job.status == 'success' && ':warning:' || ':x:' }} **${{ env.CHART_NAME }}** — `${{ env.ENV_NAME }}`
+
+            ${{ env.IS_FORCE_PUSH == 'true' && '⚠️ **FORCE PUSH DETECTED**' || '• **DIRECT PUSH DETECTED**' }}
+            **Pushed by:** `${{ env.PUSHER_NAME }}`
+
+            • Ref: `${{ github.ref_name }}`
+            • Commit: `${{ env.SHORT_COMMIT }}`
+            • Run: ${{ env.RUN_URL }}
+
+  # ==========================
+  # Notify Code Change (PR/Force Push)
+  # ==========================
+  notify_code_change:
+    if: github.ref_type == 'branch' && github.ref_name == 'master'
+    runs-on: ubuntu-latest
+    env:
+      ENV_NAME: master
+    steps:
+      - *checkout
+      - *install_gh_cli
+      - *set_short_commit
+      - *get_pr_info
+      - *notify_discord_enhanced
+
+
+
   # ==========================
   # Build Docker Images
   # ==========================
@@ -228,7 +290,7 @@ jobs:
   # Deploy to STAGING COMPOSE
   # ==========================
   trigger_deploy_staging_vm:
-    if: github.ref_type == 'branch' && github.ref_name == 'master'
+    if: github.ref_type == 'branch' && github.ref_name == 'main'
     needs:
       - build_docker
     runs-on: [self-hosted, "5116117430"]
@@ -256,5 +318,3 @@ jobs:
       - *set_short_commit
       - *run_deploy_vm_prod
       - *notify_single_prod
-
-
