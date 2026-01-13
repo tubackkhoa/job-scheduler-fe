@@ -266,7 +266,7 @@ export const jinjaLinter = (
 ) => {
   return linter((view) => {
     const diagnostics: Diagnostic[] = [];
-    const definitions = new Set<string>();
+    const definitions = new Set<string>(['this']);
     const cursor = syntaxTree(view.state).cursor();
 
     do {
@@ -332,7 +332,7 @@ export const initPyodide = new Promise(async (resolve) => {
   // Define Python code
   await pyodide.runPythonAsync(`
 from jinja2 import Environment, meta
-def extract_undeclared_variables(tpl_str, context, filters):
+def render(tpl_str, context, filters):
     env = Environment(autoescape=False, trim_blocks=True, lstrip_blocks=True)
     try:                
         return env.from_string(tpl_str).render(context)
@@ -355,9 +355,9 @@ export const extractUndeclaredVariables = async (
 ): Promise<string[] | string> => {
   const pyodide = await initPyodide;
   // @ts-ignore
-  const extractFn = pyodide.globals.get('extract_undeclared_variables');
+  const renderFn = pyodide.globals.get('render');
   // @ts-ignore
-  const params = extractFn(tpl, pyodide.toPy(data), filters);
+  const params = renderFn(tpl, pyodide.toPy({ ...data, this: data }), filters);
   return typeof params === 'string' ? params : Array.from(params.toJs());
 };
 
@@ -397,7 +397,7 @@ export const jinjaEvaluate = async (
       : await api.renderTemplate(
           packageName,
           tmpl,
-          _.pick(params, includeKeys)
+          includeKeys.includes('this') ? params : _.pick(params, includeKeys)
         );
 
   if (typeof result === 'string') {
