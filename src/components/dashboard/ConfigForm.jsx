@@ -108,7 +108,7 @@ export const ConfigForm = ({
               >
                 <Settings fontSize="small" color="primary" />
                 <Typography variant="subtitle1" fontWeight={600}>
-                  General Settings
+                  {title}
                 </Typography>
               </Stack>
               <Grid container spacing={2}>
