@@ -15,7 +15,7 @@ import {
   DialogActions,
 } from "@mui/material";
 import { Save, Delete, Add, Refresh } from "@mui/icons-material";
-import { buildJinjaContext, evaluate } from "../../../utils";
+import { buildJinjaContext } from "../../../utils";
 import { ConfirmationDialog } from "../ConfirmationDialog";
 
 export function CrudField({
@@ -42,33 +42,19 @@ export function CrudField({
   const createSchema = schema["ui:options"]?.createSchema;
 
   // Build context with dependencies
-  const getContext = useCallback(
-    (extraData = {}) => {
-      const ctx = buildJinjaContext(
-        registry.formContext.pluginPackage,
-        registry.formContext.env.filters,
-        registry.formContext.formData
-      );
-
-      // Inject dependency values if specified
-      const deps = schema["model:deps"] || [];
-      deps.forEach((dep) => {
-        ctx[dep] = _.get(registry.formContext.formData, dep);
-      });
-
-      return Object.assign(ctx, extraData);
-    },
-    [registry.formContext, schema]
+  const render = useCallback(
+    buildJinjaContext(
+      registry.formContext.pluginPackage,
+      registry.formContext.env.filters,
+      registry.formContext.formData
+    ),
+    [registry.formContext]
   );
 
   // Generic evaluate wrapper
   const evaluateExpr = useCallback(
-    (exprKey, data) => {
-      const expr = schema["model:expr"]?.[exprKey];
-      if (!expr) return Promise.resolve(null);
-      return evaluate(expr, getContext(data));
-    },
-    [schema, getContext]
+    (exprKey, data) => render(schema['model:expr'][exprKey], data),
+    [schema, render]
   );
 
   // CRUD operations
@@ -79,12 +65,12 @@ export function CrudField({
   );
 
   const createItem = useCallback(
-    (payload) => evaluateExpr("create", { payload: JSON.stringify(payload) }),
+    (payload) => evaluateExpr("create", { payload }),
     [evaluateExpr]
   );
 
   const deleteItem = useCallback(
-    (key) => evaluateExpr("delete", { key }),
+    (key) => evaluateExpr("delete", {key}),
     [evaluateExpr]
   );
 
