@@ -116,7 +116,7 @@ export default function App() {
   // Extract default values from JSON Schema
   const getDefaultsFromSchema = useCallback((schemaObj) => {
     if (!schemaObj || !schemaObj.properties) return {};
-    
+
     const defaults = {};
     for (const [key, propSchema] of Object.entries(schemaObj.properties)) {
       if (propSchema.default !== undefined) {
@@ -127,7 +127,10 @@ export default function App() {
         defaults[key] = [];
       } else if (propSchema.type === 'string') {
         defaults[key] = '';
-      } else if (propSchema.type === 'number' || propSchema.type === 'integer') {
+      } else if (
+        propSchema.type === 'number' ||
+        propSchema.type === 'integer'
+      ) {
         defaults[key] = 0;
       } else if (propSchema.type === 'boolean') {
         defaults[key] = false;
