@@ -223,12 +223,21 @@ jobs:
 
           # Check if there is a merged PR associated with this commit
           PR_COUNT=$(gh pr list --repo ${{ github.repository }} --search "${{ github.sha }}" --state merged --json number --jq length || echo "0")
+          
+          # Fallback: Check commit message for standard merge pattern
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          if [[ "$COMMIT_MSG" =~ ^Merge\ pull\ request\ \# ]]; then
+             echo "Commit message indicates a PR merge."
+             IS_PR_MERGE_MSG=true
+          else
+             IS_PR_MERGE_MSG=false
+          fi
 
           if [[ "$IS_FORCE" == "true" ]]; then
             echo "Force push detected."
             echo "SHOULD_NOTIFY=true" >> $GITHUB_ENV
             echo "IS_FORCE_PUSH=true" >> $GITHUB_ENV
-          elif [[ "$PR_COUNT" -gt 0 ]]; then
+          elif [[ "$PR_COUNT" -gt 0 ]] || [[ "$IS_PR_MERGE_MSG" == "true" ]]; then
             echo "PR merge detected. Skipping notification."
             echo "SHOULD_NOTIFY=false" >> $GITHUB_ENV
           else
@@ -237,6 +246,7 @@ jobs:
           fi
 
           echo "PUSHER_NAME=${{ github.actor }}" >> $GITHUB_ENV
+
 
       - &notify_discord_enhanced
         name: Notify Discord (Alert)
@@ -318,4 +328,5 @@ jobs:
       - *set_short_commit
       - *run_deploy_vm_prod
       - *notify_single_prod
+
 
