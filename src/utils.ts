@@ -40,10 +40,12 @@ export const buildUiSchemaWithExpr = async (
         !changedFieldId ||
         deps.includes(changedFieldId)
       ) {
-        const extraOptions = await jinjaEvaluate(packageName, expr, filters, {
-          ...context,
-          this: node // binding this context as well
-        });
+        const extraOptions = await jinjaEvaluate(
+          packageName,
+          expr,
+          filters,
+          context
+        );
         _.merge(node, extraOptions);
       }
     }
@@ -335,7 +337,7 @@ from jinja2 import Environment, meta
 def render(tpl_str, context, filters):
     env = Environment(autoescape=False, trim_blocks=True, lstrip_blocks=True)
     try:                
-        return env.from_string(tpl_str).render(context)
+        return env.from_string(tpl_str).render(context, this=context)
     except:
         identity = lambda x, *args, **kwargs: x
         env.filters.update({name: identity for name in filters})
@@ -357,7 +359,7 @@ export const extractUndeclaredVariables = async (
   // @ts-ignore
   const renderFn = pyodide.globals.get('render');
   // @ts-ignore
-  const params = renderFn(tpl, pyodide.toPy({ ...data, this: data }), filters);
+  const params = renderFn(tpl, pyodide.toPy(data), filters);
   return typeof params === 'string' ? params : Array.from(params.toJs());
 };
 
