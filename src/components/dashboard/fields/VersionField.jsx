@@ -302,7 +302,7 @@ export function VersionField({
           >
             {saving ? 'Saving...' : selectedVersion ? 'Update' : 'Save'}
           </Button>
-          {selectedVersion && (
+          {selectedVersion && schema['model:expr']?.apply && (
             <Button
               variant="contained"
               size="small"
