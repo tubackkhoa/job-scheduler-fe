@@ -117,7 +117,7 @@ export function VersionField({
     return () => {
       if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     };
-  }, [searchInput, formData]);
+  }, [searchInput, formData, fieldPathId]);
 
   const handleSelect = async (version) => {
     if (!version) {
