@@ -306,7 +306,7 @@ export function VersionField({
             <Button
               variant="contained"
               size="small"
-              color="info"
+              color="warning"
               startIcon={<PublishedWithChanges />}
               onClick={handleApplyClick}
               disabled={applying || saving}
@@ -349,7 +349,7 @@ export function VersionField({
         onClose={() => setApplyConfirmDialogOpen(false)}
         onConfirm={doApply}
         title="Apply Version to All Jobs"
-        message={
+        details={
           <ApplyMessage
             render={render}
             selectedJobIds={selectedJobIds}
@@ -361,7 +361,7 @@ export function VersionField({
             }}
           />
         }
-        details={`This action will apply the SQL version "${
+        message={`This action will apply the SQL version "${
           selectedVersion?.name || ''
         }" to ALL jobs in this plugin.\n\n⚠️ Important:\n• All jobs will use the SQL value from this version\n• This will override any custom SQL configurations in individual jobs\n• The change takes effect immediately for all jobs`}
         severity="warning"
@@ -387,19 +387,21 @@ const ApplyMessage = ({ sessionId, render, onToggle, selectedJobIds }) => {
   return (
     <Stack>
       Are you sure you want to apply this version to all jobs?
-      <List dense>
+      <List>
         {jobs.map((job) => (
-          <ListItem key={job.id} disablePadding>
-            <ListItemButton onClick={() => onToggle(job.id)}>
-              <ListItemIcon>
-                <Checkbox
-                  edge="start"
-                  checked={selectedJobIds.includes(job.id)}
-                  tabIndex={-1}
-                  disableRipple
-                />
-              </ListItemIcon>
-              <ListItemText primary={job.description} />
+          <ListItem dense key={job.id} disablePadding>
+            <ListItemButton
+              onClick={() => onToggle(job.id)}
+              sx={{ alignItems: 'center' }}
+            >
+              <Checkbox
+                edge="start"
+                checked={selectedJobIds.includes(job.id)}
+                tabIndex={-1}
+                disableRipple
+                sx={{ mr: 1 }}
+              />
+              <ListItemText primary={job.description} sx={{ my: 0 }} />
             </ListItemButton>
           </ListItem>
         ))}

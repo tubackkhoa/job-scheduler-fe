@@ -124,19 +124,21 @@ export function SelectField({ formData, fieldPathId, schema, onChange }) {
       return (
         <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
           {selected.map((id) => (
-            <Chip
+            <Typography
+              variant="subtitle2"
               key={id}
-              size="small"
-              label={optionMap.get(id) ?? id}
               sx={{
+                backgroundColor: 'primary.dark',
+                px: 1,
+                borderRadius: 0.5,
                 maxWidth: 120,
-                '.MuiChip-label': {
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
-                }
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
               }}
-            />
+            >
+              {optionMap.get(id) ?? id}
+            </Typography>
           ))}
         </Box>
       );
@@ -159,6 +161,7 @@ export function SelectField({ formData, fieldPathId, schema, onChange }) {
           multiple && (
             <InputAdornment position="start">
               <Checkbox
+                size="small"
                 edge="start"
                 checked={allSelected}
                 indeterminate={someSelected}
@@ -168,16 +171,12 @@ export function SelectField({ formData, fieldPathId, schema, onChange }) {
           )
         }
         MenuProps={{
+          MenuListProps: {
+            dense: true
+          },
           PaperProps: {
             sx: {
-              maxHeight: 300,
-              mt: 0.5,
-              bgcolor: 'background.paper',
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 2,
-              boxShadow:
-                '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)'
+              maxHeight: 300
             }
           }
         }}
@@ -187,23 +186,14 @@ export function SelectField({ formData, fieldPathId, schema, onChange }) {
         {options.map(({ id, title }) => (
           <MenuItem key={id} value={id}>
             {multiple && (
-              <Checkbox checked={selectedSet.has(id)} sx={{ mr: 1.5 }} />
+              <Checkbox
+                size="small"
+                edge="start"
+                checked={selectedSet.has(id)}
+                sx={{ mr: 1, py: 0 }}
+              />
             )}
-            <ListItemText
-              primary={title}
-              slotProps={{
-                primary: {
-                  fontSize: '0.875rem',
-                  fontWeight: multiple
-                    ? selectedSet.has(id)
-                      ? 500
-                      : 400
-                    : id === selectedValue
-                    ? 500
-                    : 400
-                }
-              }}
-            />
+            <Typography variant="subtitle2">{title}</Typography>
           </MenuItem>
         ))}
       </Select>
