@@ -141,7 +141,11 @@ export default {
 
     return parseJsonResponse(res, url);
   },
-  async renderTemplate(packageName: string, template: string, params: object) {
+  async renderTemplate(
+    packageName: string,
+    template: string,
+    params: object
+  ): Promise<string> {
     const url = `${API_BASE_URL}/template/${packageName}`;
 
     const res = await fetch(url, {
@@ -154,12 +158,11 @@ export default {
         params
       })
     });
-
+    const msg = await res.text();
     if (!res.ok) {
-      const msg = await res.text();
       throw new Error(msg || `Failed to render template (${res.status})`);
     }
 
-    return parseJsonResponse(res, url);
+    return msg;
   }
 };

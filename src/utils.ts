@@ -390,16 +390,16 @@ export const jinjaEvaluate = async (
     new Set(typeof filters === 'object' ? Object.keys(filters) : filters)
   );
 
-  const { result } =
+  const result =
     typeof includeKeys === 'string'
-      ? { result: includeKeys }
+      ? includeKeys
       : await api.renderTemplate(
           packageName,
           tmpl,
           includeKeys.includes('this') ? params : _.pick(params, includeKeys)
         );
 
-  if (!raw && typeof result === 'string') {
+  if (!raw) {
     try {
       return json5.parse(result);
     } catch {}
