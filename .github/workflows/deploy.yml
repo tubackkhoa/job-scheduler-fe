@@ -3,7 +3,7 @@ run-name: deploy-${{ github.repository }}-${{ github.ref_name }}-${{ github.run_
 
 on:
   push:
-    branches: [staging, main]
+    branches: [staging, master]
     tags: ['v*']
 
 permissions:
@@ -290,7 +290,7 @@ jobs:
   # Deploy to STAGING COMPOSE
   # ==========================
   trigger_deploy_staging_vm:
-    if: github.ref_type == 'branch' && github.ref_name == 'main'
+    if: github.ref_type == 'branch' && github.ref_name == 'master'
     needs:
       - build_docker
     runs-on: [self-hosted, "5116117430"]
@@ -318,3 +318,4 @@ jobs:
       - *set_short_commit
       - *run_deploy_vm_prod
       - *notify_single_prod
+
