@@ -4,6 +4,8 @@ import { syntaxTree } from '@codemirror/language';
 import _ from 'lodash';
 import api from './api';
 
+export type Filter = string[] | Set<string> | { [key: string]: any };
+
 // Helper to resolve $ref schema if present
 const resolveRef = (schema: any, ref: string) => {
   if (!schema.$defs || !ref) return null;
@@ -13,7 +15,7 @@ const resolveRef = (schema: any, ref: string) => {
 
 export const buildUiSchemaWithExpr = async (
   packageName: string,
-  filters: string[],
+  filters: Filter,
   context: Record<string, any>,
   schema: any,
   changedFieldId: string
@@ -318,7 +320,7 @@ export const jinjaLinter = (
   });
 };
 
-export const initPyodide = new Promise(async (resolve) => {
+const initPyodide = new Promise(async (resolve) => {
   // @ts-ignore
   const pyodide = await loadPyodide();
 
@@ -342,7 +344,7 @@ def render(tpl_str, context, filters):
   resolve(pyodide);
 });
 
-export const extractUndeclaredVariables = async (
+const extractUndeclaredVariables = async (
   tpl: string,
   data: {
     [key: string]: any;
@@ -359,7 +361,7 @@ export const extractUndeclaredVariables = async (
 
 export const buildJinjaContext = (
   packageName: string,
-  filters: string[] | { [key: string]: any },
+  filters: Filter,
   params: {
     [key: string]: any;
   },
@@ -377,7 +379,7 @@ export const buildJinjaContext = (
 export const jinjaEvaluate = async (
   packageName: string,
   tmpl: string,
-  filters: string[] | { [key: string]: any },
+  filters: Filter,
   params: {
     [key: string]: any;
   },
@@ -387,7 +389,9 @@ export const jinjaEvaluate = async (
   let includeKeys = await extractUndeclaredVariables(
     tmpl,
     params,
-    new Set(typeof filters === 'object' ? Object.keys(filters) : filters)
+    filters instanceof Set
+      ? filters
+      : new Set(Array.isArray(filters) ? filters : Object.keys(filters))
   );
 
   const result =

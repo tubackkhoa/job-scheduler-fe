@@ -143,7 +143,7 @@ export function TemplateField({
       const result = await jinjaEvaluate(
         registry.formContext.pluginPackage,
         tpl,
-        new Set(Object.keys(registry.formContext.env.filters)),
+        registry.formContext.env.filters,
         params,
         true
       );

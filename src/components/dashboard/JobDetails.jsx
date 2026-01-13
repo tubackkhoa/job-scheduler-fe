@@ -265,7 +265,6 @@ export function JobDetails({
             <JinjaEnvDocs
               data={env}
               pluginPackage={pluginPackage}
-              filters={env.filters}
               params={formData}
             />
           </TabPanel>

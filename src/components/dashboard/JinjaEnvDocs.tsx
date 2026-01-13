@@ -14,7 +14,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SearchIcon from '@mui/icons-material/Search';
 import { useMemo, useDeferredValue } from 'react';
-import { jinjaEvaluate } from '../../utils';
+import { Filter, jinjaEvaluate } from '../../utils';
 
 /**
  * Types
@@ -259,7 +259,7 @@ function DocSection({
 }: {
   title: string;
   items: Record<string, DocItem>;
-  filters: string[];
+  filters: Filter;
   pluginPackage: string;
   isFilter?: boolean;
 }) {
@@ -351,12 +351,7 @@ function DocSection({
 /**
  * Main component
  */
-export default function JinjaEnvDocs({
-  data,
-  pluginPackage,
-  filters,
-  params
-}: Props) {
+export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
   const normalizedQuery = deferredQuery.trim().toLowerCase();
@@ -426,7 +421,7 @@ export default function JinjaEnvDocs({
 
       <DocSection
         title="Config Params"
-        filters={filters}
+        filters={data.filters}
         items={filteredParams}
         pluginPackage={pluginPackage}
         isFilter={true}
@@ -434,14 +429,14 @@ export default function JinjaEnvDocs({
 
       <DocSection
         title="Globals"
-        filters={filters}
+        filters={data.filters}
         items={filteredGlobals}
         pluginPackage={pluginPackage}
         isFilter={false}
       />
       <DocSection
         title="Filters"
-        filters={filters}
+        filters={data.filters}
         items={filteredFilters}
         pluginPackage={pluginPackage}
         isFilter={true}
