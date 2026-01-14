@@ -1,18 +1,10 @@
-import type { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import type {
   ObjectFieldTemplatePropertyType,
   ObjectFieldTemplateProps
 } from '@rjsf/utils';
 import _ from 'lodash';
-import {
-  Box,
-  Paper,
-  Stack,
-  Typography,
-  Grid,
-  Breakpoint,
-  GridSize
-} from '@mui/material';
+import { Paper, Typography, Grid, Breakpoint, GridSize } from '@mui/material';
 
 type UISchema = {
   'ui:field'?: string;
@@ -73,33 +65,31 @@ const FieldsGrid: React.FC<FieldsGridProps> = ({ fields }) => (
 type SectionPaperProps = {
   title?: ReactNode;
   description?: ReactNode;
-  icon?: ReactNode;
+  collapsed?: boolean;
   children: ReactNode;
 };
 
 const SectionPaper: React.FC<SectionPaperProps> = ({
   title,
   description,
-  icon,
   children
-}) => (
-  <Paper elevation={0} sx={fieldWrapperStyle}>
-    <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 3 }}>
-      {icon}
+}) => {
+  return (
+    <Paper elevation={0} sx={fieldWrapperStyle}>
       <Typography variant="subtitle1" fontWeight={600}>
         {title}
       </Typography>
 
       {description && (
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+        <Typography variant="body2" color="text.secondary">
           {description}
         </Typography>
       )}
-    </Stack>
 
-    {children}
-  </Paper>
-);
+      {children}
+    </Paper>
+  );
+};
 
 // ------------------------------------------------------
 // ObjectFieldTemplate
@@ -108,7 +98,7 @@ const SectionPaper: React.FC<SectionPaperProps> = ({
 export const ObjectFieldTemplate: React.FC<ObjectFieldTemplateProps> = (
   props
 ) => {
-  const { title, description, properties, schema, uiSchema } = props;
+  const { title, description, properties, uiSchema } = props;
 
   // ----------------------------------------------------
   // NESTED OBJECT
@@ -120,20 +110,8 @@ export const ObjectFieldTemplate: React.FC<ObjectFieldTemplateProps> = (
   }
 
   return (
-    <Paper elevation={0} sx={fieldWrapperStyle}>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="subtitle1" fontWeight={600}>
-          {title || schema?.title}
-        </Typography>
-
-        {description && (
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            {description}
-          </Typography>
-        )}
-      </Box>
-
+    <SectionPaper title={title} description={description}>
       <FieldsGrid fields={properties} />
-    </Paper>
+    </SectionPaper>
   );
 };
