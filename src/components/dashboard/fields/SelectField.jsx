@@ -191,7 +191,16 @@ export function SelectField({ formData, fieldPathId, schema, onChange }) {
                 sx={{ mr: 1, py: 0 }}
               />
             )}
-            <Typography variant="subtitle2">{title}</Typography>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {title}
+            </Typography>
           </MenuItem>
         ))}
       </Select>
