@@ -7,11 +7,19 @@ import {
   Autocomplete,
   TextField,
   Button,
-  Chip
+  Chip,
+  List,
+  ListItem,
+  Checkbox,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText
 } from '@mui/material';
 import { Save, PublishedWithChanges } from '@mui/icons-material';
 import { buildJinjaContext } from '../../../utils';
 import { ConfirmationDialog } from '../ConfirmationDialog';
+import { SESSIONS } from '../../../constants/session';
+
 export function VersionField({
   formData,
   onChange,
@@ -30,6 +38,7 @@ export function VersionField({
   const [error, setError] = useState('');
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [applyConfirmDialogOpen, setApplyConfirmDialogOpen] = useState(false);
+  const [selectedJobIds, setSelectedJobIds] = useState([]);
 
   const render = useCallback(
     buildJinjaContext(
@@ -58,18 +67,17 @@ export function VersionField({
   );
 
   const updateVersion = useCallback(
-    (id, payload) =>
-      evaluateExpr('update', { id, payload: JSON.stringify(payload) }),
+    (id, payload) => evaluateExpr('update', { id, payload }),
     [evaluateExpr]
   );
 
   const createVersion = useCallback(
-    (payload) => evaluateExpr('create', { payload: JSON.stringify(payload) }),
+    (payload) => evaluateExpr('create', { payload }),
     [evaluateExpr]
   );
 
   const applyVersion = useCallback(
-    (id, session_id) => evaluateExpr('apply', { id, session_id }),
+    (job_ids) => evaluateExpr('apply', { job_ids }),
     [evaluateExpr]
   );
 
@@ -111,7 +119,7 @@ export function VersionField({
     return () => {
       if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     };
-  }, [searchInput, formData]);
+  }, [searchInput, formData, fieldPathId]);
 
   const handleSelect = async (version) => {
     if (!version) {
@@ -206,15 +214,14 @@ export function VersionField({
 
   const doApply = async () => {
     setApplyConfirmDialogOpen(false);
-    if (!selectedVersion) return;
+    if (!selectedVersion || !selectedJobIds.length) return;
 
     setApplying(true);
     setError('');
     setMessage('');
 
     try {
-      const sessionId = registry.formContext.sessionId;
-      await applyVersion(selectedVersion.id, sessionId);
+      await applyVersion(selectedJobIds);
       setMessage(`Applied version "${selectedVersion.name}" to all jobs`);
     } catch (e) {
       setError(e.message || 'Failed to apply version');
@@ -297,7 +304,7 @@ export function VersionField({
           >
             {saving ? 'Saving...' : selectedVersion ? 'Update' : 'Save'}
           </Button>
-          {selectedVersion && (
+          {selectedVersion && schema['model:expr']?.apply && (
             <Button
               variant="contained"
               size="small"
@@ -344,7 +351,24 @@ export function VersionField({
         onClose={() => setApplyConfirmDialogOpen(false)}
         onConfirm={doApply}
         title="Apply Version to All Jobs"
-        message="Are you sure you want to apply this version to all jobs?"
+        message={
+          <ApplyMessage
+            render={render}
+            selectedJobIds={selectedJobIds}
+            onToggle={(id) => {
+              setSelectedJobIds((prev) =>
+                prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+              );
+            }}
+            onSelectAll={(ids, select) => {
+              setSelectedJobIds((prev) =>
+                select
+                  ? [...new Set([...prev, ...ids])]
+                  : prev.filter((id) => !ids.includes(id))
+              );
+            }}
+          />
+        }
         details={`This action will apply the SQL version "${
           selectedVersion?.name || ''
         }" to ALL jobs in this plugin.\n\n⚠️ Important:\n• All jobs will use the SQL value from this version\n• This will override any custom SQL configurations in individual jobs\n• The change takes effect immediately for all jobs`}
@@ -355,3 +379,103 @@ export function VersionField({
     </Box>
   );
 }
+
+
+const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
+  const [jobsBySession, setJobsBySession] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAllJobs = async () => {
+      setLoading(true);
+      const results = {};
+      
+      await Promise.all(
+        SESSIONS.map(async (session) => {
+          try {
+            const jobs = await render(
+              `{{ get_jobs_by_plugin_and_session(plugin_id, session_id) | tolist("id", "description") | tojson }}`,
+              { session_id: session.id }
+            );
+            if (jobs?.length) {
+              results[session.id] = { name: session.name, jobs };
+            }
+          } catch (e) {
+            console.error(`Failed to fetch jobs for session ${session.name}:`, e);
+          }
+        })
+      );
+      
+      setJobsBySession(results);
+      setLoading(false);
+    };
+
+    fetchAllJobs();
+  }, [render]);
+
+  if (loading) {
+    return <Typography variant="body2">Loading jobs...</Typography>;
+  }
+
+  const sessionIds = Object.keys(jobsBySession);
+  if (!sessionIds.length) {
+    return <Typography variant="body2">No jobs found.</Typography>;
+  }
+
+  return (
+    <Stack spacing={1}>
+      <Typography variant="body2">
+        Select the jobs you want to apply this version to:
+      </Typography>
+      {sessionIds.map((sessionId) => {
+        const { name, jobs } = jobsBySession[sessionId];
+        const sessionJobIds = jobs.map((j) => j.id);
+        const allSelected = sessionJobIds.every((id) => selectedJobIds.includes(id));
+        const someSelected = sessionJobIds.some((id) => selectedJobIds.includes(id));
+
+        return (
+          <Box key={sessionId}>
+            <ListItemButton
+              onClick={() => onSelectAll(sessionJobIds, !allSelected)}
+              sx={{ bgcolor: 'action.hover', borderRadius: 1, mb: 0.5 }}
+            >
+              <ListItemIcon>
+                <Checkbox
+                  edge="start"
+                  checked={allSelected}
+                  indeterminate={someSelected && !allSelected}
+                  tabIndex={-1}
+                  disableRipple
+                />
+              </ListItemIcon>
+              <ListItemText
+                primary={name}
+                primaryTypographyProps={{ fontWeight: 600 }}
+              />
+              <Typography variant="caption" color="text.secondary">
+                {sessionJobIds.filter((id) => selectedJobIds.includes(id)).length}/{jobs.length}
+              </Typography>
+            </ListItemButton>
+            <List dense disablePadding sx={{ pl: 2 }}>
+              {jobs.map((job) => (
+                <ListItem key={job.id} disablePadding>
+                  <ListItemButton onClick={() => onToggle(job.id)}>
+                    <ListItemIcon>
+                      <Checkbox
+                        edge="start"
+                        checked={selectedJobIds.includes(job.id)}
+                        tabIndex={-1}
+                        disableRipple
+                      />
+                    </ListItemIcon>
+                    <ListItemText primary={job.description} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        );
+      })}
+    </Stack>
+  );
+};
