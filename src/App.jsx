@@ -10,21 +10,7 @@ import { ErrorAlert } from './components/dashboard/ErrorAlert';
 import { ResponseCard } from './components/dashboard/ResponseCard';
 import { CreatePluginModal } from './components/dashboard/CreatePluginModal';
 import api from './api';
-
-const sessions = [
-  {
-    id: 1,
-    name: 'Staging'
-  },
-  {
-    id: 2,
-    name: 'Production'
-  },
-  {
-    id: 3,
-    name: 'Develop'
-  }
-];
+import { SESSIONS } from './constants/session';
 
 const darkTheme = createTheme({
   palette: {
@@ -108,7 +94,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
-  const [sessionId, setSessionId] = useState(sessions[0].id);
+  const [sessionId, setSessionId] = useState(SESSIONS[0].id);
   const [error, setError] = useState(null);
   const [createPluginModalOpen, setCreatePluginModalOpen] = useState(false);
   const [isNewJobMode, setIsNewJobMode] = useState(false);
@@ -369,7 +355,7 @@ export default function App() {
                 }}
               >
                 <ContextPanel
-                  sessions={sessions}
+                  sessions={SESSIONS}
                   plugins={plugins}
                   sessionId={sessionId}
                   pluginId={pluginId}
