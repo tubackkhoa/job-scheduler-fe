@@ -4,19 +4,43 @@ import { FieldProps } from '@rjsf/utils';
 import * as Mui from '@mui/material';
 import * as Utils from '../../../utils';
 
-const importModuleFromString = async (code: string) => {
-  const blob = new Blob([code], {
-    type: 'application/javascript'
-  });
+/* ---------------- blob cache ---------------- */
 
-  const url = URL.createObjectURL(blob);
+const blobCache = new Map<string, string>();
 
-  try {
-    return await import(/* @vite-ignore */ url);
-  } finally {
+async function hashCode(code: string) {
+  const buf = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(code)
+  );
+  return [...new Uint8Array(buf)]
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+async function importModuleFromString(code: string) {
+  const hash = await hashCode(code);
+
+  let url = blobCache.get(hash);
+  if (!url) {
+    const blob = new Blob([code], { type: 'application/javascript' });
+    url = URL.createObjectURL(blob);
+    console.log(url);
+    blobCache.set(hash, url);
+  }
+
+  return import(/* @vite-ignore */ url);
+}
+
+/* optional global cleanup */
+export function clearDynamicModuleCache() {
+  for (const url of blobCache.values()) {
     URL.revokeObjectURL(url);
   }
-};
+  blobCache.clear();
+}
+
+/* ---------------- component ---------------- */
 
 export default function DynamicField(props: FieldProps) {
   const code = props.uiSchema?.['ui:options']?.code;
@@ -39,9 +63,7 @@ export default function DynamicField(props: FieldProps) {
         }
       })
       .catch((err) => {
-        if (!cancelled) {
-          setError(err);
-        }
+        if (!cancelled) setError(err);
       });
 
     return () => {
@@ -57,9 +79,7 @@ export default function DynamicField(props: FieldProps) {
     );
   }
 
-  if (!Component) {
-    return null; // or loading indicator
-  }
+  if (!Component) return null;
 
   return <Component {...props} />;
 }

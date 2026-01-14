@@ -386,7 +386,7 @@ export const jinjaEvaluate = async (
   raw = false
 ) => {
   // extract includeKeys to pass to server
-  let includeKeys = await extractUndeclaredVariables(
+  const includeKeys = await extractUndeclaredVariables(
     tmpl,
     params,
     filters instanceof Set
