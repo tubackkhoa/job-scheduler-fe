@@ -88,7 +88,7 @@ export default function App() {
   const [pluginId, setPluginId] = useState(0);
   const [jobId, setJobId] = useState(0);
   const [jobDesc, setJobDesc] = useState('');
-  const [jobConfigs, setJobConfigs] = useState([]);
+  const [jobs, setJobs] = useState([]);
   const [schema, setSchema] = useState(null);
   const [env, setEnv] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -156,20 +156,20 @@ export default function App() {
     setError(null);
     // schema and configs should be clear before processing
     setSchema(null);
-    setJobConfigs([]);
+    setJobs([]);
 
     try {
       const {
         schema: fetchedSchema,
-        configs,
+        jobs,
         env
       } = await api.fetchSchema(currentSessionId ?? sessionId, currentPluginId);
       setSchema(fetchedSchema);
       setEnv(env);
-      setJobConfigs(configs);
+      setJobs(jobs);
 
-      const newJobId = currentJobId ?? configs[0]?.id ?? 0;
-      handleChangeJob(newJobId, configs);
+      const newJobId = currentJobId ?? jobs[0]?.id ?? 0;
+      handleChangeJob(newJobId, jobs);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -216,7 +216,7 @@ export default function App() {
       const response = await api.activateJob(targetJobId, activation);
       if (response.success) {
         // update the config at local to sync with server
-        setJobConfigs((prev) =>
+        setJobs((prev) =>
           prev.map((v) =>
             v.id === targetJobId ? { ...v, active: activation ? 1 : 0 } : v
           )
@@ -229,10 +229,10 @@ export default function App() {
     }
   };
 
-  const handleChangeJob = (newJobId, configs) => {
+  const handleChangeJob = (newJobId, newJobs) => {
     setJobId(newJobId);
     setIsNewJobMode(false);
-    const collection = configs ?? jobConfigs;
+    const collection = newJobs ?? jobs;
     const found = collection.find((version) => version.id === newJobId);
     setJobDesc(found?.description ?? '');
   };
@@ -315,20 +315,20 @@ export default function App() {
   };
 
   const pluginInfo = plugins.find((p) => p.id === pluginId);
-  const currentConfig = jobConfigs.find((version) => version.id === jobId);
+  const currentJob = jobs.find((version) => version.id === jobId);
 
   const formData = useMemo(() => {
-    if (currentConfig?.config) {
-      return JSON.parse(currentConfig.config);
+    if (currentJob?.config) {
+      return currentJob?.config ? JSON.parse(currentJob.config) : null;
     }
     // When in new job mode, use schema defaults instead of null
     if (isNewJobMode && schema) {
       return getDefaultsFromSchema(schema);
     }
     return null;
-  }, [currentConfig, isNewJobMode, schema, getDefaultsFromSchema]);
+  }, [currentJob, isNewJobMode, schema, getDefaultsFromSchema]);
 
-  const isActive = !!currentConfig?.active;
+  const isActive = !!currentJob?.active;
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -370,7 +370,7 @@ export default function App() {
                 />
 
                 <JobsList
-                  jobs={jobConfigs}
+                  jobs={jobs}
                   selectedJobId={jobId}
                   pluginPackage={pluginInfo?.package}
                   onSelectJob={handleChangeJob}
