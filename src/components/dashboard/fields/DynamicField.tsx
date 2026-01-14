@@ -1,12 +1,8 @@
-// src/fields/DynamicField.tsx
-import React from 'react';
+import React, { ComponentType, useEffect, useState } from 'react';
 import { Alert } from '@mui/material';
 import { FieldProps } from '@rjsf/utils';
 import * as Mui from '@mui/material';
 import * as Utils from '../../../utils';
-
-// export lib for dynamic
-window.React = React;
 
 const importModuleFromString = async (code: string) => {
   const blob = new Blob([code], {
@@ -25,12 +21,13 @@ const importModuleFromString = async (code: string) => {
 export default function DynamicField(props: FieldProps) {
   const code = props.uiSchema?.['ui:options']?.code;
 
-  const [Component, setComponent] =
-    React.useState<React.ComponentType<FieldProps> | null>(null);
+  const [Component, setComponent] = useState<ComponentType<FieldProps> | null>(
+    null
+  );
 
-  const [error, setError] = React.useState<Error | null>(null);
+  const [error, setError] = useState<Error | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!code) return;
 
     let cancelled = false;
