@@ -8,7 +8,7 @@ export default function (
   { Box, Button, TextField, Typography }: typeof Mui,
   { buildJinjaContext }: typeof Utils
 ) {
-  return function ({ registry }: FieldProps) {
+  return function ({ registry, onChange, formData, fieldPathId }: FieldProps) {
     const render = useCallback(
       buildJinjaContext(
         registry.formContext.pluginPackage,
@@ -19,7 +19,7 @@ export default function (
     );
 
     const [input, setInput] = useState(
-      `{{ get_all_plugins() | tolist | tojson }}`
+      formData || `{{ get_all_plugins() | tolist | tojson }}`
     );
     const [output, setOutput] = useState<string>('');
     const [loading, setLoading] = useState(false);
@@ -48,6 +48,9 @@ export default function (
           multiline
           minRows={4}
           value={input}
+          onBlur={() => {
+            onChange(input, fieldPathId.path);
+          }}
           onChange={(e) => setInput(e.target.value)}
           fullWidth
         />
