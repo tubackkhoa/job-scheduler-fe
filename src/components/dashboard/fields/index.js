@@ -1,4 +1,5 @@
 import { CrudField } from './CrudField';
+import DynamicField from './DynamicField';
 import { MLThresholdsTableField } from './MLThresholdsTableField';
 import { SelectField } from './SelectField';
 import { TemplateField } from './TemplateField';
@@ -9,5 +10,6 @@ export default {
   MLThresholdsTable: MLThresholdsTableField,
   Select: SelectField,
   Template: TemplateField,
-  Version: VersionField
+  Version: VersionField,
+  Dynamic: DynamicField
 };

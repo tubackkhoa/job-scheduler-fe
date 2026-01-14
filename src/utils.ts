@@ -365,7 +365,7 @@ export const buildJinjaContext = (
   params: {
     [key: string]: any;
   },
-  raw: boolean
+  raw: boolean = false
 ) => {
   return (
     tmpl: string,
