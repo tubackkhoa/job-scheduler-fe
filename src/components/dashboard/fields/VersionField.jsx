@@ -12,7 +12,8 @@ import {
   ListItem,
   Checkbox,
   ListItemButton,
-  ListItemText
+  ListItemText,
+  ListItemIcon
 } from '@mui/material';
 import { Save, PublishedWithChanges } from '@mui/icons-material';
 import { buildJinjaContext } from '../../../utils';
@@ -379,7 +380,6 @@ export function VersionField({
   );
 }
 
-
 const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
   const [jobsBySession, setJobsBySession] = useState({});
   const [loading, setLoading] = useState(true);
@@ -388,7 +388,7 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
     const fetchAllJobs = async () => {
       setLoading(true);
       const results = {};
-      
+
       await Promise.all(
         SESSIONS.map(async (session) => {
           try {
@@ -400,11 +400,14 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
               results[session.id] = { name: session.name, jobs };
             }
           } catch (e) {
-            console.error(`Failed to fetch jobs for session ${session.name}:`, e);
+            console.error(
+              `Failed to fetch jobs for session ${session.name}:`,
+              e
+            );
           }
         })
       );
-      
+
       setJobsBySession(results);
       setLoading(false);
     };
@@ -429,8 +432,12 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
       {sessionIds.map((sessionId) => {
         const { name, jobs } = jobsBySession[sessionId];
         const sessionJobIds = jobs.map((j) => j.id);
-        const allSelected = sessionJobIds.every((id) => selectedJobIds.includes(id));
-        const someSelected = sessionJobIds.some((id) => selectedJobIds.includes(id));
+        const allSelected = sessionJobIds.every((id) =>
+          selectedJobIds.includes(id)
+        );
+        const someSelected = sessionJobIds.some((id) =>
+          selectedJobIds.includes(id)
+        );
 
         return (
           <Box key={sessionId}>
@@ -452,7 +459,11 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
                 primaryTypographyProps={{ fontWeight: 600 }}
               />
               <Typography variant="caption" color="text.secondary">
-                {sessionJobIds.filter((id) => selectedJobIds.includes(id)).length}/{jobs.length}
+                {
+                  sessionJobIds.filter((id) => selectedJobIds.includes(id))
+                    .length
+                }
+                /{jobs.length}
               </Typography>
             </ListItemButton>
             <List dense disablePadding sx={{ pl: 2 }}>
