@@ -32,16 +32,7 @@ async function importModuleFromString(code: string) {
   return import(/* @vite-ignore */ url);
 }
 
-/* optional global cleanup */
-export function clearDynamicModuleCache() {
-  for (const url of blobCache.values()) {
-    URL.revokeObjectURL(url);
-  }
-  blobCache.clear();
-}
-
 /* ---------------- component ---------------- */
-
 export default function DynamicField(props: FieldProps) {
   const code = props.uiSchema?.['ui:options']?.code;
 
