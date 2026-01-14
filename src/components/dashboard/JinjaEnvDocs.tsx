@@ -39,7 +39,7 @@ type Props = {
 
 type RenderResult = {
   loading: boolean;
-  output?: { result: string };
+  output?: string;
   error?: string;
 };
 
@@ -232,7 +232,7 @@ const DocItemAccordion = memo(function DocItemAccordion({
             )}
             {renderResult.output && (
               <Typography color="success.main">
-                {renderResult.output.result}
+                {renderResult.output}
               </Typography>
             )}
             {renderResult.error && (
