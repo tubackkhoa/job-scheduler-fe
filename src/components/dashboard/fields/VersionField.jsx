@@ -17,6 +17,8 @@ import {
 import { Save, PublishedWithChanges } from '@mui/icons-material';
 import { buildJinjaContext } from '../../../utils';
 import { ConfirmationDialog } from '../ConfirmationDialog';
+import { SESSIONS } from '../../../constants/session';
+
 export function VersionField({
   formData,
   onChange,
@@ -352,10 +354,16 @@ export function VersionField({
           <ApplyMessage
             render={render}
             selectedJobIds={selectedJobIds}
-            sessionId={registry.formContext.sessionId}
             onToggle={(id) => {
               setSelectedJobIds((prev) =>
                 prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+              );
+            }}
+            onSelectAll={(ids, select) => {
+              setSelectedJobIds((prev) =>
+                select
+                  ? [...new Set([...prev, ...ids])]
+                  : prev.filter((id) => !ids.includes(id))
               );
             }}
           />
@@ -371,40 +379,102 @@ export function VersionField({
   );
 }
 
-const ApplyMessage = ({ sessionId, render, onToggle, selectedJobIds }) => {
-  const [jobs, setJobs] = useState([]);
+
+const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
+  const [jobsBySession, setJobsBySession] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    render(
-      `{{ get_jobs_by_plugin_and_session(plugin_id, session_id) | tolist("id", "description") | tojson }}`,
-      { session_id: sessionId }
-    ).then((ret) => {
-      setJobs(ret);
-    });
-  }, [sessionId, render]);
+    const fetchAllJobs = async () => {
+      setLoading(true);
+      const results = {};
+      
+      await Promise.all(
+        SESSIONS.map(async (session) => {
+          try {
+            const jobs = await render(
+              `{{ get_jobs_by_plugin_and_session(plugin_id, session_id) | tolist("id", "description") | tojson }}`,
+              { session_id: session.id }
+            );
+            if (jobs?.length) {
+              results[session.id] = { name: session.name, jobs };
+            }
+          } catch (e) {
+            console.error(`Failed to fetch jobs for session ${session.name}:`, e);
+          }
+        })
+      );
+      
+      setJobsBySession(results);
+      setLoading(false);
+    };
+
+    fetchAllJobs();
+  }, [render]);
+
+  if (loading) {
+    return <Typography variant="body2">Loading jobs...</Typography>;
+  }
+
+  const sessionIds = Object.keys(jobsBySession);
+  if (!sessionIds.length) {
+    return <Typography variant="body2">No jobs found.</Typography>;
+  }
 
   return (
-    <Stack>
-      Are you sure you want to apply this version to all jobs?
-      <List>
-        {jobs.map((job) => (
-          <ListItem dense key={job.id} disablePadding>
+    <Stack spacing={1}>
+      <Typography variant="body2">
+        Select the jobs you want to apply this version to:
+      </Typography>
+      {sessionIds.map((sessionId) => {
+        const { name, jobs } = jobsBySession[sessionId];
+        const sessionJobIds = jobs.map((j) => j.id);
+        const allSelected = sessionJobIds.every((id) => selectedJobIds.includes(id));
+        const someSelected = sessionJobIds.some((id) => selectedJobIds.includes(id));
+
+        return (
+          <Box key={sessionId}>
             <ListItemButton
-              onClick={() => onToggle(job.id)}
-              sx={{ alignItems: 'center' }}
+              onClick={() => onSelectAll(sessionJobIds, !allSelected)}
+              sx={{ bgcolor: 'action.hover', borderRadius: 1, mb: 0.5 }}
             >
-              <Checkbox
-                edge="start"
-                checked={selectedJobIds.includes(job.id)}
-                tabIndex={-1}
-                disableRipple
-                sx={{ mr: 1 }}
+              <ListItemIcon>
+                <Checkbox
+                  edge="start"
+                  checked={allSelected}
+                  indeterminate={someSelected && !allSelected}
+                  tabIndex={-1}
+                  disableRipple
+                />
+              </ListItemIcon>
+              <ListItemText
+                primary={name}
+                primaryTypographyProps={{ fontWeight: 600 }}
               />
-              <ListItemText primary={job.description} sx={{ my: 0 }} />
+              <Typography variant="caption" color="text.secondary">
+                {sessionJobIds.filter((id) => selectedJobIds.includes(id)).length}/{jobs.length}
+              </Typography>
             </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
+            <List dense disablePadding sx={{ pl: 2 }}>
+              {jobs.map((job) => (
+                <ListItem key={job.id} disablePadding>
+                  <ListItemButton onClick={() => onToggle(job.id)}>
+                    <ListItemIcon>
+                      <Checkbox
+                        edge="start"
+                        checked={selectedJobIds.includes(job.id)}
+                        tabIndex={-1}
+                        disableRipple
+                      />
+                    </ListItemIcon>
+                    <ListItemText primary={job.description} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        );
+      })}
     </Stack>
   );
 };
