@@ -1,16 +1,18 @@
-import { transform } from 'esbuild';
-import fs from 'fs';
+import { build } from 'esbuild';
 
 const [input, output] = process.argv.slice(2);
 
-const { code } = await transform(fs.readFileSync(input), {
-  loader: 'tsx',
+await build({
+  entryPoints: [input],
+  outfile: output,
+  bundle: true,
+  minify: true,
+  legalComments: 'none',
   format: 'esm',
+  target: 'es2020',
+  loader: {
+    '.tsx': 'tsx'
+  },
   jsx: 'transform',
-  jsxFactory: 'React.createElement',
-  target: 'es2020'
+  jsxFactory: 'React.createElement'
 });
-
-const final = code.replace(/^(import .*?;\s*\n)+/, '');
-
-fs.writeFileSync(output, final);
