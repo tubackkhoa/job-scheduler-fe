@@ -24,7 +24,7 @@ function createUrlFromString(code: string) {
 // known at build time
 // Define the shape of your expected module
 const libModules = import.meta.env.DEV
-  ? import.meta.glob('../../../libs/*.{ts,js,tsx,jsx}')
+  ? import.meta.glob('../../../../libs/*.{ts,js,tsx,jsx}')
   : {};
 
 export default function DynamicField(props: FieldProps) {
@@ -35,7 +35,7 @@ export default function DynamicField(props: FieldProps) {
   const LazyComponent = useMemo(() => {
     if (!modUrl) return null;
 
-    const libModule = libModules[`../../../libs/${modUrl}`];
+    const libModule = libModules[`../../../../libs/${modUrl}`];
     const loader = libModule ? libModule() : import(/* @vite-ignore */ modUrl);
 
     if (!loader) return null;
@@ -69,10 +69,17 @@ export default function DynamicField(props: FieldProps) {
     );
   }
 
-  if (!LazyComponent) return <div>Invalid Component Path ${url}</div>;
+  if (!LazyComponent)
+    return (
+      <Mui.Alert variant="outlined" severity="error">
+        Invalid Component Path ${url}
+      </Mui.Alert>
+    );
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense
+      fallback={<Mui.Typography color="primary">Loading...</Mui.Typography>}
+    >
       <LazyComponent {...props} />
     </Suspense>
   );
