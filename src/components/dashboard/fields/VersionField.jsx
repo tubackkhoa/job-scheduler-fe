@@ -389,23 +389,18 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
     const fetchAllJobs = async () => {
       setLoading(true);
       const results = {};
-      
-      await Promise.all(
-        SESSIONS.map(async (session) => {
-          try {
-            const jobs = await render(
-              `{{ get_jobs_by_plugin_and_session(plugin_id, session_id) | tolist("id", "description") | tojson }}`,
-              { session_id: session.id }
+      const jobs = await render(
+              `{{ get_jobs_by_plugin_and_session(plugin_id) | tolist("id", "description", "session_id") | tojson }}`
             );
+      SESSIONS.map((session) => {
+          try {
             if (jobs?.length) {
-              results[session.id] = { name: session.name, jobs };
+              results[session.id] = { name: session.name, jobs: jobs.filter((j) => j.session_id === session.id) };
             }
           } catch (e) {
             console.error(`Failed to fetch jobs for session ${session.name}:`, e);
           }
         })
-      );
-      
       setJobsBySession(results);
       setLoading(false);
     };
