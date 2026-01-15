@@ -28,11 +28,12 @@ export const buildUiSchemaWithExpr = async (
   context: Record<string, any>,
   schema: any,
   changedFieldId: string
-): Promise<any> => {
+): Promise<[any, string[]]> => {
   if (!schema) return schema;
 
   const newSchema = _.cloneDeep(schema);
   const stack = [{ node: newSchema }];
+  const errors = [];
 
   while (stack.length) {
     const { node } = stack.pop()!;
@@ -62,7 +63,7 @@ export const buildUiSchemaWithExpr = async (
               _.merge(node, extraOptions);
             }
           } catch (ex) {
-            console.error(ex);
+            errors.push(ex.message);
           }
         }
       }
@@ -80,7 +81,8 @@ export const buildUiSchemaWithExpr = async (
     }
   }
 
-  return newSchema;
+  // return both to catch error
+  return [newSchema, errors];
 };
 
 export const extractUiSchema = (schema: any): Record<string, any> => {

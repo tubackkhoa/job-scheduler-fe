@@ -19,6 +19,7 @@ export const ConfigForm = ({
   pluginId
 }) => {
   const [localSchema, setLocalSchema] = useState(schema);
+  const [extraErrors, setExtraErrors] = useState({});
   const changedFieldId = useRef();
 
   const handleChange = ({ formData: newFormData }, fieldPathId) => {
@@ -36,8 +37,9 @@ export const ConfigForm = ({
       formData,
       localSchema, // remain state
       changedFieldId.current
-    ).then((newSchema) => {
+    ).then(([newSchema, errors]) => {
       setLocalSchema(newSchema);
+      if (errors.length) setExtraErrors({ __errors: errors });
     });
   }, [formData]);
 
@@ -61,6 +63,7 @@ export const ConfigForm = ({
       {formData && (
         <ErrorBoundary>
           <Form
+            extraErrors={extraErrors}
             schema={localSchema}
             uiSchema={uiSchema}
             formContext={{ formData, pluginPackage, env, sessionId }}
@@ -72,7 +75,6 @@ export const ConfigForm = ({
             validator={validator}
             onChange={handleChange}
             liveValidate={false}
-            showErrorList={false}
             templates={{
               ObjectFieldTemplate
             }}
