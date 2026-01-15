@@ -47,18 +47,22 @@ export const buildUiSchemaWithExpr = async (
         // only render if deps changed, or first time when no changedFieldId
         if (!deps || !changedFieldId || deps.includes(changedFieldId)) {
           const subKey = sKey === 'ui:expr' ? '' : sKey.replace('ui:expr:', '');
-          const extraOptions = await jinjaEvaluate(
-            packageName,
-            expr,
-            filters,
-            context,
-            !!subKey
-          );
+          try {
+            const extraOptions = await jinjaEvaluate(
+              packageName,
+              expr,
+              filters,
+              context,
+              !!subKey
+            );
 
-          if (subKey) {
-            node[subKey] = extraOptions;
-          } else {
-            _.merge(node, extraOptions);
+            if (subKey) {
+              node[subKey] = extraOptions;
+            } else {
+              _.merge(node, extraOptions);
+            }
+          } catch (ex) {
+            console.error(ex);
           }
         }
       }
