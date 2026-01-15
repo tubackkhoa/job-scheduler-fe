@@ -34,7 +34,8 @@ const libModules = import.meta.env.DEV
   : {};
 
 export default function DynamicField(props: FieldProps) {
-  const { code, url } = props.uiSchema?.['ui:options'] || {};
+  const { code, url } = props.schema;
+
   const modUrl = code ? createUrlFromString(code) : url;
   const [error, setError] = useState<Error | null>(null);
 
@@ -75,12 +76,7 @@ export default function DynamicField(props: FieldProps) {
     );
   }
 
-  if (!LazyComponent)
-    return (
-      <Mui.Alert variant="outlined" severity="error">
-        Invalid Component Path ${url}
-      </Mui.Alert>
-    );
+  if (!LazyComponent) return null;
 
   return (
     <Suspense

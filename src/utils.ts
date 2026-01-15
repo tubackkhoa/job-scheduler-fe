@@ -37,21 +37,28 @@ export const buildUiSchemaWithExpr = async (
   while (stack.length) {
     const { node } = stack.pop()!;
 
-    if (node['ui:expr']) {
-      const [expr, deps]: string[] =
-        typeof node['ui:expr'] === 'string'
-          ? [node['ui:expr']]
-          : node['ui:expr'];
+    for (const [sKey, sValue] of Object.entries(node)) {
+      if (sKey.startsWith('ui:expr')) {
+        const [expr, deps]: string[] = Array.isArray(sValue)
+          ? sValue
+          : [sValue];
 
-      // only render if deps changed, or first time when no changedFieldId
-      if (!deps || !changedFieldId || deps.includes(changedFieldId)) {
-        const extraOptions = await jinjaEvaluate(
-          packageName,
-          expr,
-          filters,
-          context
-        );
-        _.merge(node, extraOptions);
+        // only render if deps changed, or first time when no changedFieldId
+        if (!deps || !changedFieldId || deps.includes(changedFieldId)) {
+          const subKey = sKey.replace('ui:expr:', '');
+          const extraOptions = await jinjaEvaluate(
+            packageName,
+            expr,
+            filters,
+            context,
+            !!subKey
+          );
+          if (subKey) {
+            node[subKey] = extraOptions;
+          } else {
+            _.merge(node, extraOptions);
+          }
+        }
       }
     }
 
@@ -89,7 +96,7 @@ export const extractUiSchema = (schema: any): Record<string, any> => {
       const uiEntry: Record<string, any> = {};
 
       for (const [uiKey, uiValue] of Object.entries(prop)) {
-        if (uiKey.startsWith('ui:') && uiKey !== 'ui:expr') {
+        if (uiKey.startsWith('ui:') && !uiKey.startsWith('ui:expr')) {
           uiEntry[uiKey] = uiValue;
         }
       }
