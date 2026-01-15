@@ -41,8 +41,7 @@ export function CrudField({
 
   const createSchema = schema["ui:options"]?.createSchema;
 
-  const createExpr = schema['model:expr']['create'];
-  const deleteExpr = schema['model:expr']['delete'];
+
   // Build context with dependencies
   const render = useCallback(
     buildJinjaContext(
@@ -306,7 +305,7 @@ export function CrudField({
               Create
             </Button>
           )}
-
+          
           {selectedItem && schema['model:expr']?.['delete'] && (
             <IconButton
               size="small"
