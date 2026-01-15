@@ -21,6 +21,12 @@ function createUrlFromString(code: string) {
   return url;
 }
 
+export type DynamicFieldProps = FieldProps & {
+  React: typeof React;
+  Mui: typeof Mui;
+  Utils: typeof Utils;
+};
+
 // known at build time
 // Define the shape of your expected module
 const libModules = import.meta.env.DEV
