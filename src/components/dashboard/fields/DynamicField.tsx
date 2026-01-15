@@ -70,15 +70,15 @@ const libModules = import.meta.env.DEV
   : {};
 
 export default function DynamicField(props: FieldProps) {
-  const { url } = props.schema;
+  const { url, code } = props.schema;
 
   const [error, setError] = useState<Error | null>(null);
 
   const LazyComponent = useMemo(() => {
     return React.lazy(async () => {
       let loader: any;
-      if (url.startsWith(gzipPrefix)) {
-        const modUrl = await createUrlFromString(url);
+      if (code || url.startsWith(gzipPrefix)) {
+        const modUrl = await createUrlFromString(code || url);
         loader = import(/* @vite-ignore */ modUrl);
       } else {
         const libModule = libModules[`../../../../libs/${url}`];
@@ -110,7 +110,7 @@ export default function DynamicField(props: FieldProps) {
         setError(ex);
       }
     });
-  }, [url]);
+  }, [url, code]);
 
   if (error) {
     return (
