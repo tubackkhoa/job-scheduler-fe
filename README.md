@@ -90,7 +90,7 @@ Once the Field component is written, bundle it into a single JavaScript
 file.
 
 ```bash
-node bundle.js input.tsx output.js
+node bundle.js libs/input.tsx plugins/sample_plugin/field.js
 ```
 
 This produces a self-contained artifact that can be embedded into your

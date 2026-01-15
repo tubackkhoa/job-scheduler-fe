@@ -4,6 +4,15 @@ import { syntaxTree } from '@codemirror/language';
 import _ from 'lodash';
 import api from './api';
 
+export const getCodeHash = (str: string) => {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    // hash * 33 + charCode
+    hash = (hash << 5) + hash + str.charCodeAt(i);
+  }
+  return (hash >>> 0).toString(16);
+};
+
 export type Filter = string[] | Set<string> | { [key: string]: any };
 
 // Helper to resolve $ref schema if present
