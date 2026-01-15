@@ -1,5 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
+import { keymap } from '@codemirror/view';
+import { commentKeymap } from '@codemirror/comment';
 import {
   Stack,
   Typography,
@@ -78,7 +80,8 @@ export function TemplateField({
         base: resolveLanguageExtension(schema),
         ...completions
       }),
-      jinjaLinter(params, registry.formContext.env)
+      jinjaLinter(params, registry.formContext.env),
+      keymap.of(commentKeymap)
     ];
   }, [schema, registry.formContext]);
 

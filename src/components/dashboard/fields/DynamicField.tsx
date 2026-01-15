@@ -1,66 +1,85 @@
-import React, { ComponentType, useEffect, useState } from 'react';
+import React, { Suspense, useMemo, useState } from 'react';
 import { Alert } from '@mui/material';
 import { FieldProps } from '@rjsf/utils';
 import * as Mui from '@mui/material';
 import * as Utils from '../../../utils';
+import _ from 'lodash';
+import * as MuiIcon from '@mui/icons-material';
+import { ConfirmationDialog } from '../ConfirmationDialog';
 
 /* ---------------- blob cache ---------------- */
 
 const blobCache = new Map<string, string>();
 
-async function hashCode(code: string) {
-  const buf = await crypto.subtle.digest(
-    'SHA-256',
-    new TextEncoder().encode(code)
-  );
-  return [...new Uint8Array(buf)]
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-}
-
-async function importModuleFromString(code: string) {
-  const hash = await hashCode(code);
+function createUrlFromString(code: string) {
+  const hash = Utils.getCodeHash(code);
 
   let url = blobCache.get(hash);
   if (!url) {
     const blob = new Blob([code], { type: 'application/javascript' });
     url = URL.createObjectURL(blob);
-    console.log(url);
     blobCache.set(hash, url);
   }
 
-  return import(/* @vite-ignore */ url);
+  return url;
 }
 
-/* ---------------- component ---------------- */
+// extends and declare React, Mui, Utils scope
+export type DynamicFieldProps = FieldProps & {
+  React: typeof React;
+  MuiIcon: typeof MuiIcon;
+  Mui: typeof Mui & {
+    ConfirmationDialog: typeof ConfirmationDialog;
+  };
+  Utils: typeof Utils & {
+    _: typeof _;
+  };
+};
+
+const ExtendedMui = { ...Mui, ConfirmationDialog };
+const ExtendedUtils = { ...Utils, _ };
+
+// known at build time
+// Define the shape of your expected module
+const libModules = import.meta.env.DEV
+  ? import.meta.glob('../../../../libs/*.{ts,js,tsx,jsx}')
+  : {};
+
 export default function DynamicField(props: FieldProps) {
-  const code = props.uiSchema?.['ui:options']?.code;
+  const { code, url } = props.schema;
 
-  const [Component, setComponent] = useState<ComponentType<FieldProps> | null>(
-    null
-  );
-
+  const modUrl = code ? createUrlFromString(code) : url;
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    if (!code) return;
+  const LazyComponent = useMemo(() => {
+    if (!modUrl) return null;
 
-    let cancelled = false;
+    const libModule = libModules[`../../../../libs/${modUrl}`];
+    const loader = libModule ? libModule() : import(/* @vite-ignore */ modUrl);
 
-    importModuleFromString(code)
-      .then((mod) => {
-        if (!cancelled) {
-          setComponent(() => mod.default(React, Mui, Utils));
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err);
-      });
+    if (!loader) return null;
 
-    return () => {
-      cancelled = true;
-    };
-  }, [code]);
+    return React.lazy(async () => {
+      try {
+        const mod = await loader;
+
+        // Return an object that looks like { default: Component }
+        // but injects your custom dependencies
+        return {
+          default: (componentProps) =>
+            React.createElement(mod.default, {
+              ...componentProps,
+              React,
+              MuiIcon,
+              Mui: ExtendedMui,
+              Utils: ExtendedUtils
+            })
+        };
+      } catch (ex) {
+        setError(ex);
+      }
+    });
+  }, [modUrl]);
 
   if (error) {
     return (
@@ -70,7 +89,13 @@ export default function DynamicField(props: FieldProps) {
     );
   }
 
-  if (!Component) return null;
+  if (!LazyComponent) return null;
 
-  return <Component {...props} />;
+  return (
+    <Suspense
+      fallback={<Mui.Typography color="primary">Loading...</Mui.Typography>}
+    >
+      <LazyComponent {...props} />
+    </Suspense>
+  );
 }

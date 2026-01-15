@@ -37,7 +37,7 @@ const calculateItemSize = (uiSchema?: UISchema): GridSizeObject => {
   if (typeof size === 'object' && size !== null) {
     Object.assign(calSize, size);
   } else {
-    calSize.md = size ?? (isEditor ? 12 : 3);
+    calSize.md = (size as GridSize) ?? (isEditor ? 12 : 3);
   }
 
   return calSize;

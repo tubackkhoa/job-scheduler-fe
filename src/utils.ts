@@ -4,6 +4,15 @@ import { syntaxTree } from '@codemirror/language';
 import _ from 'lodash';
 import api from './api';
 
+export const getCodeHash = (str: string) => {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    // hash * 33 + charCode
+    hash = (hash << 5) + hash + str.charCodeAt(i);
+  }
+  return (hash >>> 0).toString(16);
+};
+
 export type Filter = string[] | Set<string> | { [key: string]: any };
 
 // Helper to resolve $ref schema if present
@@ -28,21 +37,34 @@ export const buildUiSchemaWithExpr = async (
   while (stack.length) {
     const { node } = stack.pop()!;
 
-    if (node['ui:expr']) {
-      const [expr, deps]: string[] =
-        typeof node['ui:expr'] === 'string'
-          ? [node['ui:expr']]
-          : node['ui:expr'];
+    for (const [sKey, sValue] of Object.entries(node)) {
+      if (sKey.startsWith('ui:expr')) {
+        const [expr, deps] =
+          typeof sValue === 'string'
+            ? [sValue]
+            : (sValue as [string, string[]]);
 
-      // only render if deps changed, or first time when no changedFieldId
-      if (!deps || !changedFieldId || deps.includes(changedFieldId)) {
-        const extraOptions = await jinjaEvaluate(
-          packageName,
-          expr,
-          filters,
-          context
-        );
-        _.merge(node, extraOptions);
+        // only render if deps changed, or first time when no changedFieldId
+        if (!deps || !changedFieldId || deps.includes(changedFieldId)) {
+          const subKey = sKey === 'ui:expr' ? '' : sKey.replace('ui:expr:', '');
+          try {
+            const extraOptions = await jinjaEvaluate(
+              packageName,
+              expr,
+              filters,
+              context,
+              !!subKey
+            );
+
+            if (subKey) {
+              node[subKey] = extraOptions;
+            } else {
+              _.merge(node, extraOptions);
+            }
+          } catch (ex) {
+            console.error(ex);
+          }
+        }
       }
     }
 
@@ -80,7 +102,7 @@ export const extractUiSchema = (schema: any): Record<string, any> => {
       const uiEntry: Record<string, any> = {};
 
       for (const [uiKey, uiValue] of Object.entries(prop)) {
-        if (uiKey.startsWith('ui:') && uiKey !== 'ui:expr') {
+        if (uiKey.startsWith('ui:') && !uiKey.startsWith('ui:expr')) {
           uiEntry[uiKey] = uiValue;
         }
       }
