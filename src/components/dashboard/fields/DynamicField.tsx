@@ -10,16 +10,40 @@ import { ConfirmationDialog } from '../ConfirmationDialog';
 /* ---------------- blob cache ---------------- */
 
 const blobCache = new Map<string, string>();
+const gzipPrefix = 'data:application/gzip;base64,';
 
-function createUrlFromString(code: string) {
+async function createUrlFromString(code: string) {
   const hash = Utils.getCodeHash(code);
 
   let url = blobCache.get(hash);
-  if (!url) {
-    const blob = new Blob([code], { type: 'application/javascript' });
-    url = URL.createObjectURL(blob);
-    blobCache.set(hash, url);
+  if (url) return url;
+
+  let jsSource: string;
+
+  // Handle data:application/gzip;base64,...
+  if (code.startsWith(gzipPrefix)) {
+    const base64 = code.slice(gzipPrefix.length);
+
+    // base64 → bytes
+    const compressed = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+
+    // gunzip
+    const stream = new Blob([compressed]).stream();
+    const decompressedStream = stream.pipeThrough(
+      new DecompressionStream('gzip')
+    );
+
+    jsSource = await new Response(decompressedStream).text();
+  } else {
+    jsSource = code;
   }
+
+  const blob = new Blob([jsSource], {
+    type: 'application/javascript'
+  });
+
+  url = URL.createObjectURL(blob);
+  blobCache.set(hash, url);
 
   return url;
 }
@@ -46,20 +70,27 @@ const libModules = import.meta.env.DEV
   : {};
 
 export default function DynamicField(props: FieldProps) {
-  const { code, url } = props.schema;
+  const { url } = props.schema;
 
-  const modUrl = code ? createUrlFromString(code) : url;
   const [error, setError] = useState<Error | null>(null);
 
   const LazyComponent = useMemo(() => {
-    if (!modUrl) return null;
-
-    const libModule = libModules[`../../../../libs/${modUrl}`];
-    const loader = libModule ? libModule() : import(/* @vite-ignore */ modUrl);
-
-    if (!loader) return null;
-
     return React.lazy(async () => {
+      let loader: any;
+      if (url.startsWith(gzipPrefix)) {
+        const modUrl = await createUrlFromString(url);
+        loader = import(/* @vite-ignore */ modUrl);
+      } else {
+        const libModule = libModules[`../../../../libs/${url}`];
+        if (libModule) {
+          loader = libModule();
+        } else {
+          loader = import(/* @vite-ignore */ url);
+        }
+      }
+
+      if (!loader) return null;
+
       try {
         const mod = await loader;
 
@@ -79,7 +110,7 @@ export default function DynamicField(props: FieldProps) {
         setError(ex);
       }
     });
-  }, [modUrl]);
+  }, [url]);
 
   if (error) {
     return (
