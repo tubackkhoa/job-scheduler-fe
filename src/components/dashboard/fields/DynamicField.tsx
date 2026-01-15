@@ -6,39 +6,33 @@ import * as Utils from '../../../utils';
 import _ from 'lodash';
 import * as MuiIcon from '@mui/icons-material';
 import { ConfirmationDialog } from '../ConfirmationDialog';
+import { ErrorBoundary } from '../ErrorBound';
 
 /* ---------------- blob cache ---------------- */
 
 const blobCache = new Map<string, string>();
 const gzipPrefix = 'data:application/gzip;base64,';
 
-async function createUrlFromString(code: string) {
+async function decodeGzip(base64: string) {
+  // base64 → bytes
+  const compressed = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+
+  // gunzip
+  const stream = new Blob([compressed]).stream();
+  const decompressedStream = stream.pipeThrough(
+    new DecompressionStream('gzip')
+  );
+
+  return await new Response(decompressedStream).text();
+}
+
+function createUrlFromString(code: string) {
   const hash = Utils.getCodeHash(code);
 
   let url = blobCache.get(hash);
   if (url) return url;
 
-  let jsSource: string;
-
-  // Handle data:application/gzip;base64,...
-  if (code.startsWith(gzipPrefix)) {
-    const base64 = code.slice(gzipPrefix.length);
-
-    // base64 → bytes
-    const compressed = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-
-    // gunzip
-    const stream = new Blob([compressed]).stream();
-    const decompressedStream = stream.pipeThrough(
-      new DecompressionStream('gzip')
-    );
-
-    jsSource = await new Response(decompressedStream).text();
-  } else {
-    jsSource = code;
-  }
-
-  const blob = new Blob([jsSource], {
+  const blob = new Blob([code], {
     type: 'application/javascript'
   });
 
@@ -69,35 +63,38 @@ const libModules = import.meta.env.DEV
   ? import.meta.glob('../../../../libs/*.{ts,js,tsx,jsx}')
   : {};
 
+const loadModule = (modUrl: string) => import(/* @vite-ignore */ modUrl);
+
 export default function DynamicField(props: FieldProps) {
   const { url, code } = props.schema;
 
   const [error, setError] = useState<Error | null>(null);
 
   const LazyComponent = useMemo(() => {
-    return React.lazy(async () => {
-      let loader: any;
-      if (code || url.startsWith(gzipPrefix)) {
-        const modUrl = await createUrlFromString(code || url);
-        loader = import(/* @vite-ignore */ modUrl);
-      } else {
-        const libModule = libModules[`../../../../libs/${url}`];
-        if (libModule) {
-          loader = libModule();
+    if (!code && !url) return null;
+
+    return React.lazy(() =>
+      (async () => {
+        let loader: Promise<any>;
+
+        if (code) {
+          loader = loadModule(createUrlFromString(code));
+        } else if (url.startsWith(gzipPrefix)) {
+          loader = loadModule(
+            createUrlFromString(await decodeGzip(url.slice(gzipPrefix.length)))
+          );
         } else {
-          loader = import(/* @vite-ignore */ url);
+          loader = libModules[`../../../../libs/${url}`]?.() ?? loadModule(url);
         }
-      }
 
-      if (!loader) return null;
+        if (!loader) {
+          throw new Error('Module loader is undefined');
+        }
 
-      try {
         const mod = await loader;
 
-        // Return an object that looks like { default: Component }
-        // but injects your custom dependencies
         return {
-          default: (componentProps) =>
+          default: (componentProps: any) =>
             React.createElement(mod.default, {
               ...componentProps,
               React,
@@ -106,10 +103,8 @@ export default function DynamicField(props: FieldProps) {
               Utils: ExtendedUtils
             })
         };
-      } catch (ex) {
-        setError(ex);
-      }
-    });
+      })()
+    );
   }, [url, code]);
 
   if (error) {
@@ -123,10 +118,12 @@ export default function DynamicField(props: FieldProps) {
   if (!LazyComponent) return null;
 
   return (
-    <Suspense
-      fallback={<Mui.Typography color="primary">Loading...</Mui.Typography>}
-    >
-      <LazyComponent {...props} />
-    </Suspense>
+    <ErrorBoundary resetKey={`${url}:${code}`} onError={setError}>
+      <Suspense
+        fallback={<Mui.Typography color="primary">Loading...</Mui.Typography>}
+      >
+        <LazyComponent {...props} />
+      </Suspense>
+    </ErrorBoundary>
   );
 }
