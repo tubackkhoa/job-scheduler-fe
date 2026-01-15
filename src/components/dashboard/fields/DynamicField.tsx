@@ -3,6 +3,9 @@ import { Alert } from '@mui/material';
 import { FieldProps } from '@rjsf/utils';
 import * as Mui from '@mui/material';
 import * as Utils from '../../../utils';
+import _ from 'lodash';
+import * as MuiIcon from '@mui/icons-material';
+import { ConfirmationDialog } from '../ConfirmationDialog';
 
 /* ---------------- blob cache ---------------- */
 
@@ -21,11 +24,20 @@ function createUrlFromString(code: string) {
   return url;
 }
 
+// extends and declare React, Mui, Utils scope
 export type DynamicFieldProps = FieldProps & {
   React: typeof React;
-  Mui: typeof Mui;
-  Utils: typeof Utils;
+  MuiIcon: typeof MuiIcon;
+  Mui: typeof Mui & {
+    ConfirmationDialog: typeof ConfirmationDialog;
+  };
+  Utils: typeof Utils & {
+    _: typeof _;
+  };
 };
+
+const ExtendedMui = { ...Mui, ConfirmationDialog };
+const ExtendedUtils = { ...Utils, _ };
 
 // known at build time
 // Define the shape of your expected module
@@ -58,8 +70,9 @@ export default function DynamicField(props: FieldProps) {
             React.createElement(mod.default, {
               ...componentProps,
               React,
-              Mui,
-              Utils
+              MuiIcon,
+              Mui: ExtendedMui,
+              Utils: ExtendedUtils
             })
         };
       } catch (ex) {
