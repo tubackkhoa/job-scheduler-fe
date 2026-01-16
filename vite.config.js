@@ -12,10 +12,22 @@ export default defineConfig(({ mode }) => {
         .filter(Boolean)
     : [''];
 
+  const enableProxy = env.VITE_PROXY === 'true';
+
   return {
     plugins: [react({ babel: { plugins: ['babel-plugin-react-compiler'] } })],
     preview: {
       allowedHosts
+    },
+    server: {
+      ...(enableProxy && {
+        proxy: {
+          '/api': {
+            target: env.VITE_API_BASE_URL,
+            changeOrigin: true
+          }
+        }
+      })
     }
   };
 });

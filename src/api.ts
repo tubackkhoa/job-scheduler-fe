@@ -1,6 +1,7 @@
+const { VITE_PROXY, VITE_API_BASE_URL } = import.meta.env;
+
 export const API_BASE_URL =
-  // @ts-ignore
-  import.meta.env.VITE_API_BASE_URL ?? '';
+  VITE_PROXY === 'true' ? '' : VITE_API_BASE_URL || '';
 
 const parseJsonResponse = async (res: Response, url: string) => {
   const contentType = res.headers.get('content-type');
@@ -22,7 +23,7 @@ const parseJsonResponse = async (res: Response, url: string) => {
 
 export default {
   async fetchSchema(sessionId: number, pluginId: number) {
-    const url = `${API_BASE_URL}/schema/${sessionId}/${pluginId}`;
+    const url = `${API_BASE_URL}/api/schema/${sessionId}/${pluginId}`;
 
     const res = await fetch(url);
 
@@ -35,7 +36,7 @@ export default {
   },
 
   async fetchPlugins() {
-    const url = `${API_BASE_URL}/plugins`;
+    const url = `${API_BASE_URL}/api/plugins`;
 
     const res = await fetch(url);
 
@@ -47,7 +48,7 @@ export default {
     return parseJsonResponse(res, url);
   },
   async updateConfig(jobId: number, payload: Object) {
-    const url = `${API_BASE_URL}/config/${jobId}`;
+    const url = `${API_BASE_URL}/api/config/${jobId}`;
 
     const res = await fetch(url, {
       method: 'POST',
@@ -65,7 +66,7 @@ export default {
     return parseJsonResponse(res, url);
   },
   async activateJob(jobId: number, activation: boolean) {
-    const url = `${API_BASE_URL}/activate/${jobId}/${activation}`;
+    const url = `${API_BASE_URL}/api/activate/${jobId}/${activation}`;
 
     const res = await fetch(url, {
       method: 'POST',
@@ -82,7 +83,7 @@ export default {
     return parseJsonResponse(res, url);
   },
   async deleteJob(jobId: number) {
-    const url = `${API_BASE_URL}/delete/${jobId}`;
+    const url = `${API_BASE_URL}/api/delete/${jobId}`;
 
     const res = await fetch(url, {
       method: 'POST',
@@ -99,7 +100,7 @@ export default {
     return parseJsonResponse(res, url);
   },
   async reloadPlugin(pkg: string) {
-    const url = `${API_BASE_URL}/reload/${pkg}`;
+    const url = `${API_BASE_URL}/api/reload/${pkg}`;
 
     const res = await fetch(url, {
       method: 'POST',
@@ -120,7 +121,7 @@ export default {
     interval: number,
     description?: string
   ) {
-    const url = `${API_BASE_URL}/plugins`;
+    const url = `${API_BASE_URL}/api/plugins`;
 
     const res = await fetch(url, {
       method: 'POST',
@@ -146,7 +147,7 @@ export default {
     template: string,
     params: object
   ): Promise<string> {
-    const url = `${API_BASE_URL}/template/${packageName}`;
+    const url = `${API_BASE_URL}/api/template/${packageName}`;
 
     const res = await fetch(url, {
       method: 'POST',
