@@ -181,8 +181,6 @@ export function SelectField({
           }
         }}
       >
-        {multiple && <Divider sx={{ my: 0.5 }} />}
-
         {options.map(({ id, title }) => (
           <MenuItem key={id} value={id}>
             {multiple && (
