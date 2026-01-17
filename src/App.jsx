@@ -318,8 +318,9 @@ export default function App() {
   const currentJob = jobs.find((version) => version.id === jobId);
 
   const formData = useMemo(() => {
-    if (currentJob?.config) {
-      return currentJob?.config ? JSON.parse(currentJob.config) : null;
+    const cfg = currentJob?.config;
+    if (cfg) {
+      return typeof cfg === 'string' ? JSON.parse(cfg) : cfg;
     }
     // When in new job mode, use schema defaults instead of null
     if (isNewJobMode && schema) {
