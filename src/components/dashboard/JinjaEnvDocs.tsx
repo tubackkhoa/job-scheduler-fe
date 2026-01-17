@@ -375,7 +375,7 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
   }, [data.filters, normalizedQuery]);
 
   const filteredParams = useMemo(() => {
-    let rawParams = Object.entries(params);
+    let rawParams = params ? Object.entries(params) : [];
     if (normalizedQuery)
       rawParams = rawParams.filter(([name]) =>
         name.toLowerCase().includes(normalizedQuery)
