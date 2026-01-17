@@ -11,10 +11,16 @@ import {
 } from '@mui/material';
 import { useMemo, useCallback } from 'react';
 
-export function SelectField({ formData, fieldPathId, schema, onChange }) {
+export function SelectField({
+  formData,
+  fieldPathId,
+  schema,
+  uiSchema,
+  onChange
+}) {
   const labelId = `${fieldPathId?.$id}-label`;
-
-  const uiOptions = schema['ui:options'] ?? {};
+  // uiSchema is updated
+  const uiOptions = uiSchema['ui:options'] ?? {};
   const multiple = uiOptions.multiple === true;
 
   /**
@@ -145,7 +151,7 @@ export function SelectField({ formData, fieldPathId, schema, onChange }) {
   );
 
   return (
-    <FormControl fullWidth size="small">
+    <FormControl fullWidth>
       <InputLabel id={labelId}>{schema.title}</InputLabel>
 
       <Select
@@ -159,7 +165,6 @@ export function SelectField({ formData, fieldPathId, schema, onChange }) {
           multiple && (
             <InputAdornment position="start">
               <Checkbox
-                size="small"
                 edge="start"
                 checked={allSelected}
                 indeterminate={someSelected}
@@ -169,9 +174,6 @@ export function SelectField({ formData, fieldPathId, schema, onChange }) {
           )
         }
         MenuProps={{
-          MenuListProps: {
-            dense: true
-          },
           PaperProps: {
             sx: {
               maxHeight: 300
@@ -185,22 +187,12 @@ export function SelectField({ formData, fieldPathId, schema, onChange }) {
           <MenuItem key={id} value={id}>
             {multiple && (
               <Checkbox
-                size="small"
                 edge="start"
                 checked={selectedSet.has(id)}
                 sx={{ mr: 1, py: 0 }}
               />
             )}
-            <Typography
-              variant="subtitle2"
-              sx={{
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              {title}
-            </Typography>
+            {title}
           </MenuItem>
         ))}
       </Select>
