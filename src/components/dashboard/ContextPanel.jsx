@@ -126,11 +126,8 @@ export function ContextPanel({
                 </MenuItem>
                 {plugins.map((plugin) => (
                   <MenuItem key={plugin.id} value={plugin.id}>
-                    <Tooltip
-                      title={plugin.description}
-                      placement="bottom-start"
-                    >
-                      <Stack>
+                    <Tooltip arrow title={plugin.description} placement="top">
+                      <Stack width="100%">
                         <Typography
                           variant="body2"
                           sx={{
