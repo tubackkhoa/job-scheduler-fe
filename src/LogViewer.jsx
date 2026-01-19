@@ -56,57 +56,34 @@ const LogRow = function LogRow({ log, searchText }) {
         <Typography
           variant="caption"
           color="text.secondary"
-          sx={{ minWidth: 140, fontFamily: 'inherit' }}
+          sx={{ minWidth: 200 }}
         >
           {log.time || ''}
+          <Typography
+            variant="caption"
+            component="span"
+            sx={{
+              fontWeight: 600,
+              ml: 2,
+              textTransform: 'uppercase',
+              color: getLevelColor(log.level)
+            }}
+          >
+            [{log.level}]
+          </Typography>
         </Typography>
 
         <Typography
           variant="caption"
           sx={{
-            minWidth: 80,
             fontFamily: 'inherit',
-            fontWeight: 600,
-            textTransform: 'uppercase',
-            color: getLevelColor(log.level)
+            opacity: 0.9,
+            whiteSpace: 'pre',
+            minWidth: 'max-content'
           }}
         >
-          [{log.level}]
+          {highlightMessage(formatMessage(log.message), searchText)}
         </Typography>
-
-        <Box
-          sx={{
-            flex: 1,
-            overflowX: 'auto',
-            overflowY: 'hidden',
-            maxWidth: '100%',
-            '&::-webkit-scrollbar': {
-              height: '4px'
-            },
-            '&::-webkit-scrollbar-track': {
-              bgcolor: 'rgba(0, 0, 0, 0.2)'
-            },
-            '&::-webkit-scrollbar-thumb': {
-              bgcolor: 'rgba(255, 255, 255, 0.2)',
-              borderRadius: '2px',
-              '&:hover': {
-                bgcolor: 'rgba(255, 255, 255, 0.3)'
-              }
-            }
-          }}
-        >
-          <Typography
-            variant="caption"
-            sx={{
-              fontFamily: 'inherit',
-              opacity: 0.9,
-              whiteSpace: 'pre',
-              minWidth: 'max-content'
-            }}
-          >
-            {highlightMessage(formatMessage(log.message), searchText)}
-          </Typography>
-        </Box>
       </Stack>
     </ListItem>
   );
