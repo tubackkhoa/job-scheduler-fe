@@ -22,6 +22,25 @@ const resolveRef = (schema: any, ref: string) => {
   return schema.$defs[defKey] ?? null;
 };
 
+export const convertByType = (value: string, field: any) => {
+  switch (typeof field) {
+    case 'number':
+      return Number(value);
+
+    case 'boolean':
+      return value === 'true';
+
+    case 'bigint':
+      return BigInt(value);
+
+    case 'object':
+      return json5.parse(value);
+
+    default:
+      return value;
+  }
+};
+
 export const buildUiSchemaWithExpr = async (
   packageName: string,
   filters: Filter,
@@ -58,7 +77,7 @@ export const buildUiSchemaWithExpr = async (
             );
 
             if (subKey) {
-              node[subKey] = extraOptions;
+              node[subKey] = convertByType(extraOptions, node[subKey]);
             } else {
               _.merge(node, extraOptions);
             }
