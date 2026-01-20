@@ -389,20 +389,20 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
       setLoading(true);
       const results = {};
       const jobs = await render(
-              `{{ get_jobs_by_plugin_and_session(plugin_id) | tolist("id", "description", "session_id") | tojson }}`
-            );
+        `{{ dao.get_jobs_by_plugin_and_session(plugin_id) | tolist("id", "description", "session_id") | tojson }}`
+      );
       SESSIONS.map((session) => {
-          try {
-            if (jobs?.length) {
-              results[session.id] = { name: session.name, jobs: jobs.filter((j) => j.session_id === session.id) };
-            }
-          } catch (e) {
-            console.error(
-              `Failed to fetch jobs for session ${session.name}:`,
-              e
-            );
+        try {
+          if (jobs?.length) {
+            results[session.id] = {
+              name: session.name,
+              jobs: jobs.filter((j) => j.session_id === session.id)
+            };
           }
-        })
+        } catch (e) {
+          console.error(`Failed to fetch jobs for session ${session.name}:`, e);
+        }
+      });
       setJobsBySession(results);
       setLoading(false);
     };
