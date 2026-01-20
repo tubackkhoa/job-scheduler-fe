@@ -348,7 +348,7 @@ export default function App() {
 
           <Grid container spacing={3} sx={{ mt: 1 }}>
             {/* Left sidebar */}
-            <Grid item size={{ xs: 12, md: 3 }}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <Box
                 sx={{
                   display: 'flex',
@@ -384,7 +384,7 @@ export default function App() {
             </Grid>
 
             {/* Main content */}
-            <Grid item size={{ xs: 12, md: 9 }}>
+            <Grid size={{ xs: 12, md: 9 }}>
               <JobDetails
                 jobId={jobId}
                 jobDesc={jobDesc}
