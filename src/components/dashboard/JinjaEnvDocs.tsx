@@ -167,7 +167,7 @@ const DocItemAccordion = memo(function DocItemAccordion({
 
       <AccordionDetails sx={{ pt: 0 }}>
         {item.signature && (
-          <Box mb={1.5}>
+          <Box my={1.5}>
             <Typography
               component="pre"
               sx={(theme) => ({
@@ -193,7 +193,7 @@ const DocItemAccordion = memo(function DocItemAccordion({
           <Typography
             component="pre"
             sx={(theme) => ({
-              margin: 0,
+              my: 1.5,
               padding: '10px 12px',
               fontSize: 13,
               lineHeight: 1.7,
