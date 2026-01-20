@@ -33,7 +33,6 @@ export const ConfigForm = ({
   useEffect(() => {
     buildUiSchemaWithExpr(
       pluginPackage,
-      env.filters,
       formData,
       localSchema, // remain state
       changedFieldId.current

@@ -11,6 +11,7 @@ import { ResponseCard } from './components/dashboard/ResponseCard';
 import { CreatePluginModal } from './components/dashboard/CreatePluginModal';
 import api from './api';
 import { SESSIONS } from './constants/session';
+import { getEnvDoc } from './utils';
 
 const darkTheme = createTheme({
   palette: {
@@ -162,10 +163,10 @@ export default function App() {
       const {
         schema: fetchedSchema,
         jobs,
-        env
+        globals
       } = await api.fetchSchema(currentSessionId ?? sessionId, currentPluginId);
+      setEnv(await getEnvDoc(globals));
       setSchema(fetchedSchema);
-      setEnv(env);
       setJobs(jobs);
 
       const newJobId = currentJobId ?? jobs[0]?.id ?? 0;

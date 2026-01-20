@@ -48,7 +48,6 @@ export default function (
     const render = useCallback(
       buildJinjaContext(
         registry.formContext.pluginPackage,
-        registry.formContext.env.filters,
         registry.formContext.formData
       ),
       [registry.formContext]

@@ -14,7 +14,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SearchIcon from '@mui/icons-material/Search';
 import { useMemo, useDeferredValue } from 'react';
-import { Filter, jinjaEvaluate } from '../../utils';
+import { jinjaEvaluate } from '../../utils';
 
 /**
  * Types
@@ -253,13 +253,11 @@ const DocItemAccordion = memo(function DocItemAccordion({
 function DocSection({
   title,
   items,
-  filters,
   pluginPackage,
   isFilter = false
 }: {
   title: string;
   items: Record<string, DocItem>;
-  filters: Filter;
   pluginPackage: string;
   isFilter?: boolean;
 }) {
@@ -281,13 +279,7 @@ function DocSection({
 
       try {
         // render raw output
-        const output = await jinjaEvaluate(
-          pluginPackage,
-          tpl,
-          filters,
-          {},
-          true
-        );
+        const output = await jinjaEvaluate(pluginPackage, tpl, {}, true);
         setRenderResults((prev) => ({
           ...prev,
           [name]: { loading: false, output }
@@ -421,7 +413,6 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
 
       <DocSection
         title="Config Params"
-        filters={data.filters}
         items={filteredParams}
         pluginPackage={pluginPackage}
         isFilter={true}
@@ -429,14 +420,12 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
 
       <DocSection
         title="Globals"
-        filters={data.filters}
         items={filteredGlobals}
         pluginPackage={pluginPackage}
         isFilter={false}
       />
       <DocSection
         title="Filters"
-        filters={data.filters}
         items={filteredFilters}
         pluginPackage={pluginPackage}
         isFilter={true}

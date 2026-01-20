@@ -1,4 +1,5 @@
 import json5 from 'json5';
+import { PyodideAPI } from 'pyodide';
 import { linter, Diagnostic } from '@codemirror/lint';
 import { syntaxTree } from '@codemirror/language';
 import _ from 'lodash';
@@ -12,8 +13,6 @@ export const getCodeHash = (str: string) => {
   }
   return (hash >>> 0).toString(16);
 };
-
-export type Filter = string[] | Set<string> | { [key: string]: any };
 
 // Helper to resolve $ref schema if present
 const resolveRef = (schema: any, ref: string) => {
@@ -43,7 +42,6 @@ export const convertByType = (value: string, field: any) => {
 
 export const buildUiSchemaWithExpr = async (
   packageName: string,
-  filters: Filter,
   context: Record<string, any>,
   schema: any,
   changedFieldId: string
@@ -71,7 +69,6 @@ export const buildUiSchemaWithExpr = async (
             const extraOptions = await jinjaEvaluate(
               packageName,
               expr,
-              filters,
               context,
               !!subKey
             );
@@ -282,15 +279,15 @@ export class JinjaCompletionBuilder {
     };
   }
 
-  static build(params: Record<string, any> = {}, serverSymbols: any = {}) {
+  static build(params: Record<string, any> = {}, envDoc: EnvDoc) {
     return {
       variables: [
         ...this.buildTopLevelVariables(params),
-        ...this.buildGlobals(serverSymbols.globals),
-        ...this.buildTests(serverSymbols.tests)
+        ...this.buildGlobals(envDoc.globals),
+        ...this.buildTests(envDoc.tests)
       ],
-      filters: this.buildFilters(serverSymbols.filters),
-      tags: this.buildTags(serverSymbols.tags),
+      filters: this.buildFilters(envDoc.filters),
+      tags: this.buildTags(envDoc.tags),
       properties: this.buildProperties(params)
     };
   }
@@ -363,48 +360,109 @@ export const jinjaLinter = (
   });
 };
 
-const initPyodide = new Promise(async (resolve) => {
+const initPyodide: Promise<PyodideAPI> = (async () => {
   // @ts-ignore
-  const pyodide = await loadPyodide();
+  const pyodide: PyodideAPI = await loadPyodide();
 
   // Ensure Jinja2 is available
   await pyodide.loadPackage('jinja2');
 
   // Define Python code
   await pyodide.runPythonAsync(`
-from jinja2 import Environment, meta
-def render(tpl_str, context, filters):
-    env = Environment(autoescape=False, trim_blocks=True, lstrip_blocks=True)
+from jinja2.sandbox import SandboxedEnvironment
+from jinja2 import meta
+import inspect
+import json
+
+def tolist(obj, *include):
+    if include:
+        include_set = set(include)
+        return [{k: v for k, v in item.to_dict().items() if k in include_set} for item in obj]
+    return [item.to_dict() for item in obj]
+
+sandbox = SandboxedEnvironment(autoescape=False, trim_blocks=True, lstrip_blocks=True)
+sandbox.filters.update({
+    "in_clause": lambda values: (
+        "()" if not values else f"({','.join(map(repr, values))})"
+    ),
+    "tolist": tolist,
+})
+
+def describe_callable(obj):    
+    if callable(obj):
+        try:
+            signature = str(inspect.signature(obj))
+        except (ValueError, TypeError):
+            signature = None
+
+        return {
+            "type": "function",
+            "doc": inspect.getdoc(obj),
+            "signature": signature,
+        }
+
+    try:
+        cls = obj if isinstance(obj, type) else type(obj)
+        doc = f"{cls.__module__}.{cls.__qualname__}"
+    except Exception:
+        doc = str(obj)
+
+    return {
+        "type": "variable",
+        "doc": doc,
+    }
+
+doc_json = json.dumps({
+  "filters": {name: describe_callable(value) for name, value in sandbox.filters.items()},
+  "tests": tuple(sandbox.tests),
+  "tags": [tag for ext in sandbox.extensions.values() for tag in getattr(ext, "tags", ())],
+})
+
+def render(tpl_str, context):
     try:                
-        return env.from_string(tpl_str).render(context, this=context)
-    except:
-        identity = lambda x, *args, **kwargs: x
-        env.filters.update({name: identity for name in filters})
-        ast = env.parse(tpl_str)
+        return sandbox.from_string(tpl_str).render(context, this=context)
+    except Exception:        
+        ast = sandbox.parse(tpl_str)
         return meta.find_undeclared_variables(ast)
   `);
   console.log('Pyodide initialized');
-  resolve(pyodide);
-});
+  return pyodide;
+})();
+
+// pre-init at background for faster load
+initPyodide;
+type EnvDoc = {
+  filters: Record<string, unknown>;
+  globals: Record<string, unknown>;
+  tests: string[];
+  tags: string[];
+};
+
+const envDocPromise: Promise<EnvDoc> = (async () => {
+  const pyodide = await initPyodide;
+  const envDoc = JSON.parse(pyodide.globals.get('doc_json'));
+  return Object.freeze(envDoc);
+})();
+
+export const getEnvDoc = async (globals: Record<string, unknown>) => {
+  const envDoc = await envDocPromise;
+  return { ...envDoc, globals };
+};
 
 const extractUndeclaredVariables = async (
   tpl: string,
   data: {
     [key: string]: any;
-  },
-  filters: Set<string>
+  }
 ): Promise<string[] | string> => {
   const pyodide = await initPyodide;
-  // @ts-ignore
   const renderFn = pyodide.globals.get('render');
-  // @ts-ignore
-  const params = renderFn(tpl, pyodide.toPy(data), filters);
+  const params = renderFn(tpl, pyodide.toPy(data));
   return typeof params === 'string' ? params : Array.from(params.toJs());
 };
 
 export const buildJinjaContext = (
   packageName: string,
-  filters: Filter,
   params: {
     [key: string]: any;
   },
@@ -415,28 +473,19 @@ export const buildJinjaContext = (
     context: {
       [key: string]: any;
     }
-  ) =>
-    jinjaEvaluate(packageName, tmpl, filters, { ...params, ...context }, raw);
+  ) => jinjaEvaluate(packageName, tmpl, { ...params, ...context }, raw);
 };
 
 export const jinjaEvaluate = async (
   packageName: string,
   tmpl: string,
-  filters: Filter,
   params: {
     [key: string]: any;
   },
   raw = false
 ) => {
   // extract includeKeys to pass to server
-  const includeKeys = await extractUndeclaredVariables(
-    tmpl,
-    params,
-    filters instanceof Set
-      ? filters
-      : new Set(Array.isArray(filters) ? filters : Object.keys(filters))
-  );
-
+  const includeKeys = await extractUndeclaredVariables(tmpl, params);
   const result =
     typeof includeKeys === 'string'
       ? includeKeys
@@ -454,5 +503,3 @@ export const jinjaEvaluate = async (
   // not a string, return as is
   return result;
 };
-// pre-init at background for faster load
-initPyodide;
