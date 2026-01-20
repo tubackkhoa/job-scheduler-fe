@@ -413,6 +413,7 @@ def describe_callable(obj):
     }
 
 doc_json = json.dumps({
+  "globals": {name: describe_callable(value) for name, value in sandbox.globals.items()},
   "filters": {name: describe_callable(value) for name, value in sandbox.filters.items()},
   "tests": tuple(sandbox.tests),
   "tags": [tag for ext in sandbox.extensions.values() for tag in getattr(ext, "tags", ())],
@@ -446,7 +447,7 @@ const envDocPromise: Promise<EnvDoc> = (async () => {
 
 export const getEnvDoc = async (globals: Record<string, unknown>) => {
   const envDoc = await envDocPromise;
-  return { ...envDoc, globals };
+  return { ...envDoc, globals: { ...envDoc.globals, ...globals } };
 };
 
 const extractUndeclaredVariables = async (
