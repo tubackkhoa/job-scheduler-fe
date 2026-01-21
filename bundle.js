@@ -16,7 +16,8 @@ const result = await build({
   target: 'es2020',
   external: ['react-dom', '@rjsf/*', '@mui/*'],
   loader: {
-    '.tsx': 'tsx'
+    '.tsx': 'tsx',
+    '.py': 'text'
   },
   jsx: 'transform',
   jsxFactory: 'React.createElement',
