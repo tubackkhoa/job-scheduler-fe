@@ -179,6 +179,7 @@ export function JobDetails({
                         localFormData
                       );
                       setResult(result);
+                      setIsDirty(false);
                     } catch (e) {
                       setError(e.message);
                     }
