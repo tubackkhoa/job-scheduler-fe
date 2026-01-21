@@ -161,7 +161,7 @@ export function JobDetails({
         subheader={
           pluginPackage
             ? `${pluginPackage}${pluginInterval ? ` • every ${pluginInterval}s` : ''}`
-            : pluginId || 'Select a plugin to begin'
+            : 'Select a plugin to begin'
         }
         action={
           (typeof pluginId == 'string' || jobId !== 0) && (
