@@ -1,30 +1,35 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import _ from "lodash";
-import {
-  Stack,
-  Typography,
-  Box,
-  Autocomplete,
-  TextField,
-  Button,
-  Chip,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-} from "@mui/material";
-import { Save, Delete, Add, Refresh } from "@mui/icons-material";
-import { buildJinjaContext } from "../../../utils";
-import { ConfirmationDialog } from "../ConfirmationDialog";
-
-export function CrudField({
+export default function CrudField({
   formData,
   onChange,
   schema,
   fieldPathId,
   registry,
+  React,
+  Mui,
+  MuiIcon,
+  Utils,
 }) {
+  // Destructure dependencies from props
+  const { useState, useEffect, useRef, useCallback } = React;
+  const {
+    Stack,
+    Typography,
+    Box,
+    Autocomplete,
+    TextField,
+    Button,
+    Chip,
+    IconButton,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    ConfirmationDialog,
+  } = Mui;
+  const { Save, Delete, Add, Refresh } = MuiIcon;
+  const { buildJinjaContext } = Utils;
+  const _ = Utils._;
+
   const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchInput, setSearchInput] = useState("");
@@ -46,11 +51,14 @@ export function CrudField({
   const render = useCallback(
     buildJinjaContext(
       registry.formContext.pluginPackage,
-      registry.formContext.env.filters,
-      registry.formContext.formData
+      {
+        ...registry.formContext.env.filters,
+        ...registry.formContext.formData
+      }
     ),
     [registry.formContext]
   );
+
 
   // Generic evaluate wrapper
   const evaluateExpr = useCallback(
