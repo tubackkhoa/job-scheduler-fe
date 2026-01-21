@@ -134,8 +134,11 @@ export default function App() {
         setPlugins(data);
         const params = new URLSearchParams(window.location.search);
         const pluginId = params.get('plugin_id');
+        if (!pluginId) return;
         if (data.some((p) => p.id == pluginId)) {
           loadSchema(Number(pluginId));
+        } else {
+          loadSchema(pluginId);
         }
       })
       .catch((err) => setError(err.message));
@@ -164,11 +167,12 @@ export default function App() {
         schema: fetchedSchema,
         jobs,
         globals
-      } = await api.fetchSchema(currentSessionId ?? sessionId, currentPluginId);
+      } = typeof currentPluginId === 'string'
+        ? await api.fetchTemplatePluginSchema(currentPluginId)
+        : await api.fetchSchema(currentSessionId ?? sessionId, currentPluginId);
       setEnv(await getEnvDoc(globals));
       setSchema(fetchedSchema);
       setJobs(jobs);
-
       const newJobId = currentJobId ?? jobs[0]?.id ?? 0;
       handleChangeJob(newJobId, jobs);
     } catch (err) {
@@ -190,19 +194,22 @@ export default function App() {
       };
 
       let response;
-      if (!jobId || saveNew) {
-        // add new job
-        response = await api.updateConfig(0, {
-          ...jobItem,
-          sessionId,
-          pluginId
-        });
+      if (typeof pluginId === 'string') {
+        response = await api.updateTemplatePlugin(pluginId, jobItem);
       } else {
-        response = await api.updateConfig(jobId, jobItem);
+        if (!jobId || saveNew) {
+          // add new job
+          response = await api.updateConfig(0, {
+            ...jobItem,
+            sessionId,
+            pluginId
+          });
+        } else {
+          response = await api.updateConfig(jobId, jobItem);
+        }
+        await loadSchema(pluginId, sessionId, jobId);
       }
-
       handleSetResult(response);
-      await loadSchema(pluginId, sessionId, jobId);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -315,7 +322,14 @@ export default function App() {
     }
   };
 
-  const pluginInfo = plugins.find((p) => p.id === pluginId);
+  const pluginInfo = useMemo(() => {
+    return typeof pluginId === 'number'
+      ? plugins.find((p) => p.id === pluginId)
+      : { package: pluginId };
+  }, [pluginId]);
+
+  console.log(pluginInfo);
+
   const currentJob = jobs.find((version) => version.id === jobId);
 
   const formData = useMemo(() => {
@@ -371,16 +385,20 @@ export default function App() {
                   isLoading={submitting}
                 />
 
-                <JobsList
-                  jobs={jobs}
-                  selectedJobId={jobId}
-                  pluginPackage={pluginInfo?.package}
-                  onSelectJob={handleChangeJob}
-                  onToggleJob={(id, active) => handleJobActivation(active, id)}
-                  onNewJob={handleNewJob}
-                  isNewJobMode={isNewJobMode}
-                  disabled={!schema}
-                />
+                {typeof pluginId === 'number' && (
+                  <JobsList
+                    jobs={jobs}
+                    selectedJobId={jobId}
+                    pluginPackage={pluginInfo?.package}
+                    onSelectJob={handleChangeJob}
+                    onToggleJob={(id, active) =>
+                      handleJobActivation(active, id)
+                    }
+                    onNewJob={handleNewJob}
+                    isNewJobMode={isNewJobMode}
+                    disabled={!schema}
+                  />
+                )}
               </Box>
             </Grid>
 
@@ -391,6 +409,8 @@ export default function App() {
                 jobDesc={jobDesc}
                 pluginPackage={pluginInfo?.package}
                 pluginInterval={pluginInfo?.interval}
+                setResult={setResult}
+                setError={setError}
                 isActive={isActive}
                 formData={formData}
                 env={env}

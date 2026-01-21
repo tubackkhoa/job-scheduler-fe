@@ -12,7 +12,9 @@ import {
   Tooltip,
   InputAdornment,
   Avatar,
-  Button
+  Button,
+  TextField,
+  Autocomplete
 } from '@mui/material';
 import { Refresh, Person, Add } from '@mui/icons-material';
 
@@ -27,6 +29,16 @@ export function ContextPanel({
   onCreatePlugin,
   isLoading
 }) {
+  const pluginOptions = plugins.map((p) => ({
+    id: p.id,
+    label: p.package,
+    description: p.description,
+    interval: p.interval
+  }));
+
+  const selectedPlugin =
+    pluginOptions.find((p) => p.id === pluginId) || pluginId;
+
   return (
     <Card
       sx={{
@@ -36,6 +48,7 @@ export function ContextPanel({
       }}
     >
       <CardContent sx={{ p: 3 }}>
+        {/* Header */}
         <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
           <Avatar
             sx={{
@@ -57,6 +70,7 @@ export function ContextPanel({
         </Stack>
 
         <Stack spacing={2.5}>
+          {/* Session selector */}
           <FormControl fullWidth>
             <InputLabel>Session</InputLabel>
             <Select
@@ -72,83 +86,104 @@ export function ContextPanel({
             </Select>
           </FormControl>
 
-          <Stack direction="row" spacing={1} alignItems="flex-start">
-            <FormControl fullWidth>
-              <InputLabel>Plugin</InputLabel>
-              <Select
-                value={pluginId}
-                onChange={(e) => {
-                  // Get current URL
-                  const url = new URL(window.location);
-                  const pluginId = Number(e.target.value);
-                  // Set or update the plugin_id parameter
-                  url.searchParams.set('plugin_id', pluginId);
-                  // Update the browser address bar without reloading the page
-                  window.history.replaceState({}, '', url);
-                  onPluginChange(pluginId);
-                }}
-                label="Plugin"
-                startAdornment={
-                  <InputAdornment position="start">
-                    {pluginId > 0 && (
-                      <Tooltip title="Reload plugin (development)">
-                        <IconButton
-                          onClick={onReloadPlugin}
-                          disabled={isLoading}
-                          size="small"
-                          color="warning"
-                          sx={{
-                            bgcolor: 'rgba(245, 158, 11, 0.1)',
-                            '&:hover': {
-                              bgcolor: 'rgba(245, 158, 11, 0.2)'
-                            }
-                          }}
-                        >
-                          <Refresh
-                            sx={{
-                              animation: isLoading
-                                ? 'spin 1s linear infinite'
-                                : 'none',
-                              '@keyframes spin': {
-                                '0%': { transform: 'rotate(0deg)' },
-                                '100%': { transform: 'rotate(360deg)' }
-                              }
-                            }}
-                          />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                  </InputAdornment>
-                }
-              >
-                <MenuItem value={0}>
-                  <em>Select a plugin...</em>
-                </MenuItem>
-                {plugins.map((plugin) => (
-                  <MenuItem key={plugin.id} value={plugin.id}>
-                    <Tooltip arrow title={plugin.description} placement="top">
-                      <Stack width="100%">
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {plugin.package}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          interval {plugin.interval}s
-                        </Typography>
-                      </Stack>
-                    </Tooltip>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Stack>
+          {/* Plugin selector (Autocomplete) */}
+          <Autocomplete
+            freeSolo
+            fullWidth
+            options={pluginOptions}
+            value={selectedPlugin}
+            getOptionLabel={(option) => {
+              if (typeof option === 'string') return option;
+              if (typeof option === 'number') return option.toString();
+              return option?.label ?? '';
+            }}
+            isOptionEqualToValue={(opt, val) => opt.id === val.id}
+            onChange={(event, value) => {
+              const valueId = typeof value === 'string' ? value : value?.id;
 
+              if (valueId) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('plugin_id', String(valueId));
+                window.history.replaceState({}, '', url);
+                onPluginChange(valueId);
+              }
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Plugin"
+                placeholder="Select or type template plugin name"
+                slotProps={{
+                  input: {
+                    ...params.InputProps,
+                    startAdornment: (
+                      <>
+                        {pluginId > 0 && (
+                          <InputAdornment position="start">
+                            <Tooltip title="Reload plugin (development)">
+                              <IconButton
+                                onClick={onReloadPlugin}
+                                disabled={isLoading}
+                                size="small"
+                                color="warning"
+                                sx={{
+                                  bgcolor: 'rgba(245, 158, 11, 0.1)',
+                                  '&:hover': {
+                                    bgcolor: 'rgba(245, 158, 11, 0.2)'
+                                  }
+                                }}
+                              >
+                                <Refresh
+                                  sx={{
+                                    animation: isLoading
+                                      ? 'spin 1s linear infinite'
+                                      : 'none',
+                                    '@keyframes spin': {
+                                      '0%': { transform: 'rotate(0deg)' },
+                                      '100%': { transform: 'rotate(360deg)' }
+                                    }
+                                  }}
+                                />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        )}
+                        {params.InputProps.startAdornment}
+                      </>
+                    )
+                  }
+                }}
+              />
+            )}
+            renderOption={({ key, ...props }, option) => (
+              <Tooltip
+                arrow
+                placement="right"
+                title={option.description}
+                key={option.id}
+              >
+                <Box component="li" {...props}>
+                  <Stack width="100%">
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {option.label}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      interval {option.interval}s
+                    </Typography>
+                  </Stack>
+                </Box>
+              </Tooltip>
+            )}
+          />
+
+          {/* Create plugin */}
           <Button
             variant="outlined"
             startIcon={<Add />}
