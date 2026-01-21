@@ -1,8 +1,9 @@
 const { VITE_PROXY, VITE_API_BASE_URL } = import.meta.env;
 
-const BASE_URL = VITE_PROXY === 'true' ? '' : (VITE_API_BASE_URL ?? '');
+export const API_BASE_URL =
+  VITE_PROXY === 'true' ? '' : (VITE_API_BASE_URL ?? '');
 
-const apiUrl = (path: string) => `${BASE_URL}${path}`;
+const apiUrl = (path: string) => `${API_BASE_URL}${path}`;
 
 type HttpMethod = 'GET' | 'POST';
 
