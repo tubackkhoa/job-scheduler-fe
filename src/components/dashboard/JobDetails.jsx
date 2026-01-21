@@ -160,7 +160,7 @@ export function JobDetails({
         title={typeof pluginId === 'number' ? 'Job Details' : 'User Plugin'}
         subheader={
           pluginPackage
-            ? `${pluginPackage} • every ${pluginInterval}s`
+            ? `${pluginPackage}${pluginInterval ? ` • every ${pluginInterval}s` : ''}`
             : pluginId || 'Select a plugin to begin'
         }
         action={
