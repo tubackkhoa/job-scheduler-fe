@@ -322,7 +322,14 @@ export default function App() {
     }
   };
 
-  const pluginInfo = plugins.find((p) => p.id === pluginId);
+  const pluginInfo = useMemo(() => {
+    return typeof pluginId === 'number'
+      ? plugins.find((p) => p.id === pluginId)
+      : { package: pluginId };
+  }, [pluginId]);
+
+  console.log(pluginInfo);
+
   const currentJob = jobs.find((version) => version.id === jobId);
 
   const formData = useMemo(() => {

@@ -92,9 +92,11 @@ export function ContextPanel({
             fullWidth
             options={pluginOptions}
             value={selectedPlugin}
-            getOptionLabel={(option) =>
-              typeof option === 'string' ? option : option.label
-            }
+            getOptionLabel={(option) => {
+              if (typeof option === 'string') return option;
+              if (typeof option === 'number') return option.toString();
+              return option?.label ?? '';
+            }}
             isOptionEqualToValue={(opt, val) => opt.id === val.id}
             onChange={(event, value) => {
               const valueId = typeof value === 'string' ? value : value?.id;
