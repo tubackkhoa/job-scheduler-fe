@@ -1,4 +1,4 @@
-import { MouseEventHandler, useState } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -15,24 +15,24 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 export function Header() {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
-
-  const handleOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const { logout, isAuthenticated } = useAuth();
 
   const handleClose = () => {
     setAnchorEl(null);
   };
 
-  const handleNavigate = (path) => {
+  const handleNavigate = (path: string) => {
     navigate(path);
     handleClose();
   };
+
+  if (!isAuthenticated) return null;
 
   return (
     <Box
@@ -67,7 +67,13 @@ export function Header() {
 
       {/* Right: Menu */}
       <Box>
-        <IconButton color="inherit" onClick={handleOpen} size="large">
+        <IconButton
+          color="inherit"
+          onClick={(event) => {
+            setAnchorEl(event.currentTarget);
+          }}
+          size="large"
+        >
           <MenuIcon />
         </IconButton>
 
@@ -79,21 +85,14 @@ export function Header() {
             Dashboard
           </MenuItem>
 
-          <MenuItem onClick={() => handleNavigate('/plugins/1')}>
+          <MenuItem onClick={() => handleNavigate('/plugins')}>
             <ListItemIcon>
               <ExtensionIcon fontSize="small" />
             </ListItemIcon>
             Plugin Manager
           </MenuItem>
 
-          <MenuItem onClick={() => handleNavigate('/settings')}>
-            <ListItemIcon>
-              <SettingsIcon fontSize="small" />
-            </ListItemIcon>
-            Settings
-          </MenuItem>
-
-          <MenuItem onClick={() => handleNavigate('/logout')}>
+          <MenuItem onClick={() => logout()}>
             <ListItemIcon>
               <LogoutIcon fontSize="small" />
             </ListItemIcon>

@@ -1,11 +1,11 @@
+import { getToken, clearToken, setToken } from '@/auth/tokenStorage';
+
 const { VITE_PROXY, VITE_API_BASE_URL } = import.meta.env;
 
 export const API_BASE_URL =
   VITE_PROXY === 'true' ? '' : (VITE_API_BASE_URL ?? '');
 
 const apiUrl = (path: string) => `${API_BASE_URL}${path}`;
-
-type HttpMethod = 'GET' | 'POST';
 
 const JSON_HEADERS = {
   'Content-Type': 'application/json'
@@ -36,7 +36,22 @@ async function request<T = unknown>(
   options: RequestInit = {},
   responseType: 'json' | 'text' = 'json'
 ): Promise<T> {
-  const res = await fetch(apiUrl(path), options);
+  const token = getToken();
+
+  const headers = new Headers(options.headers);
+  if (token) {
+    headers.set('Authorization', `${token.token_type} ${token.access_token}`);
+  }
+
+  const res = await fetch(apiUrl(path), {
+    ...options,
+    headers
+  });
+
+  if (res.status === 401) {
+    clearToken();
+    throw new Error('Unauthorized');
+  }
 
   if (!res.ok) {
     await handleError(res);
@@ -61,6 +76,17 @@ const postJson = <T = unknown>(
   );
 
 export default {
+  async login(username: string, password: string): Promise<LoginResponse> {
+    const data: LoginResponse = await request('/auth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ username, password })
+    });
+
+    setToken(data);
+    return data;
+  },
+
   fetchSchema(
     sessionId: number,
     pluginId: number

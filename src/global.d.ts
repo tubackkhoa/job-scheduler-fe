@@ -38,6 +38,11 @@ declare global {
     user: User;
   }
 
+  interface LoginResponse {
+    access_token: string;
+    token_type: string;
+  }
+
   interface Window {
     ctx: { user: User };
     // or: ctx?: YourType

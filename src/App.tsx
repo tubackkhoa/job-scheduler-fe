@@ -5,11 +5,13 @@ import { Header } from './components/dashboard/Header';
 import { LoadingBar } from './components/dashboard/LoadingBar';
 import { ErrorAlert } from './components/dashboard/ErrorAlert';
 import { darkTheme } from './theme';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import PluginManager from './pages/PluginManager';
-import SignalCalendar from './pages/Settings';
 import NotificationsProvider from './hooks/useNotifications/NotificationsProvider';
 import DialogsProvider from './hooks/useDialogs/DialogsProvider';
+import Login from './pages/Login';
+import RequireAuth from './auth/RequireAuth';
+import Dashboard from './pages/Dashboard';
 
 export default function App() {
   // to show loading and error global
@@ -33,16 +35,19 @@ export default function App() {
           <NotificationsProvider>
             <DialogsProvider>
               <Routes>
-                <Route
-                  path="/plugins/:plugin_id"
-                  element={
-                    <PluginManager
-                      setLoading={setLoading}
-                      setError={setError}
-                    />
-                  }
-                />
-                <Route path="/settings" Component={SignalCalendar} />
+                <Route path="/login" element={<Login />} />
+                <Route element={<RequireAuth />}>
+                  <Route index element={<Dashboard />} />
+                  <Route
+                    path="/plugins/:plugin_id?"
+                    element={
+                      <PluginManager
+                        setLoading={setLoading}
+                        setError={setError}
+                      />
+                    }
+                  />
+                </Route>
               </Routes>
             </DialogsProvider>
           </NotificationsProvider>
