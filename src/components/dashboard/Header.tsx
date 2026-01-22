@@ -1,0 +1,106 @@
+import { MouseEventHandler, useState } from 'react';
+import {
+  Box,
+  Typography,
+  IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon
+} from '@mui/material';
+
+import MenuIcon from '@mui/icons-material/Menu';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import ExtensionIcon from '@mui/icons-material/Extension';
+import SettingsIcon from '@mui/icons-material/Settings';
+import LogoutIcon from '@mui/icons-material/Logout';
+
+import { useNavigate } from 'react-router-dom';
+
+export function Header() {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+  const navigate = useNavigate();
+
+  const handleOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleNavigate = (path) => {
+    navigate(path);
+    handleClose();
+  };
+
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        py: 3,
+        borderBottom: 1,
+        borderColor: 'divider'
+      }}
+    >
+      {/* Left: Title */}
+      <Box>
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 700,
+            background: 'linear-gradient(135deg, #fff 0%, #a5b4fc 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}
+        >
+          Job Scheduler Dashboard
+        </Typography>
+
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          Manage plugins, jobs, configurations, and live logs in one view.
+        </Typography>
+      </Box>
+
+      {/* Right: Menu */}
+      <Box>
+        <IconButton color="inherit" onClick={handleOpen} size="large">
+          <MenuIcon />
+        </IconButton>
+
+        <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+          <MenuItem onClick={() => handleNavigate('/')}>
+            <ListItemIcon>
+              <DashboardIcon fontSize="small" />
+            </ListItemIcon>
+            Dashboard
+          </MenuItem>
+
+          <MenuItem onClick={() => handleNavigate('/plugins/1')}>
+            <ListItemIcon>
+              <ExtensionIcon fontSize="small" />
+            </ListItemIcon>
+            Plugin Manager
+          </MenuItem>
+
+          <MenuItem onClick={() => handleNavigate('/settings')}>
+            <ListItemIcon>
+              <SettingsIcon fontSize="small" />
+            </ListItemIcon>
+            Settings
+          </MenuItem>
+
+          <MenuItem onClick={() => handleNavigate('/logout')}>
+            <ListItemIcon>
+              <LogoutIcon fontSize="small" />
+            </ListItemIcon>
+            Logout
+          </MenuItem>
+        </Menu>
+      </Box>
+    </Box>
+  );
+}
