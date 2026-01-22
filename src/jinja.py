@@ -2,6 +2,7 @@ from jinja2.sandbox import SandboxedEnvironment
 from jinja2 import meta
 import inspect
 import json
+from datetime import datetime, timedelta, timezone
 
 
 def tolist(obj, *include):
@@ -15,6 +16,9 @@ def tolist(obj, *include):
 
 
 sandbox = SandboxedEnvironment(autoescape=False, trim_blocks=True, lstrip_blocks=True)
+sandbox.globals.update(
+    {"datetime": datetime, "timedelta": timedelta, "timezone": timezone}
+)
 sandbox.filters.update(
     {
         "in_clause": lambda values: (
