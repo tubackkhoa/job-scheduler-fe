@@ -131,6 +131,7 @@ export function ContextPanel({
                                 size="small"
                                 color="warning"
                                 sx={{
+                                  p: 0,
                                   bgcolor: 'rgba(245, 158, 11, 0.1)',
                                   '&:hover': {
                                     bgcolor: 'rgba(245, 158, 11, 0.2)'

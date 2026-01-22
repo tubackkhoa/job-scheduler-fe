@@ -61,11 +61,14 @@ const postJson = <T = unknown>(
   );
 
 export default {
-  fetchSchema(sessionId: number, pluginId: number) {
+  fetchSchema(
+    sessionId: number,
+    pluginId: number
+  ): Promise<PluginSchemaResponse> {
     return request(`/api/schema/${sessionId}/${pluginId}`);
   },
 
-  fetchTemplatePluginSchema(pluginPath: string) {
+  fetchTemplatePluginSchema(pluginPath: string): Promise<PluginSchemaResponse> {
     return request(`/api/user/template/${pluginPath}`);
   },
 
@@ -77,7 +80,7 @@ export default {
     return postJson(`/api/user/template/run/${pluginPath}`, payload, 'text');
   },
 
-  fetchPlugins() {
+  fetchPlugins(): Promise<PluginData[]> {
     return request(`/api/plugins`);
   },
 
@@ -85,7 +88,10 @@ export default {
     return postJson(`/api/config/${jobId}`, payload);
   },
 
-  activateJob(jobId: number, activation: boolean) {
+  activateJob(
+    jobId: number,
+    activation: boolean
+  ): Promise<{ success: boolean }> {
     return postJson(`/api/activate/${jobId}/${activation}`);
   },
 
@@ -97,7 +103,11 @@ export default {
     return postJson(`/api/reload/${pkg}`);
   },
 
-  createPlugin(packageName: string, interval: number, description = '') {
+  createPlugin(
+    packageName: string,
+    interval: number,
+    description = ''
+  ): Promise<PluginData> {
     return postJson(`/api/plugins`, {
       package: packageName,
       interval,

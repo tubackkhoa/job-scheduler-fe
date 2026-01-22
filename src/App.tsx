@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { Box, Container, Grid, CssBaseline } from '@mui/material';
 import { Header } from './components/dashboard/Header';
 import { ContextPanel } from './components/dashboard/ContextPanel';
@@ -12,81 +12,12 @@ import { CreatePluginModal } from './components/dashboard/CreatePluginModal';
 import api from './api';
 import { SESSIONS } from './constants/session';
 import { getEnvDoc } from './utils';
-
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#6366f1',
-      light: '#818cf8',
-      dark: '#4f46e5'
-    },
-    secondary: {
-      main: '#ec4899',
-      light: '#f472b6',
-      dark: '#db2777'
-    },
-    success: {
-      main: '#22c55e',
-      light: '#4ade80',
-      dark: '#16a34a'
-    },
-    warning: {
-      main: '#f59e0b',
-      light: '#fbbf24',
-      dark: '#d97706'
-    },
-    error: {
-      main: '#ef4444',
-      light: '#f87171',
-      dark: '#dc2626'
-    },
-    background: {
-      default: '#0a0a0f',
-      paper: '#111119'
-    },
-    divider: 'rgba(255, 255, 255, 0.08)'
-  },
-  typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif'
-  },
-  shape: {
-    borderRadius: 12
-  },
-  components: {
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          backgroundImage: 'none',
-          border: '1px solid rgba(255, 255, 255, 0.08)'
-        }
-      }
-    },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: 'none',
-          fontWeight: 500
-        }
-      }
-    },
-    MuiTextField: {
-      defaultProps: {
-        variant: 'outlined',
-        size: 'small'
-      }
-    },
-    MuiSelect: {
-      defaultProps: {
-        size: 'small'
-      }
-    }
-  }
-});
+import { getDefaultFormState } from '@rjsf/utils';
+import { darkTheme } from './theme';
 
 export default function App() {
-  const [plugins, setPlugins] = useState([]);
-  const [pluginId, setPluginId] = useState(0);
+  const [plugins, setPlugins] = useState<PluginData[]>([]);
+  const [pluginId, setPluginId] = useState<string | number>(0);
   const [jobId, setJobId] = useState(0);
   const [jobDesc, setJobDesc] = useState('');
   const [jobs, setJobs] = useState([]);
@@ -100,32 +31,6 @@ export default function App() {
   const [createPluginModalOpen, setCreatePluginModalOpen] = useState(false);
   const [isNewJobMode, setIsNewJobMode] = useState(false);
 
-  // Extract default values from JSON Schema
-  const getDefaultsFromSchema = useCallback((schemaObj) => {
-    if (!schemaObj || !schemaObj.properties) return {};
-
-    const defaults = {};
-    for (const [key, propSchema] of Object.entries(schemaObj.properties)) {
-      if (propSchema.default !== undefined) {
-        defaults[key] = propSchema.default;
-      } else if (propSchema.type === 'object' && propSchema.properties) {
-        defaults[key] = getDefaultsFromSchema(propSchema);
-      } else if (propSchema.type === 'array') {
-        defaults[key] = [];
-      } else if (propSchema.type === 'string') {
-        defaults[key] = '';
-      } else if (
-        propSchema.type === 'number' ||
-        propSchema.type === 'integer'
-      ) {
-        defaults[key] = 0;
-      } else if (propSchema.type === 'boolean') {
-        defaults[key] = false;
-      }
-    }
-    return defaults;
-  }, []);
-
   // Load plugin list
   useEffect(() => {
     api
@@ -135,8 +40,12 @@ export default function App() {
         const params = new URLSearchParams(window.location.search);
         const pluginId = params.get('plugin_id');
         if (!pluginId) return;
-        if (data.some((p) => p.id == pluginId)) {
-          loadSchema(Number(pluginId));
+        const pluginIdAsNumber = Number(pluginId);
+        if (
+          !Number.isNaN(pluginIdAsNumber) &&
+          data.some((p) => p.id == pluginIdAsNumber)
+        ) {
+          loadSchema(pluginIdAsNumber);
         } else {
           loadSchema(pluginId);
         }
@@ -150,9 +59,9 @@ export default function App() {
   };
 
   const loadSchema = async (
-    currentPluginId,
-    currentSessionId,
-    currentJobId
+    currentPluginId: string | number,
+    currentSessionId?: number,
+    currentJobId?: number
   ) => {
     if (!currentPluginId) return;
     setPluginId(currentPluginId);
@@ -328,22 +237,19 @@ export default function App() {
   const pluginInfo = useMemo(() => {
     return typeof pluginId === 'number'
       ? plugins.find((p) => p.id === pluginId)
-      : { package: pluginId };
+      : { package: pluginId, interval: undefined };
   }, [pluginId]);
 
   const currentJob = jobs.find((version) => version.id === jobId);
 
-  const formData = useMemo(() => {
-    const cfg = currentJob?.config;
-    if (cfg) {
-      return typeof cfg === 'string' ? JSON.parse(cfg) : cfg;
-    }
-    // When in new job mode, use schema defaults instead of null
-    if (isNewJobMode && schema) {
-      return getDefaultsFromSchema(schema);
-    }
-    return null;
-  }, [currentJob, isNewJobMode, schema, getDefaultsFromSchema]);
+  const formData = useMemo(
+    () =>
+      currentJob?.config ??
+      (isNewJobMode && schema
+        ? getDefaultFormState(schema, undefined, schema)
+        : undefined),
+    [currentJob, isNewJobMode, schema]
+  );
 
   const isActive = !!currentJob?.active;
 

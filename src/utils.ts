@@ -295,8 +295,8 @@ export class JinjaCompletionBuilder {
 }
 
 type JinjaSymbols = {
-  globals: Record<string, any>;
-  filters: Record<string, any>;
+  globals: Globals;
+  filters: Globals;
 };
 
 export const jinjaLinter = (
