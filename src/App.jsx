@@ -172,7 +172,7 @@ export default function App() {
         ? await api.fetchTemplatePluginSchema(currentPluginId)
         : await api.fetchSchema(currentSessionId ?? sessionId, currentPluginId);
       // assign global ctx
-      window.ctx = { user };
+      window.ctx = { id: user.id, roles: new Set(user.roles) };
       setEnv(await getEnvDoc(globals));
       setSchema(fetchedSchema);
       setJobs(jobs);
