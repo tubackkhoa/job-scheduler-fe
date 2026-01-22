@@ -81,7 +81,7 @@ export function VersionField({
   );
 
   const applyVersion = useCallback(
-    (job_ids) => evaluateExpr('apply', { job_ids }),
+    (id, job_ids) => evaluateExpr('apply', { id, job_ids }),
     [evaluateExpr]
   );
 
@@ -304,7 +304,7 @@ export function VersionField({
     setMessage('');
 
     try {
-      await applyVersion(selectedJobIds);
+      await applyVersion(selectedVersion.id, selectedJobIds);
       setMessage(`Applied version "${selectedVersion.name}" to all jobs`);
     } catch (e) {
       setError(e.message || 'Failed to apply version');
