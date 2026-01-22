@@ -39,6 +39,11 @@ export function VersionField({
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [applyConfirmDialogOpen, setApplyConfirmDialogOpen] = useState(false);
   const [selectedJobIds, setSelectedJobIds] = useState([]);
+  const [selectedDeleteJobIds, setSelectedDeleteJobIds] = useState([]);
+  const [updateChoiceDialogOpen, setUpdateChoiceDialogOpen] = useState(false);
+  const [saveAsNewDialogOpen, setSaveAsNewDialogOpen] = useState(false);
+  const [newVersionName, setNewVersionName] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const render = useCallback(
     buildJinjaContext(
@@ -77,6 +82,11 @@ export function VersionField({
 
   const applyVersion = useCallback(
     (job_ids) => evaluateExpr('apply', { job_ids }),
+    [evaluateExpr]
+  );
+
+  const deleteVersion = useCallback(
+    (id) => evaluateExpr('delete', { id }),
     [evaluateExpr]
   );
 
@@ -159,12 +169,19 @@ export function VersionField({
       return;
     }
 
-    setConfirmDialogOpen(true);
+    // If updating an existing version, show choice dialog
+    if (selectedVersion) {
+      setUpdateChoiceDialogOpen(true);
+    } else {
+      // If creating new, show direct confirmation
+      setConfirmDialogOpen(true);
+    }
   };
 
-  const doSave = async () => {
+  const doSave = async (forceNew = false) => {
     setConfirmDialogOpen(false);
-    const nameTrimmed = versionName.trim();
+    setUpdateChoiceDialogOpen(false);
+    const nameTrimmed = forceNew && newVersionName ? newVersionName.trim() : versionName.trim();
     const value = localValue().trim();
 
     setSaving(true);
@@ -174,13 +191,15 @@ export function VersionField({
     try {
       let savedVersion;
 
-      if (selectedVersion) {
+      if (selectedVersion && !forceNew) {
+        // Update existing version
         savedVersion = await updateVersion(selectedVersion.id, {
           name: nameTrimmed,
           value
         });
         setMessage(`Updated version #${savedVersion.id}`);
       } else {
+        // Create new version
         savedVersion = await createVersion({
           field_id: fieldPathId?.$id,
           name: nameTrimmed,
@@ -189,15 +208,80 @@ export function VersionField({
           tags: ''
         });
         setMessage(`Saved as version #${savedVersion.id}`);
+        
+        // For "save as new", update the selected version and name
+        if (forceNew) {
+          setSelectedVersion(savedVersion);
+          setVersionName(savedVersion.name);
+        }
       }
 
-      setSelectedVersion(savedVersion);
+      if (!forceNew) {
+        setSelectedVersion(savedVersion);
+      }
 
       // Refresh list
-      const updatedList = await listVersions(searchInput);
+      const updatedList = await listVersions(fieldPathId?.$id, searchInput);
       setVersions(updatedList?.versions || []);
     } catch (e) {
       setError(e.message || 'Failed to save version');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleUpdateChoice = (choice) => {
+    setUpdateChoiceDialogOpen(false);
+    if (choice === 'update') {
+      // Directly call update without additional confirmation
+      doSave(false);
+    } else if (choice === 'save-as-new') {
+      // Show save as new dialog
+      setNewVersionName(versionName + ' (Copy)');
+      setSaveAsNewDialogOpen(true);
+    }
+  };
+
+  const handleSaveAsNew = () => {
+    if (!newVersionName.trim()) {
+      setError('New version name is required');
+      return;
+    }
+    setSaveAsNewDialogOpen(false);
+    doSave(true);
+  };
+
+  const handleDeleteClick = () => {
+    if (!selectedVersion) {
+      setError('Please select a version to delete');
+      return;
+    }
+
+    setDeleteDialogOpen(true);
+  };
+
+  const doDelete = async () => {
+    setDeleteDialogOpen(false);
+    if (!selectedVersion) return;
+
+    setSaving(true);
+    setError('');
+    setMessage('');
+
+    try {
+      await deleteVersion(selectedVersion.id);
+      setMessage(`Deleted version "${selectedVersion.name}"`);
+      
+      // Clear selection and refresh list
+      setSelectedVersion(null);
+      setVersionName('');
+      onChange('', schema['model:binding']);
+      if (fieldPathId?.path) onChange(0, fieldPathId.path);
+      
+      const updatedList = await listVersions(fieldPathId?.$id, searchInput);
+      setVersions(updatedList?.versions || []);
+    } catch (e) {
+      setError(e.message || 'Failed to delete version');
     } finally {
       setSaving(false);
     }
@@ -303,6 +387,18 @@ export function VersionField({
           >
             {saving ? 'Saving...' : selectedVersion ? 'Update' : 'Save'}
           </Button>
+          {selectedVersion && schema['model:expr']?.delete && (
+            <Button
+              variant="outlined"
+              size="small"
+              color="error"
+              onClick={handleDeleteClick}
+              disabled={saving || applying}
+              sx={{ minWidth: 100 }}
+            >
+              Delete
+            </Button>
+          )}
           {selectedVersion && schema['model:expr']?.apply && (
             <Button
               variant="contained"
@@ -374,6 +470,115 @@ export function VersionField({
         severity="warning"
         confirmText="Apply to All Jobs"
         isLoading={applying}
+      />
+
+      {/* Update Choice Dialog */}
+      <ConfirmationDialog
+        open={updateChoiceDialogOpen}
+        onClose={() => setUpdateChoiceDialogOpen(false)}
+        onConfirm={() => handleUpdateChoice('update')}
+        title="Update Version"
+        message={
+          <Stack spacing={2}>
+            <Typography variant="body2">
+              You are about to modify version <strong>"{selectedVersion?.name}"</strong>. 
+              How would you like to proceed?
+            </Typography>
+            <Stack spacing={1}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => handleUpdateChoice('update')}
+                sx={{ textTransform: 'none' }}
+              >
+                <Stack spacing={0.5} sx={{ width: '100%', textAlign: 'left' }}>
+                  <Typography variant="button">Update Existing Version</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    This will replace the current version's content. All jobs using this version will be affected.
+                  </Typography>
+                </Stack>
+              </Button>
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={() => handleUpdateChoice('save-as-new')}
+                sx={{ textTransform: 'none' }}
+              >
+                <Stack spacing={0.5} sx={{ width: '100%', textAlign: 'left' }}>
+                  <Typography variant="button">Save as New Version</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Create a new version with this content. The original version remains unchanged.
+                  </Typography>
+                </Stack>
+              </Button>
+            </Stack>
+          </Stack>
+        }
+        severity="info"
+        confirmText="Update"
+        cancelText="Cancel"
+        hideActions
+      />
+
+      {/* Save As New Dialog */}
+      <ConfirmationDialog
+        open={saveAsNewDialogOpen}
+        onClose={() => setSaveAsNewDialogOpen(false)}
+        onConfirm={handleSaveAsNew}
+        title="Save as New Version"
+        message={
+          <Stack spacing={2}>
+            <Typography variant="body2">
+              Enter a name for the new version:
+            </Typography>
+            <TextField
+              fullWidth
+              size="small"
+              label="New Version Name"
+              value={newVersionName}
+              onChange={(e) => setNewVersionName(e.target.value)}
+              placeholder="e.g. v2.0 - Enhanced Query"
+              autoFocus
+            />
+            <Typography variant="caption" color="text.secondary">
+              This will create a new version while keeping the original version "{selectedVersion?.name}" intact.
+            </Typography>
+          </Stack>
+        }
+        severity="info"
+        confirmText="Save as New"
+        isLoading={saving}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={doDelete}
+        title="Delete Version"
+        message={
+          <DeleteMessage
+            render={render}
+            selectedVersion={selectedVersion}
+            selectedDeleteJobIds={selectedDeleteJobIds}
+            onToggle={(id) => {
+              setSelectedDeleteJobIds((prev) =>
+                prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+              );
+            }}
+            onSelectAll={(ids, select) => {
+              setSelectedDeleteJobIds((prev) =>
+                select
+                  ? [...new Set([...prev, ...ids])]
+                  : prev.filter((id) => !ids.includes(id))
+              );
+            }}
+          />
+        }
+        details="This action cannot be undone. If jobs depend on this version, they may be affected."
+        severity="warning"
+        confirmText="Delete Version"
+        isLoading={saving}
       />
     </Box>
   );
@@ -483,3 +688,126 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
     </Stack>
   );
 };
+
+const DeleteMessage = ({ render, selectedVersion, selectedDeleteJobIds, onToggle, onSelectAll }) => {
+  const [jobsBySession, setJobsBySession] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [dependentJobs, setDependentJobs] = useState([]);
+
+  useEffect(() => {
+    const fetchDependentJobs = async () => {
+      if (!selectedVersion?.id) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const jobs = await render(
+          `{{ get_jobs_depending_on_version(${selectedVersion.id}) }}`
+        );
+        setDependentJobs(jobs || []);
+        
+        // Group jobs by session
+        const grouped = {};
+        (jobs || []).forEach((job) => {
+          const session = SESSIONS.find(s => s.id === job.session_id);
+          const sessionId = job.session_id || 'unknown';
+          const sessionName = session?.name || 'Unknown Session';
+          
+          if (!grouped[sessionId]) {
+            grouped[sessionId] = { name: sessionName, jobs: [] };
+          }
+          grouped[sessionId].jobs.push(job);
+        });
+        
+        setJobsBySession(grouped);
+      } catch (e) {
+        console.error('Failed to fetch dependent jobs:', e);
+        setDependentJobs([]);
+        setJobsBySession({});
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDependentJobs();
+  }, [render, selectedVersion?.id]);
+
+  if (loading) {
+    return <Typography variant="body2">Loading dependent jobs...</Typography>;
+  }
+
+  if (dependentJobs.length === 0) {
+    return (
+      <Stack spacing={2}>
+        <Typography variant="body2">
+          Are you sure you want to delete version <strong>"{selectedVersion?.name}"</strong>?
+        </Typography>
+        <Typography variant="body2" color="success.main">
+          ✓ No jobs are currently using this version. It's safe to delete.
+        </Typography>
+      </Stack>
+    );
+  }
+
+  const sessionIds = Object.keys(jobsBySession);
+
+  return (
+    <Stack spacing={2}>
+      <Typography variant="body2">
+        Are you sure you want to delete version <strong>"{selectedVersion?.name}"</strong>?
+      </Typography>
+      
+      <Typography variant="body2" color="error.main" fontWeight={600}>
+        ⚠️ Warning: This version is being used by {dependentJobs.length} job{dependentJobs.length > 1 ? 's' : ''}
+      </Typography>
+
+      <Box
+        sx={{
+          maxHeight: 300,
+          overflow: 'auto',
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: 1,
+          p: 1,
+          bgcolor: 'background.paper'
+        }}
+      >
+        <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+          Jobs that depend on this version
+        </Typography>
+        
+        {sessionIds.map((sessionId) => {
+          const { name, jobs } = jobsBySession[sessionId];
+
+          return (
+            <Box key={sessionId} sx={{ mb: 1 }}>
+              <ListItemButton
+                sx={{ bgcolor: 'action.hover', borderRadius: 1, mb: 0.5 }}
+              >
+                <ListItemText
+                  primary={name}
+                  primaryTypographyProps={{ fontWeight: 600 }}
+                />
+              </ListItemButton>
+              <List dense disablePadding sx={{ pl: 2 }}>
+                {jobs.map((job) => (
+                  <ListItem key={job.id} disablePadding>
+                    <ListItemButton>
+                      <ListItemText 
+                        primary={job.description}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
+          );
+        })}
+      </Box>
+    </Stack>
+  );
+};
+
+
