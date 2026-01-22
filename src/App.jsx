@@ -172,7 +172,7 @@ export default function App() {
         ? await api.fetchTemplatePluginSchema(currentPluginId)
         : await api.fetchSchema(currentSessionId ?? sessionId, currentPluginId);
       // assign global ctx
-      window.ctx = { id: user.id, roles: new Set(user.roles) };
+      window.ctx = { user: { ...user, roles: new Set(user.roles) } };
       setEnv(await getEnvDoc(globals));
       setSchema(fetchedSchema);
       setJobs(jobs);
@@ -330,8 +330,6 @@ export default function App() {
       ? plugins.find((p) => p.id === pluginId)
       : { package: pluginId };
   }, [pluginId]);
-
-  console.log(pluginInfo);
 
   const currentJob = jobs.find((version) => version.id === jobId);
 
