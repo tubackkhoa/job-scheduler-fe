@@ -94,7 +94,8 @@ export function ContextPanel({
             value={selectedPlugin}
             getOptionLabel={(option) => {
               if (typeof option === 'string') return option;
-              if (typeof option === 'number') return option.toString();
+              if (typeof option === 'number')
+                return option > 0 ? option.toString() : '';
               return option?.label ?? '';
             }}
             isOptionEqualToValue={(opt, val) => opt.id === val.id}
