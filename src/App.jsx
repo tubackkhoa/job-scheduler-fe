@@ -377,6 +377,7 @@ export default function App() {
                 <ContextPanel
                   sessions={SESSIONS}
                   plugins={plugins}
+                  ctx={window.ctx}
                   sessionId={sessionId}
                   pluginId={pluginId}
                   onSessionChange={handleChangeSession}

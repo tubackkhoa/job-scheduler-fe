@@ -22,6 +22,7 @@ export function ContextPanel({
   sessions,
   plugins,
   sessionId,
+  ctx,
   pluginId,
   onSessionChange,
   onPluginChange,
@@ -61,7 +62,7 @@ export function ContextPanel({
           </Avatar>
           <Box>
             <Typography variant="h6" fontWeight={600}>
-              {window.ctx.user.username || 'Context'}
+              {ctx?.user.username || 'Context'}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Choose session and plugin
