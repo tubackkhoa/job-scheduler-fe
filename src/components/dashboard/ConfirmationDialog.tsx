@@ -52,10 +52,12 @@ export function ConfirmationDialog({
       onClose={onClose}
       maxWidth="sm"
       fullWidth
-      PaperProps={{
-        sx: {
-          bgcolor: 'background.paper',
-          borderRadius: 2
+      slotProps={{
+        paper: {
+          sx: {
+            bgcolor: 'background.paper',
+            borderRadius: 2
+          }
         }
       }}
     >
@@ -81,32 +83,33 @@ export function ConfirmationDialog({
       </DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
-          <Typography variant="body1" color="text.primary">
+          <Typography
+            variant="body1"
+            color="text.primary"
+            sx={{
+              p: 2,
+              bgcolor: config.bgColor,
+              borderRadius: 1,
+              border: '1px solid',
+              color: 'text.secondary',
+              whiteSpace: 'pre-line',
+              borderColor: config.color
+            }}
+          >
             {message}
           </Typography>
-          {details && (
-            <Box
-              sx={{
-                p: 2,
-                bgcolor: config.bgColor,
-                borderRadius: 1,
-                border: '1px solid',
-                borderColor: config.color
-              }}
-            >
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ whiteSpace: 'pre-line' }}
-              >
-                {details}
-              </Typography>
-            </Box>
-          )}
+
+          {details && <Box>{details}</Box>}
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2, pt: 1 }}>
-        <Button onClick={onClose} disabled={isLoading} sx={{ minWidth: 80 }}>
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={onClose}
+          disabled={isLoading}
+          sx={{ minWidth: 80 }}
+        >
           {cancelText}
         </Button>
         <Button

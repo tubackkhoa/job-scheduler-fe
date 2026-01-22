@@ -11,6 +11,7 @@ import { ResponseCard } from './components/dashboard/ResponseCard';
 import { CreatePluginModal } from './components/dashboard/CreatePluginModal';
 import api from './api';
 import { SESSIONS } from './constants/session';
+import { getEnvDoc } from './utils';
 
 const darkTheme = createTheme({
   palette: {
@@ -88,7 +89,7 @@ export default function App() {
   const [pluginId, setPluginId] = useState(0);
   const [jobId, setJobId] = useState(0);
   const [jobDesc, setJobDesc] = useState('');
-  const [jobConfigs, setJobConfigs] = useState([]);
+  const [jobs, setJobs] = useState([]);
   const [schema, setSchema] = useState(null);
   const [env, setEnv] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -102,7 +103,7 @@ export default function App() {
   // Extract default values from JSON Schema
   const getDefaultsFromSchema = useCallback((schemaObj) => {
     if (!schemaObj || !schemaObj.properties) return {};
-    
+
     const defaults = {};
     for (const [key, propSchema] of Object.entries(schemaObj.properties)) {
       if (propSchema.default !== undefined) {
@@ -113,7 +114,10 @@ export default function App() {
         defaults[key] = [];
       } else if (propSchema.type === 'string') {
         defaults[key] = '';
-      } else if (propSchema.type === 'number' || propSchema.type === 'integer') {
+      } else if (
+        propSchema.type === 'number' ||
+        propSchema.type === 'integer'
+      ) {
         defaults[key] = 0;
       } else if (propSchema.type === 'boolean') {
         defaults[key] = false;
@@ -130,8 +134,11 @@ export default function App() {
         setPlugins(data);
         const params = new URLSearchParams(window.location.search);
         const pluginId = params.get('plugin_id');
+        if (!pluginId) return;
         if (data.some((p) => p.id == pluginId)) {
           loadSchema(Number(pluginId));
+        } else {
+          loadSchema(pluginId);
         }
       })
       .catch((err) => setError(err.message));
@@ -153,20 +160,24 @@ export default function App() {
     setError(null);
     // schema and configs should be clear before processing
     setSchema(null);
-    setJobConfigs([]);
+    setJobs([]);
 
     try {
       const {
         schema: fetchedSchema,
-        configs,
-        env
-      } = await api.fetchSchema(currentSessionId ?? sessionId, currentPluginId);
+        jobs,
+        user,
+        globals
+      } = typeof currentPluginId === 'string'
+        ? await api.fetchTemplatePluginSchema(currentPluginId)
+        : await api.fetchSchema(currentSessionId ?? sessionId, currentPluginId);
+      // assign global ctx
+      window.ctx = { user: { ...user, roles: new Set(user.roles) } };
+      setEnv(await getEnvDoc(globals));
       setSchema(fetchedSchema);
-      setEnv(env);
-      setJobConfigs(configs);
-
-      const newJobId = currentJobId ?? configs[0]?.id ?? 0;
-      handleChangeJob(newJobId, configs);
+      setJobs(jobs);
+      const newJobId = currentJobId ?? jobs[0]?.id ?? 0;
+      handleChangeJob(newJobId, jobs);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -186,19 +197,22 @@ export default function App() {
       };
 
       let response;
-      if (!jobId || saveNew) {
-        // add new job
-        response = await api.updateConfig(0, {
-          ...jobItem,
-          sessionId,
-          pluginId
-        });
+      if (typeof pluginId === 'string') {
+        response = await api.updateTemplatePlugin(pluginId, jobItem);
       } else {
-        response = await api.updateConfig(jobId, jobItem);
+        if (!jobId || saveNew) {
+          // add new job
+          response = await api.updateConfig(0, {
+            ...jobItem,
+            sessionId,
+            pluginId
+          });
+        } else {
+          response = await api.updateConfig(jobId, jobItem);
+        }
+        await loadSchema(pluginId, sessionId, jobId);
       }
-
       handleSetResult(response);
-      await loadSchema(pluginId, sessionId, jobId);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -213,7 +227,7 @@ export default function App() {
       const response = await api.activateJob(targetJobId, activation);
       if (response.success) {
         // update the config at local to sync with server
-        setJobConfigs((prev) =>
+        setJobs((prev) =>
           prev.map((v) =>
             v.id === targetJobId ? { ...v, active: activation ? 1 : 0 } : v
           )
@@ -226,10 +240,10 @@ export default function App() {
     }
   };
 
-  const handleChangeJob = (newJobId, configs) => {
+  const handleChangeJob = (newJobId, newJobs) => {
     setJobId(newJobId);
     setIsNewJobMode(false);
-    const collection = configs ?? jobConfigs;
+    const collection = newJobs ?? jobs;
     const found = collection.find((version) => version.id === newJobId);
     setJobDesc(found?.description ?? '');
   };
@@ -311,21 +325,27 @@ export default function App() {
     }
   };
 
-  const pluginInfo = plugins.find((p) => p.id === pluginId);
-  const currentConfig = jobConfigs.find((version) => version.id === jobId);
+  const pluginInfo = useMemo(() => {
+    return typeof pluginId === 'number'
+      ? plugins.find((p) => p.id === pluginId)
+      : { package: pluginId };
+  }, [pluginId]);
+
+  const currentJob = jobs.find((version) => version.id === jobId);
 
   const formData = useMemo(() => {
-    if (currentConfig?.config) {
-      return JSON.parse(currentConfig.config);
+    const cfg = currentJob?.config;
+    if (cfg) {
+      return typeof cfg === 'string' ? JSON.parse(cfg) : cfg;
     }
     // When in new job mode, use schema defaults instead of null
     if (isNewJobMode && schema) {
       return getDefaultsFromSchema(schema);
     }
     return null;
-  }, [currentConfig, isNewJobMode, schema, getDefaultsFromSchema]);
+  }, [currentJob, isNewJobMode, schema, getDefaultsFromSchema]);
 
-  const isActive = !!currentConfig?.active;
+  const isActive = !!currentJob?.active;
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -344,7 +364,7 @@ export default function App() {
 
           <Grid container spacing={3} sx={{ mt: 1 }}>
             {/* Left sidebar */}
-            <Grid item size={{ xs: 12, md: 3 }}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <Box
                 sx={{
                   display: 'flex',
@@ -357,6 +377,7 @@ export default function App() {
                 <ContextPanel
                   sessions={SESSIONS}
                   plugins={plugins}
+                  ctx={window.ctx}
                   sessionId={sessionId}
                   pluginId={pluginId}
                   onSessionChange={handleChangeSession}
@@ -366,26 +387,32 @@ export default function App() {
                   isLoading={submitting}
                 />
 
-                <JobsList
-                  jobs={jobConfigs}
-                  selectedJobId={jobId}
-                  pluginPackage={pluginInfo?.package}
-                  onSelectJob={handleChangeJob}
-                  onToggleJob={(id, active) => handleJobActivation(active, id)}
-                  onNewJob={handleNewJob}
-                  isNewJobMode={isNewJobMode}
-                  disabled={!schema}
-                />
+                {typeof pluginId === 'number' && (
+                  <JobsList
+                    jobs={jobs}
+                    selectedJobId={jobId}
+                    pluginPackage={pluginInfo?.package}
+                    onSelectJob={handleChangeJob}
+                    onToggleJob={(id, active) =>
+                      handleJobActivation(active, id)
+                    }
+                    onNewJob={handleNewJob}
+                    isNewJobMode={isNewJobMode}
+                    disabled={!schema}
+                  />
+                )}
               </Box>
             </Grid>
 
             {/* Main content */}
-            <Grid item size={{ xs: 12, md: 9 }}>
+            <Grid size={{ xs: 12, md: 9 }}>
               <JobDetails
                 jobId={jobId}
                 jobDesc={jobDesc}
                 pluginPackage={pluginInfo?.package}
                 pluginInterval={pluginInfo?.interval}
+                setResult={setResult}
+                setError={setError}
                 isActive={isActive}
                 formData={formData}
                 env={env}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import _ from 'lodash';
 import {
   Stack,
@@ -12,8 +12,8 @@ import {
   ListItem,
   Checkbox,
   ListItemButton,
-  ListItemIcon,
-  ListItemText
+  ListItemText,
+  ListItemIcon
 } from '@mui/material';
 import { Save, PublishedWithChanges } from '@mui/icons-material';
 import { buildJinjaContext } from '../../../utils';
@@ -48,7 +48,6 @@ export function VersionField({
   const render = useCallback(
     buildJinjaContext(
       registry.formContext.pluginPackage,
-      registry.formContext.env.filters,
       registry.formContext.formData
     ),
     [registry.formContext]
@@ -404,7 +403,7 @@ export function VersionField({
             <Button
               variant="contained"
               size="small"
-              color="info"
+              color="warning"
               startIcon={<PublishedWithChanges />}
               onClick={handleApplyClick}
               disabled={applying || saving}
@@ -447,7 +446,7 @@ export function VersionField({
         onClose={() => setApplyConfirmDialogOpen(false)}
         onConfirm={doApply}
         title="Apply Version to All Jobs"
-        message={
+        details={
           <ApplyMessage
             render={render}
             selectedJobIds={selectedJobIds}
@@ -465,7 +464,7 @@ export function VersionField({
             }}
           />
         }
-        details={`This action will apply the SQL version "${
+        message={`This action will apply the SQL version "${
           selectedVersion?.name || ''
         }" to ALL jobs in this plugin.\n\n⚠️ Important:\n• All jobs will use the SQL value from this version\n• This will override any custom SQL configurations in individual jobs\n• The change takes effect immediately for all jobs`}
         severity="warning"
@@ -585,7 +584,6 @@ export function VersionField({
   );
 }
 
-
 const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
   const [jobsBySession, setJobsBySession] = useState({});
   const [loading, setLoading] = useState(true);
@@ -595,17 +593,20 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
       setLoading(true);
       const results = {};
       const jobs = await render(
-              `{{ get_jobs_by_plugin_and_session(plugin_id) | tolist("id", "description", "session_id") | tojson }}`
-            );
+        `{{ dao.get_jobs_by_plugin_and_session(plugin_id) | tolist("id", "description", "session_id") | tojson }}`
+      );
       SESSIONS.map((session) => {
-          try {
-            if (jobs?.length) {
-              results[session.id] = { name: session.name, jobs: jobs.filter((j) => j.session_id === session.id) };
-            }
-          } catch (e) {
-            console.error(`Failed to fetch jobs for session ${session.name}:`, e);
+        try {
+          if (jobs?.length) {
+            results[session.id] = {
+              name: session.name,
+              jobs: jobs.filter((j) => j.session_id === session.id)
+            };
           }
-        })
+        } catch (e) {
+          console.error(`Failed to fetch jobs for session ${session.name}:`, e);
+        }
+      });
       setJobsBySession(results);
       setLoading(false);
     };
@@ -630,8 +631,12 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
       {sessionIds.map((sessionId) => {
         const { name, jobs } = jobsBySession[sessionId];
         const sessionJobIds = jobs.map((j) => j.id);
-        const allSelected = sessionJobIds.every((id) => selectedJobIds.includes(id));
-        const someSelected = sessionJobIds.some((id) => selectedJobIds.includes(id));
+        const allSelected = sessionJobIds.every((id) =>
+          selectedJobIds.includes(id)
+        );
+        const someSelected = sessionJobIds.some((id) =>
+          selectedJobIds.includes(id)
+        );
 
         return (
           <Box key={sessionId}>
@@ -653,7 +658,11 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
                 primaryTypographyProps={{ fontWeight: 600 }}
               />
               <Typography variant="caption" color="text.secondary">
-                {sessionJobIds.filter((id) => selectedJobIds.includes(id)).length}/{jobs.length}
+                {
+                  sessionJobIds.filter((id) => selectedJobIds.includes(id))
+                    .length
+                }
+                /{jobs.length}
               </Typography>
             </ListItemButton>
             <List dense disablePadding sx={{ pl: 2 }}>

@@ -39,7 +39,7 @@ type Props = {
 
 type RenderResult = {
   loading: boolean;
-  output?: { result: string };
+  output?: string;
   error?: string;
 };
 
@@ -167,7 +167,7 @@ const DocItemAccordion = memo(function DocItemAccordion({
 
       <AccordionDetails sx={{ pt: 0 }}>
         {item.signature && (
-          <Box mb={1.5}>
+          <Box my={1.5}>
             <Typography
               component="pre"
               sx={(theme) => ({
@@ -193,7 +193,7 @@ const DocItemAccordion = memo(function DocItemAccordion({
           <Typography
             component="pre"
             sx={(theme) => ({
-              margin: 0,
+              my: 1.5,
               padding: '10px 12px',
               fontSize: 13,
               lineHeight: 1.7,
@@ -232,7 +232,7 @@ const DocItemAccordion = memo(function DocItemAccordion({
             )}
             {renderResult.output && (
               <Typography color="success.main">
-                {renderResult.output.result}
+                {renderResult.output}
               </Typography>
             )}
             {renderResult.error && (
@@ -253,13 +253,11 @@ const DocItemAccordion = memo(function DocItemAccordion({
 function DocSection({
   title,
   items,
-  filters,
   pluginPackage,
   isFilter = false
 }: {
   title: string;
   items: Record<string, DocItem>;
-  filters: string[];
   pluginPackage: string;
   isFilter?: boolean;
 }) {
@@ -280,7 +278,8 @@ function DocSection({
       }));
 
       try {
-        const output = await jinjaEvaluate(pluginPackage, tpl, filters, {});
+        // render raw output
+        const output = await jinjaEvaluate(pluginPackage, tpl, {}, true);
         setRenderResults((prev) => ({
           ...prev,
           [name]: { loading: false, output }
@@ -344,12 +343,7 @@ function DocSection({
 /**
  * Main component
  */
-export default function JinjaEnvDocs({
-  data,
-  pluginPackage,
-  filters,
-  params
-}: Props) {
+export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
   const normalizedQuery = deferredQuery.trim().toLowerCase();
@@ -373,7 +367,7 @@ export default function JinjaEnvDocs({
   }, [data.filters, normalizedQuery]);
 
   const filteredParams = useMemo(() => {
-    let rawParams = Object.entries(params);
+    let rawParams = params ? Object.entries(params) : [];
     if (normalizedQuery)
       rawParams = rawParams.filter(([name]) =>
         name.toLowerCase().includes(normalizedQuery)
@@ -419,7 +413,6 @@ export default function JinjaEnvDocs({
 
       <DocSection
         title="Config Params"
-        filters={filters}
         items={filteredParams}
         pluginPackage={pluginPackage}
         isFilter={true}
@@ -427,14 +420,12 @@ export default function JinjaEnvDocs({
 
       <DocSection
         title="Globals"
-        filters={filters}
         items={filteredGlobals}
         pluginPackage={pluginPackage}
         isFilter={false}
       />
       <DocSection
         title="Filters"
-        filters={filters}
         items={filteredFilters}
         pluginPackage={pluginPackage}
         isFilter={true}

@@ -29,6 +29,7 @@ import { ConfigForm } from './ConfigForm';
 import LogViewer from '../../LogViewer';
 import SignalsLogsViewer from '../../SignalsLogsViewer';
 import JinjaEnvDocs from './JinjaEnvDocs';
+import api from '../../api';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -46,6 +47,8 @@ export function JobDetails({
   jobDesc,
   pluginPackage,
   pluginInterval,
+  setResult,
+  setError,
   isActive,
   formData,
   schema,
@@ -154,24 +157,43 @@ export function JobDetails({
   return (
     <Card sx={{ bgcolor: 'background.paper' }}>
       <CardHeader
-        title="Job Details"
+        title={typeof pluginId === 'number' ? 'Job Details' : 'User Plugin'}
         subheader={
           pluginPackage
-            ? `${pluginPackage} • every ${pluginInterval}s`
+            ? `${pluginPackage}${pluginInterval ? ` • every ${pluginInterval}s` : ''}`
             : 'Select a plugin to begin'
         }
         action={
-          jobId !== 0 && (
+          (typeof pluginId == 'string' || jobId !== 0) && (
             <Stack direction="row" spacing={1} alignItems="center">
               <Button
                 variant={isActive ? 'outlined' : 'contained'}
                 color={isActive ? 'warning' : 'success'}
                 size="small"
                 startIcon={isActive ? <Pause /> : <PlayArrow />}
-                onClick={onToggleActive}
+                onClick={async () => {
+                  if (typeof pluginId === 'string') {
+                    try {
+                      const result = await api.runTemplatePlugin(
+                        pluginId,
+                        localFormData
+                      );
+                      setResult(result);
+                      setIsDirty(false);
+                    } catch (e) {
+                      setError(e.message);
+                    }
+                    return;
+                  }
+                  onToggleActive();
+                }}
                 disabled={isSubmitting}
               >
-                {isActive ? 'Pause' : 'Start'}
+                {typeof pluginId == 'string'
+                  ? 'Run'
+                  : isActive
+                    ? 'Pause'
+                    : 'Start'}
               </Button>
             </Stack>
           )
@@ -265,7 +287,6 @@ export function JobDetails({
             <JinjaEnvDocs
               data={env}
               pluginPackage={pluginPackage}
-              filters={env.filters}
               params={formData}
             />
           </TabPanel>
@@ -299,7 +320,12 @@ export function JobDetails({
             <Button
               variant="contained"
               startIcon={<Save />}
-              onClick={() => openConfirmDialog('save')}
+              onClick={() => {
+                if (typeof pluginId === 'string') {
+                  return onSave(localFormData);
+                }
+                openConfirmDialog('save');
+              }}
               disabled={isSubmitting}
               sx={{
                 background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',

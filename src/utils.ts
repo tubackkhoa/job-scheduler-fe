@@ -1,8 +1,19 @@
 import json5 from 'json5';
+import { PyodideAPI } from 'pyodide';
 import { linter, Diagnostic } from '@codemirror/lint';
 import { syntaxTree } from '@codemirror/language';
 import _ from 'lodash';
 import api from './api';
+import jinja from './jinja.py?raw';
+
+export const getCodeHash = (str: string) => {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    // hash * 33 + charCode
+    hash = (hash << 5) + hash + str.charCodeAt(i);
+  }
+  return (hash >>> 0).toString(16);
+};
 
 // Helper to resolve $ref schema if present
 const resolveRef = (schema: any, ref: string) => {
@@ -11,36 +22,67 @@ const resolveRef = (schema: any, ref: string) => {
   return schema.$defs[defKey] ?? null;
 };
 
+export const convertByType = (value: string, field: any) => {
+  switch (typeof field) {
+    case 'number':
+      return Number(value);
+
+    case 'boolean':
+      return value === 'true';
+
+    case 'bigint':
+      return BigInt(value);
+
+    case 'object':
+      return json5.parse(value);
+
+    default:
+      return value;
+  }
+};
+
 export const buildUiSchemaWithExpr = async (
   packageName: string,
-  filters: string[],
   context: Record<string, any>,
   schema: any,
   changedFieldId: string
-): Promise<any> => {
+): Promise<[any, string[]]> => {
   if (!schema) return schema;
 
   const newSchema = _.cloneDeep(schema);
   const stack = [{ node: newSchema }];
+  const errors = [];
 
   while (stack.length) {
     const { node } = stack.pop()!;
 
-    if (node['ui:expr']) {
-      const [expr, deps]: string[] =
-        typeof node['ui:expr'] === 'string'
-          ? [node['ui:expr']]
-          : node['ui:expr'];
+    for (const [sKey, sValue] of Object.entries(node)) {
+      if (sKey.startsWith('ui:expr')) {
+        const [expr, deps] =
+          typeof sValue === 'string'
+            ? [sValue]
+            : (sValue as [string, string[]]);
 
-      // only render if deps changed, or first time when no changedFieldId
-      if (!deps || !changedFieldId || deps.includes(changedFieldId)) {
-        const extraOptions = await jinjaEvaluate(
-          packageName,
-          expr,
-          filters,
-          context
-        );
-        _.merge(node, extraOptions);
+        // only render if deps changed, or first time when no changedFieldId
+        if (!deps || !changedFieldId || deps.includes(changedFieldId)) {
+          const subKey = sKey === 'ui:expr' ? '' : sKey.replace('ui:expr:', '');
+          try {
+            const extraOptions = await jinjaEvaluate(
+              packageName,
+              expr,
+              context,
+              !!subKey
+            );
+
+            if (subKey) {
+              node[subKey] = convertByType(extraOptions, node[subKey]);
+            } else {
+              _.merge(node, extraOptions);
+            }
+          } catch (ex) {
+            errors.push(ex.message);
+          }
+        }
       }
     }
 
@@ -56,7 +98,8 @@ export const buildUiSchemaWithExpr = async (
     }
   }
 
-  return newSchema;
+  // return both to catch error
+  return [newSchema, errors];
 };
 
 export const extractUiSchema = (schema: any): Record<string, any> => {
@@ -78,7 +121,7 @@ export const extractUiSchema = (schema: any): Record<string, any> => {
       const uiEntry: Record<string, any> = {};
 
       for (const [uiKey, uiValue] of Object.entries(prop)) {
-        if (uiKey.startsWith('ui:') && uiKey !== 'ui:expr') {
+        if (uiKey.startsWith('ui:') && !uiKey.startsWith('ui:expr')) {
           uiEntry[uiKey] = uiValue;
         }
       }
@@ -237,15 +280,15 @@ export class JinjaCompletionBuilder {
     };
   }
 
-  static build(params: Record<string, any> = {}, serverSymbols: any = {}) {
+  static build(params: Record<string, any> = {}, envDoc: EnvDoc) {
     return {
       variables: [
         ...this.buildTopLevelVariables(params),
-        ...this.buildGlobals(serverSymbols.globals),
-        ...this.buildTests(serverSymbols.tests)
+        ...this.buildGlobals(envDoc.globals),
+        ...this.buildTests(envDoc.tests)
       ],
-      filters: this.buildFilters(serverSymbols.filters),
-      tags: this.buildTags(serverSymbols.tags),
+      filters: this.buildFilters(envDoc.filters),
+      tags: this.buildTags(envDoc.tags),
       properties: this.buildProperties(params)
     };
   }
@@ -318,85 +361,87 @@ export const jinjaLinter = (
   });
 };
 
-export const initPyodide = new Promise(async (resolve) => {
+const initPyodide: Promise<PyodideAPI> = (async () => {
   // @ts-ignore
-  const pyodide = await loadPyodide();
-
+  const pyodide: PyodideAPI = await loadPyodide();
   // Ensure Jinja2 is available
   await pyodide.loadPackage('jinja2');
-
-  // Define Python code
-  await pyodide.runPythonAsync(`
-from jinja2 import Environment, meta
-def render(tpl_str, context, filters):
-    env = Environment(autoescape=False, trim_blocks=True, lstrip_blocks=True)
-    try:                
-        return env.from_string(tpl_str).render(context, this=context)
-    except:
-        identity = lambda x, *args, **kwargs: x
-        env.filters.update({name: identity for name in filters})
-        ast = env.parse(tpl_str)
-        return meta.find_undeclared_variables(ast)
-  `);
+  await pyodide.runPythonAsync(jinja);
   console.log('Pyodide initialized');
-  resolve(pyodide);
-});
+  return pyodide;
+})();
 
-export const extractUndeclaredVariables = async (
+// pre-init at background for faster load
+initPyodide;
+type EnvDoc = {
+  filters: Record<string, unknown>;
+  globals: Record<string, unknown>;
+  tests: string[];
+  tags: string[];
+};
+
+const envDocPromise: Promise<EnvDoc> = (async () => {
+  const pyodide = await initPyodide;
+  const envDoc = JSON.parse(pyodide.globals.get('doc_json'));
+  return Object.freeze(envDoc);
+})();
+
+export const getEnvDoc = async (globals: Record<string, unknown>) => {
+  const envDoc = await envDocPromise;
+  return { ...envDoc, globals: { ...envDoc.globals, ...globals } };
+};
+
+const extractUndeclaredVariables = async (
   tpl: string,
   data: {
     [key: string]: any;
-  },
-  filters: Set<string>
+  }
 ): Promise<string[] | string> => {
   const pyodide = await initPyodide;
-  // @ts-ignore
   const renderFn = pyodide.globals.get('render');
-  // @ts-ignore
-  const params = renderFn(tpl, pyodide.toPy(data), filters);
+  const params = renderFn(
+    tpl,
+    pyodide.toPy(data),
+    pyodide.toPy(window.ctx ?? {})
+  );
   return typeof params === 'string' ? params : Array.from(params.toJs());
 };
 
 export const buildJinjaContext = (
   packageName: string,
-  filters: string[] | { [key: string]: any },
   params: {
     [key: string]: any;
-  }
+  },
+  raw: boolean = false
 ) => {
   return (
     tmpl: string,
     context: {
       [key: string]: any;
     }
-  ) => jinjaEvaluate(packageName, tmpl, filters, { ...params, ...context });
+  ) => jinjaEvaluate(packageName, tmpl, { ...params, ...context }, raw);
 };
 
 export const jinjaEvaluate = async (
   packageName: string,
   tmpl: string,
-  filters: string[] | { [key: string]: any },
   params: {
     [key: string]: any;
-  }
+  },
+  raw = false
 ) => {
   // extract includeKeys to pass to server
-  let includeKeys = await extractUndeclaredVariables(
-    tmpl,
-    params,
-    new Set(typeof filters === 'object' ? Object.keys(filters) : filters)
-  );
-
-  const { result } =
+  const includeKeys = await extractUndeclaredVariables(tmpl, params);
+  const result =
     typeof includeKeys === 'string'
-      ? { result: includeKeys }
+      ? includeKeys
       : await api.renderTemplate(
           packageName,
           tmpl,
           includeKeys.includes('this') ? params : _.pick(params, includeKeys)
         );
 
-  if (typeof result === 'string') {
+  if (!raw) {
     try {
       return json5.parse(result);
     } catch {}
@@ -404,5 +449,3 @@ export const jinjaEvaluate = async (
   // not a string, return as is
   return result;
 };
-// pre-init at background for faster load
-initPyodide;

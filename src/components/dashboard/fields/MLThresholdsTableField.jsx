@@ -7,6 +7,7 @@ import {
   Checkbox,
   Stack,
   Typography,
+  TableContainer,
   Divider,
   TextField,
   Box,
@@ -16,7 +17,6 @@ import {
 export function MLThresholdsTableField({
   schema,
   formData = {},
-  registry,
   onChange,
   fieldPathId
 }) {
@@ -42,14 +42,16 @@ export function MLThresholdsTableField({
   };
 
   return (
-    <Paper
+    <TableContainer
+      component={Paper}
       elevation={0}
+      variant="outlined"
       sx={{
         p: 2,
         bgcolor: 'background.paper',
         border: '1px solid',
         borderColor: 'divider',
-        borderRadius: 2
+        borderRadius: 1
       }}
     >
       <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
@@ -156,6 +158,6 @@ export function MLThresholdsTableField({
           </TableBody>
         </Table>
       </Box>
-    </Paper>
+    </TableContainer>
   );
 }

@@ -1,165 +1,119 @@
-export const API_BASE_URL =
-  // @ts-ignore
-  import.meta.env.VITE_API_BASE_URL ?? '';
+const { VITE_PROXY, VITE_API_BASE_URL } = import.meta.env;
 
-const parseJsonResponse = async (res: Response, url: string) => {
-  const contentType = res.headers.get('content-type');
-  if (!contentType || !contentType.includes('application/json')) {
-    const text = await res.text();
-    // If we get HTML, it's likely a 404 or error page
-    if (contentType?.includes('text/html')) {
-      throw new Error(`Response: ${text.substring(0, 200)}`);
-    }
-    throw new Error(
-      `Expected JSON but got ${contentType}. Response: ${text.substring(
-        0,
-        100
-      )}`
-    );
-  }
-  return res.json();
+export const API_BASE_URL =
+  VITE_PROXY === 'true' ? '' : (VITE_API_BASE_URL ?? '');
+
+const apiUrl = (path: string) => `${API_BASE_URL}${path}`;
+
+type HttpMethod = 'GET' | 'POST';
+
+const JSON_HEADERS = {
+  'Content-Type': 'application/json'
 };
 
+async function handleError(res: Response): Promise<never> {
+  const text = await res.text();
+  throw new Error(text || `Request failed (${res.status})`);
+}
+
+async function parseJson(res: Response) {
+  const contentType = res.headers.get('content-type');
+
+  if (!contentType?.includes('application/json')) {
+    const text = await res.text();
+    throw new Error(
+      contentType?.includes('text/html')
+        ? `Response: ${text.substring(0, 200)}`
+        : `Expected JSON but got ${contentType}. Response: ${text.substring(0, 100)}`
+    );
+  }
+
+  return res.json();
+}
+
+async function request<T = unknown>(
+  path: string,
+  options: RequestInit = {},
+  responseType: 'json' | 'text' = 'json'
+): Promise<T> {
+  const res = await fetch(apiUrl(path), options);
+
+  if (!res.ok) {
+    await handleError(res);
+  }
+
+  return responseType === 'json' ? parseJson(res) : ((await res.text()) as T);
+}
+
+const postJson = <T = unknown>(
+  path: string,
+  body?: unknown,
+  responseType: 'json' | 'text' = 'json'
+) =>
+  request<T>(
+    path,
+    {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: body ? JSON.stringify(body) : undefined
+    },
+    responseType
+  );
+
 export default {
-  async fetchSchema(sessionId: number, pluginId: number) {
-    const url = `${API_BASE_URL}/schema/${sessionId}/${pluginId}`;
-
-    const res = await fetch(url);
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || `Schema not found (${res.status})`);
-    }
-
-    return parseJsonResponse(res, url);
+  fetchSchema(sessionId: number, pluginId: number) {
+    return request(`/api/schema/${sessionId}/${pluginId}`);
   },
 
-  async fetchPlugins() {
-    const url = `${API_BASE_URL}/plugins`;
-
-    const res = await fetch(url);
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || `Failed to load plugins (${res.status})`);
-    }
-
-    return parseJsonResponse(res, url);
+  fetchTemplatePluginSchema(pluginPath: string) {
+    return request(`/api/user/template/${pluginPath}`);
   },
-  async updateConfig(jobId: number, payload: Object) {
-    const url = `${API_BASE_URL}/config/${jobId}`;
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
+  updateTemplatePlugin(pluginPath: string, payload: unknown) {
+    return postJson(`/api/user/template/${pluginPath}`, payload);
+  },
+
+  runTemplatePlugin(pluginPath: string, payload: unknown): Promise<string> {
+    return postJson(`/api/user/template/run/${pluginPath}`, payload, 'text');
+  },
+
+  fetchPlugins() {
+    return request(`/api/plugins`);
+  },
+
+  updateConfig(jobId: number, payload: unknown) {
+    return postJson(`/api/config/${jobId}`, payload);
+  },
+
+  activateJob(jobId: number, activation: boolean) {
+    return postJson(`/api/activate/${jobId}/${activation}`);
+  },
+
+  deleteJob(jobId: number) {
+    return postJson(`/api/delete/${jobId}`);
+  },
+
+  reloadPlugin(pkg: string) {
+    return postJson(`/api/reload/${pkg}`);
+  },
+
+  createPlugin(packageName: string, interval: number, description = '') {
+    return postJson(`/api/plugins`, {
+      package: packageName,
+      interval,
+      description
     });
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || `Plugin execution failed (${res.status})`);
-    }
-
-    return parseJsonResponse(res, url);
   },
-  async activateJob(jobId: number, activation: boolean) {
-    const url = `${API_BASE_URL}/activate/${jobId}/${activation}`;
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (!res.ok) {
-      const msg = await res.text();
-      throw new Error(msg || `Plugin activation failed (${res.status})`);
-    }
-
-    return parseJsonResponse(res, url);
-  },
-  async deleteJob(jobId: number) {
-    const url = `${API_BASE_URL}/delete/${jobId}`;
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (!res.ok) {
-      const msg = await res.text();
-      throw new Error(msg || `Plugin deletion failed (${res.status})`);
-    }
-
-    return parseJsonResponse(res, url);
-  },
-  async reloadPlugin(pkg: string) {
-    const url = `${API_BASE_URL}/reload/${pkg}`;
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (!res.ok) {
-      const msg = await res.text();
-      throw new Error(msg || `Plugin reload failed (${res.status})`);
-    }
-
-    return parseJsonResponse(res, url);
-  },
-  async createPlugin(
+  renderTemplate(
     packageName: string,
-    interval: number,
-    description?: string
-  ) {
-    const url = `${API_BASE_URL}/plugins`;
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        package: packageName,
-        interval,
-        description: description || ''
-      })
-    });
-
-    if (!res.ok) {
-      const msg = await res.text();
-      throw new Error(msg || `Failed to create plugin (${res.status})`);
-    }
-
-    return parseJsonResponse(res, url);
-  },
-  async renderTemplate(packageName: string, template: string, params: object) {
-    const url = `${API_BASE_URL}/template/${packageName}`;
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        template,
-        params
-      })
-    });
-
-    if (!res.ok) {
-      const msg = await res.text();
-      throw new Error(msg || `Failed to render template (${res.status})`);
-    }
-
-    return parseJsonResponse(res, url);
+    template: string,
+    params: object
+  ): Promise<string> {
+    return postJson(
+      `/api/template/${packageName}`,
+      { template, params },
+      'text'
+    );
   }
 };
