@@ -24,7 +24,7 @@ export default function App() {
       <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         <LoadingBar isLoading={loading} />
 
-        <Container maxWidth={false} sx={{ py: 3, px: { xs: 2, sm: 3, md: 4 } }}>
+        <Container maxWidth={false} sx={{ pb: 3, px: { xs: 2, sm: 3, md: 4 } }}>
           <Header />
 
           {error && (

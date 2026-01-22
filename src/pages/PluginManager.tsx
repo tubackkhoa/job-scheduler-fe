@@ -257,7 +257,7 @@ export default function PluginManager({ setLoading, setError }) {
               flexDirection: 'column',
               gap: 3,
               position: { xs: 'static', md: 'sticky' },
-              top: 30
+              top: 125
             }}
           >
             <ContextPanel

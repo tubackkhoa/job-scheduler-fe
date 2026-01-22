@@ -11,7 +11,6 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ExtensionIcon from '@mui/icons-material/Extension';
-import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 
 import { useNavigate } from 'react-router-dom';
@@ -36,14 +35,18 @@ export function Header() {
 
   return (
     <Box
-      sx={{
+      sx={(theme) => ({
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'self-start',
         justifyContent: 'space-between',
         py: 3,
+        backgroundColor: theme.palette.background.default,
         borderBottom: 1,
-        borderColor: 'divider'
-      }}
+        zIndex: 1000,
+        borderColor: 'divider',
+        position: { xs: 'static', md: 'sticky' },
+        top: 0
+      })}
     >
       {/* Left: Title */}
       <Box>
