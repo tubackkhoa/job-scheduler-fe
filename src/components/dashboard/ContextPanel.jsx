@@ -17,6 +17,7 @@ import {
   Autocomplete
 } from '@mui/material';
 import { Refresh, Person, Add } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 export function ContextPanel({
   sessions,
@@ -25,11 +26,12 @@ export function ContextPanel({
   ctx,
   pluginId,
   onSessionChange,
-  onPluginChange,
   onReloadPlugin,
   onCreatePlugin,
   isLoading
 }) {
+  const navigate = useNavigate();
+
   const pluginOptions = plugins.map((p) => ({
     id: p.id,
     label: p.package,
@@ -104,12 +106,8 @@ export function ContextPanel({
             isOptionEqualToValue={(opt, val) => opt.id === val.id}
             onChange={(event, value) => {
               const valueId = typeof value === 'string' ? value : value?.id;
-
               if (valueId) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('plugin_id', String(valueId));
-                window.history.replaceState({}, '', url);
-                onPluginChange(valueId);
+                navigate(`/plugins/${valueId}`);
               }
             }}
             renderInput={(params) => (
