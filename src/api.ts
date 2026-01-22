@@ -36,6 +36,7 @@ async function request<T = unknown>(
   options: RequestInit = {},
   responseType: 'json' | 'text' = 'json'
 ): Promise<T> {
+  
   const res = await fetch(apiUrl(path), options);
 
   if (!res.ok) {
