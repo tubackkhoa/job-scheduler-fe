@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -22,6 +22,10 @@ export function Header() {
   const navigate = useNavigate();
   const { logout, isAuthenticated } = useAuth();
 
+  useEffect(() => {
+    setAnchorEl(null);
+  }, [isAuthenticated]);
+
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -37,7 +41,7 @@ export function Header() {
     <Box
       sx={(theme) => ({
         display: 'flex',
-        alignItems: 'self-start',
+        alignItems: 'flex-start',
         justifyContent: 'space-between',
         py: 3,
         backgroundColor: theme.palette.background.default,
@@ -80,7 +84,19 @@ export function Header() {
           <MenuIcon />
         </IconButton>
 
-        <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+        <Menu
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right'
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right'
+          }}
+        >
           <MenuItem onClick={() => handleNavigate('/')}>
             <ListItemIcon>
               <DashboardIcon fontSize="small" />
