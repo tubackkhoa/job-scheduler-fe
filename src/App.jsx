@@ -166,10 +166,13 @@ export default function App() {
       const {
         schema: fetchedSchema,
         jobs,
+        user,
         globals
       } = typeof currentPluginId === 'string'
         ? await api.fetchTemplatePluginSchema(currentPluginId)
         : await api.fetchSchema(currentSessionId ?? sessionId, currentPluginId);
+      // assign global ctx
+      window.ctx = { user };
       setEnv(await getEnvDoc(globals));
       setSchema(fetchedSchema);
       setJobs(jobs);

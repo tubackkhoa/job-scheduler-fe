@@ -72,9 +72,9 @@ doc_json = json.dumps(
 )
 
 
-def render(tpl_str, context):
+def render(tpl_str, context, ctx):
     try:
-        return sandbox.from_string(tpl_str).render(context, this=context)
+        return sandbox.from_string(tpl_str).render(context, this=context, ctx=ctx)
     except Exception:
         ast = sandbox.parse(tpl_str)
         return meta.find_undeclared_variables(ast)
