@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import _ from 'lodash';
+import { useState, useEffect, useRef, useCallback } from "react";
+import _ from "lodash";
 import {
   Stack,
   Typography,
@@ -13,104 +13,111 @@ import {
   Checkbox,
   ListItemButton,
   ListItemText,
-  ListItemIcon
-} from '@mui/material';
-import { Save, PublishedWithChanges } from '@mui/icons-material';
-import { buildJinjaContext } from '../../../utils';
-import { ConfirmationDialog } from '../ConfirmationDialog';
-import { SESSIONS } from '../../../constants/session';
+  ListItemIcon,
+} from "@mui/material";
+import { Save, PublishedWithChanges } from "@mui/icons-material";
+import { buildJinjaContext } from "../../../utils";
+import { ConfirmationDialog } from "../ConfirmationDialog";
+import { SESSIONS } from "../../../constants/session";
 
 export function VersionField({
   formData,
   onChange,
   schema,
   fieldPathId,
-  registry
+  registry,
 }) {
   const [versions, setVersions] = useState([]);
   const [selectedVersion, setSelectedVersion] = useState(null);
-  const [versionName, setVersionName] = useState('');
-  const [searchInput, setSearchInput] = useState('');
+  const [versionName, setVersionName] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [applying, setApplying] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [applyConfirmDialogOpen, setApplyConfirmDialogOpen] = useState(false);
   const [selectedJobIds, setSelectedJobIds] = useState([]);
   const [selectedDeleteJobIds, setSelectedDeleteJobIds] = useState([]);
   const [updateChoiceDialogOpen, setUpdateChoiceDialogOpen] = useState(false);
   const [saveAsNewDialogOpen, setSaveAsNewDialogOpen] = useState(false);
-  const [newVersionName, setNewVersionName] = useState('');
+  const [newVersionName, setNewVersionName] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const render = useCallback(
     buildJinjaContext(
       registry.formContext.pluginPackage,
-      registry.formContext.formData
+      registry.formContext.formData,
     ),
-    [registry.formContext]
+    [registry.formContext],
   );
 
   // Generic evaluate wrapper
   const evaluateExpr = useCallback(
-    (exprKey, data) => render(schema['model:expr'][exprKey], data),
-    [schema, render]
+    (exprKey, data) => render(schema["model:expr"][exprKey], data),
+    [schema, render],
   );
 
   const listVersions = useCallback(
-    (field_id, searchTerm = '', limit = 20, offset = 0) =>
-      evaluateExpr('list', { field_id, search: searchTerm, limit, offset }),
-    [evaluateExpr]
+    (field_id, searchTerm = "", version_id = null, limit = 100, offset = 0) =>
+      evaluateExpr("list", { field_id, search: searchTerm, id: version_id, limit, offset }),
+    [evaluateExpr],
   );
 
   const getVersion = useCallback(
-    (id) => evaluateExpr('detail', { id }),
-    [evaluateExpr]
+    (id) => evaluateExpr("detail", { id }),
+    [evaluateExpr],
   );
 
   const updateVersion = useCallback(
-    (id, payload) => evaluateExpr('update', { id, payload }),
-    [evaluateExpr]
+    (id, payload) => evaluateExpr("update", { id, payload }),
+    [evaluateExpr],
   );
 
   const createVersion = useCallback(
-    (payload) => evaluateExpr('create', { payload }),
-    [evaluateExpr]
+    (payload) => evaluateExpr("create", { payload }),
+    [evaluateExpr],
   );
 
   const applyVersion = useCallback(
-    (id, job_ids) => evaluateExpr('apply', { id, job_ids }),
-    [evaluateExpr]
+    (id, job_ids) => evaluateExpr("apply", { id, job_ids }),
+    [evaluateExpr],
   );
 
   const deleteVersion = useCallback(
-    (id) => evaluateExpr('delete', { id }),
-    [evaluateExpr]
+    (id) => evaluateExpr("delete", { id }),
+    [evaluateExpr],
   );
 
   const localValue = useCallback(
-    () => _.get(registry.formContext.formData, schema['model:binding']) || '',
-    [registry, schema['model:binding']]
+    () => _.get(registry.formContext.formData, schema["model:binding"]) || "",
+    [registry, schema["model:binding"]],
   );
 
   const debounceTimeout = useRef(null);
 
+  const prevFormDataRef = useRef(formData);
+
+
   useEffect(() => {
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-
     debounceTimeout.current = setTimeout(async () => {
       setLoading(true);
-      setError('');
+      setError("");
       try {
-        const result = await listVersions(fieldPathId?.$id, searchInput);
+        const formDataChanged = prevFormDataRef.current !== formData;
+        let searchTerm = searchInput;
+        if(formDataChanged){
+          searchTerm = '';
+        }
+        const result = await listVersions(fieldPathId?.$id, searchTerm, formData);
         const items = result?.versions || [];
         setVersions(items);
 
         // If formData exists, select corresponding version
         if (formData) {
-          const matched = items.find((v) => v.id === formData);
+          const matched = items.find((v) => Number(v.id) === formData);
           if (matched) {
             setSelectedVersion(matched);
             setVersionName(matched.name);
@@ -118,9 +125,10 @@ export function VersionField({
         }
       } catch (e) {
         setVersions([]);
-        setError(e.message || 'Failed to load versions');
+        setError(e.message || "Failed to load versions");
         console.error(e);
       } finally {
+        prevFormDataRef.current = formData;
         setLoading(false);
       }
     }, 300);
@@ -133,24 +141,24 @@ export function VersionField({
   const handleSelect = async (version) => {
     if (!version) {
       setSelectedVersion(null);
-      setVersionName('');
+      setVersionName("");
       // onChange('', schema['model:binding']);
       if (fieldPathId?.path) onChange(0, fieldPathId.path);
       return;
     }
 
     setLoading(true);
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
 
     try {
       const fullVersion = await getVersion(version.id);
       setSelectedVersion(fullVersion);
       setVersionName(fullVersion.name);
-      onChange(fullVersion.value, schema['model:binding']);
+      onChange(fullVersion.value, schema["model:binding"]);
       if (fieldPathId?.path) onChange(fullVersion.id, fieldPathId.path);
     } catch (e) {
-      setError(e.message || 'Failed to load version details');
+      setError(e.message || "Failed to load version details");
     } finally {
       setLoading(false);
     }
@@ -161,11 +169,11 @@ export function VersionField({
     const value = localValue().trim();
 
     if (!nameTrimmed) {
-      setMessage('Version name is required');
+      setMessage("Version name is required");
       return;
     }
     if (!value) {
-      setMessage('Version value cannot be empty');
+      setMessage("Version value cannot be empty");
       return;
     }
 
@@ -181,12 +189,13 @@ export function VersionField({
   const doSave = async (forceNew = false) => {
     setConfirmDialogOpen(false);
     setUpdateChoiceDialogOpen(false);
-    const nameTrimmed = forceNew && newVersionName ? newVersionName.trim() : versionName.trim();
+    const nameTrimmed =
+      forceNew && newVersionName ? newVersionName.trim() : versionName.trim();
     const value = localValue().trim();
 
     setSaving(true);
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
 
     try {
       let savedVersion;
@@ -195,7 +204,7 @@ export function VersionField({
         // Update existing version
         savedVersion = await updateVersion(selectedVersion.id, {
           name: nameTrimmed,
-          value
+          value,
         });
         setMessage(`Updated version #${savedVersion.id}`);
       } else {
@@ -204,11 +213,11 @@ export function VersionField({
           field_id: fieldPathId?.$id,
           name: nameTrimmed,
           value,
-          description: '',
-          tags: ''
+          description: "",
+          tags: "",
         });
         setMessage(`Saved as version #${savedVersion.id}`);
-        
+
         // For "save as new", update the selected version and name
         if (forceNew) {
           setSelectedVersion(savedVersion);
@@ -224,7 +233,7 @@ export function VersionField({
       const updatedList = await listVersions(fieldPathId?.$id, searchInput);
       setVersions(updatedList?.versions || []);
     } catch (e) {
-      setError(e.message || 'Failed to save version');
+      setError(e.message || "Failed to save version");
     } finally {
       setSaving(false);
     }
@@ -232,19 +241,19 @@ export function VersionField({
 
   const handleUpdateChoice = (choice) => {
     setUpdateChoiceDialogOpen(false);
-    if (choice === 'update') {
+    if (choice === "update") {
       // Directly call update without additional confirmation
       doSave(false);
-    } else if (choice === 'save-as-new') {
+    } else if (choice === "save-as-new") {
       // Show save as new dialog
-      setNewVersionName(versionName + ' (Copy)');
+      setNewVersionName(versionName + " (Copy)");
       setSaveAsNewDialogOpen(true);
     }
   };
 
   const handleSaveAsNew = () => {
     if (!newVersionName.trim()) {
-      setError('New version name is required');
+      setError("New version name is required");
       return;
     }
     setSaveAsNewDialogOpen(false);
@@ -253,7 +262,7 @@ export function VersionField({
 
   const handleDeleteClick = () => {
     if (!selectedVersion) {
-      setError('Please select a version to delete');
+      setError("Please select a version to delete");
       return;
     }
 
@@ -265,23 +274,23 @@ export function VersionField({
     if (!selectedVersion) return;
 
     setSaving(true);
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
 
     try {
       await deleteVersion(selectedVersion.id);
       setMessage(`Deleted version "${selectedVersion.name}"`);
-      
+
       // Clear selection and refresh list
       setSelectedVersion(null);
-      setVersionName('');
-      onChange('', schema['model:binding']);
+      setVersionName("");
+      onChange("", schema["model:binding"]);
       if (fieldPathId?.path) onChange(0, fieldPathId.path);
-      
+
       const updatedList = await listVersions(fieldPathId?.$id, searchInput);
       setVersions(updatedList?.versions || []);
     } catch (e) {
-      setError(e.message || 'Failed to delete version');
+      setError(e.message || "Failed to delete version");
     } finally {
       setSaving(false);
     }
@@ -289,7 +298,7 @@ export function VersionField({
 
   const handleApplyClick = () => {
     if (!selectedVersion) {
-      setError('Please select a version to apply');
+      setError("Please select a version to apply");
       return;
     }
     setApplyConfirmDialogOpen(true);
@@ -300,14 +309,14 @@ export function VersionField({
     if (!selectedVersion || !selectedJobIds.length) return;
 
     setApplying(true);
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
 
     try {
       await applyVersion(selectedVersion.id, selectedJobIds);
       setMessage(`Applied version "${selectedVersion.name}" to all jobs`);
     } catch (e) {
-      setError(e.message || 'Failed to apply version');
+      setError(e.message || "Failed to apply version");
     } finally {
       setApplying(false);
     }
@@ -317,22 +326,22 @@ export function VersionField({
     <Box
       sx={{
         p: 1.5,
-        bgcolor: 'rgba(99, 102, 241, 0.08)',
+        bgcolor: "rgba(99, 102, 241, 0.08)",
         borderRadius: 1,
-        border: '1px solid',
-        borderColor: 'divider'
+        border: "1px solid",
+        borderColor: "divider",
       }}
     >
       <Stack spacing={1.5}>
         <Stack
-          direction={{ xs: 'column', sm: 'row' }}
+          direction={{ xs: "column", sm: "row" }}
           spacing={1}
-          alignItems={{ xs: 'stretch', sm: 'center' }}
+          alignItems={{ xs: "stretch", sm: "center" }}
         >
           <Autocomplete
             size="small"
             options={versions}
-            getOptionLabel={(option) => option.name || ''}
+            getOptionLabel={(option) => option.name || ""}
             value={selectedVersion}
             onChange={(_, v) => handleSelect(v)}
             inputValue={searchInput}
@@ -352,7 +361,7 @@ export function VersionField({
                   direction="row"
                   spacing={1}
                   alignItems="center"
-                  sx={{ width: '100%' }}
+                  sx={{ width: "100%" }}
                 >
                   <Typography variant="body2" sx={{ flex: 1 }}>
                     {option.name}
@@ -385,9 +394,9 @@ export function VersionField({
             }
             sx={{ minWidth: 100 }}
           >
-            {saving ? 'Saving...' : selectedVersion ? 'Update' : 'Save'}
+            {saving ? "Saving..." : selectedVersion ? "Update" : "Save"}
           </Button>
-          {selectedVersion && schema['model:expr']?.delete && (
+          {selectedVersion && schema["model:expr"]?.delete && (
             <Button
               variant="outlined"
               size="small"
@@ -399,7 +408,7 @@ export function VersionField({
               Delete
             </Button>
           )}
-          {selectedVersion && schema['model:expr']?.apply && (
+          {selectedVersion && schema["model:expr"]?.apply && (
             <Button
               variant="contained"
               size="small"
@@ -409,7 +418,7 @@ export function VersionField({
               disabled={applying || saving}
               sx={{ minWidth: 100 }}
             >
-              {applying ? 'Applying...' : 'Apply All'}
+              {applying ? "Applying..." : "Apply All"}
             </Button>
           )}
         </Stack>
@@ -431,13 +440,13 @@ export function VersionField({
         open={confirmDialogOpen}
         onClose={() => setConfirmDialogOpen(false)}
         onConfirm={doSave}
-        title={selectedVersion ? 'Update SQL Version' : 'Save SQL Version'}
+        title={selectedVersion ? "Update SQL Version" : "Save SQL Version"}
         message="Are you sure you want to proceed?"
         details={`When you ${
-          selectedVersion ? 'update' : 'save'
+          selectedVersion ? "update" : "save"
         } this version "${versionName.trim()}", the SQL value from this version will be used to run jobs.\n\nNote: The preview value in the editor will be replaced by the saved SQL version value.`}
         severity="warning"
-        confirmText={selectedVersion ? 'Update Version' : 'Save Version'}
+        confirmText={selectedVersion ? "Update Version" : "Save Version"}
         isLoading={saving}
       />
 
@@ -448,24 +457,27 @@ export function VersionField({
         title="Apply Version to All Jobs"
         details={
           <ApplyMessage
+            // selectedVersion={selectedVersion}
             render={render}
             selectedJobIds={selectedJobIds}
             onToggle={(id) => {
               setSelectedJobIds((prev) =>
-                prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+                prev.includes(id)
+                  ? prev.filter((x) => x !== id)
+                  : [...prev, id],
               );
             }}
             onSelectAll={(ids, select) => {
               setSelectedJobIds((prev) =>
                 select
                   ? [...new Set([...prev, ...ids])]
-                  : prev.filter((id) => !ids.includes(id))
+                  : prev.filter((id) => !ids.includes(id)),
               );
             }}
           />
         }
         message={`This action will apply the SQL version "${
-          selectedVersion?.name || ''
+          selectedVersion?.name || ""
         }" to ALL jobs in this plugin.\n\n⚠️ Important:\n• All jobs will use the SQL value from this version\n• This will override any custom SQL configurations in individual jobs\n• The change takes effect immediately for all jobs`}
         severity="warning"
         confirmText="Apply to All Jobs"
@@ -476,38 +488,43 @@ export function VersionField({
       <ConfirmationDialog
         open={updateChoiceDialogOpen}
         onClose={() => setUpdateChoiceDialogOpen(false)}
-        onConfirm={() => handleUpdateChoice('update')}
+        onConfirm={() => handleUpdateChoice("update")}
         title="Update Version"
         message={
           <Stack spacing={2}>
             <Typography variant="body2">
-              You are about to modify version <strong>"{selectedVersion?.name}"</strong>. 
-              How would you like to proceed?
+              You are about to modify version{" "}
+              <strong>"{selectedVersion?.name}"</strong>. How would you like to
+              proceed?
             </Typography>
             <Stack spacing={1}>
               <Button
                 variant="contained"
                 fullWidth
-                onClick={() => handleUpdateChoice('update')}
-                sx={{ textTransform: 'none' }}
+                onClick={() => handleUpdateChoice("update")}
+                sx={{ textTransform: "none" }}
               >
-                <Stack spacing={0.5} sx={{ width: '100%', textAlign: 'left' }}>
-                  <Typography variant="button">Update Existing Version</Typography>
+                <Stack spacing={0.5} sx={{ width: "100%", textAlign: "left" }}>
+                  <Typography variant="button">
+                    Update Existing Version
+                  </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    This will replace the current version's content. All jobs using this version will be affected.
+                    This will replace the current version's content. All jobs
+                    using this version will be affected.
                   </Typography>
                 </Stack>
               </Button>
               <Button
                 variant="outlined"
                 fullWidth
-                onClick={() => handleUpdateChoice('save-as-new')}
-                sx={{ textTransform: 'none' }}
+                onClick={() => handleUpdateChoice("save-as-new")}
+                sx={{ textTransform: "none" }}
               >
-                <Stack spacing={0.5} sx={{ width: '100%', textAlign: 'left' }}>
+                <Stack spacing={0.5} sx={{ width: "100%", textAlign: "left" }}>
                   <Typography variant="button">Save as New Version</Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Create a new version with this content. The original version remains unchanged.
+                    Create a new version with this content. The original version
+                    remains unchanged.
                   </Typography>
                 </Stack>
               </Button>
@@ -541,7 +558,8 @@ export function VersionField({
               autoFocus
             />
             <Typography variant="caption" color="text.secondary">
-              This will create a new version while keeping the original version "{selectedVersion?.name}" intact.
+              This will create a new version while keeping the original version
+              "{selectedVersion?.name}" intact.
             </Typography>
           </Stack>
         }
@@ -563,14 +581,16 @@ export function VersionField({
             selectedDeleteJobIds={selectedDeleteJobIds}
             onToggle={(id) => {
               setSelectedDeleteJobIds((prev) =>
-                prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+                prev.includes(id)
+                  ? prev.filter((x) => x !== id)
+                  : [...prev, id],
               );
             }}
             onSelectAll={(ids, select) => {
               setSelectedDeleteJobIds((prev) =>
                 select
                   ? [...new Set([...prev, ...ids])]
-                  : prev.filter((id) => !ids.includes(id))
+                  : prev.filter((id) => !ids.includes(id)),
               );
             }}
           />
@@ -584,7 +604,13 @@ export function VersionField({
   );
 }
 
-const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
+const ApplyMessage = ({
+  render,
+  onToggle,
+  selectedJobIds,
+  onSelectAll,
+  selectedVersion,
+}) => {
   const [jobsBySession, setJobsBySession] = useState({});
   const [loading, setLoading] = useState(true);
 
@@ -593,14 +619,14 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
       setLoading(true);
       const results = {};
       const jobs = await render(
-        `{{ dao.get_jobs_by_plugin_and_session(plugin_id) | tolist("id", "description", "session_id") | tojson }}`
+        `{{ dao.get_all_jobs() | tolist("id", "session_id", "description") | tojson }}`,
       );
       SESSIONS.map((session) => {
         try {
           if (jobs?.length) {
             results[session.id] = {
               name: session.name,
-              jobs: jobs.filter((j) => j.session_id === session.id)
+              jobs: jobs.filter((j) => j.session_id === session.id),
             };
           }
         } catch (e) {
@@ -612,7 +638,7 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
     };
 
     fetchAllJobs();
-  }, [render]);
+  }, [render, selectedVersion]);
 
   if (loading) {
     return <Typography variant="body2">Loading jobs...</Typography>;
@@ -632,17 +658,17 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
         const { name, jobs } = jobsBySession[sessionId];
         const sessionJobIds = jobs.map((j) => j.id);
         const allSelected = sessionJobIds.every((id) =>
-          selectedJobIds.includes(id)
+          selectedJobIds.includes(id),
         );
         const someSelected = sessionJobIds.some((id) =>
-          selectedJobIds.includes(id)
+          selectedJobIds.includes(id),
         );
 
         return (
           <Box key={sessionId}>
             <ListItemButton
               onClick={() => onSelectAll(sessionJobIds, !allSelected)}
-              sx={{ bgcolor: 'action.hover', borderRadius: 1, mb: 0.5 }}
+              sx={{ bgcolor: "action.hover", borderRadius: 1, mb: 0.5 }}
             >
               <ListItemIcon>
                 <Checkbox
@@ -689,7 +715,13 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
   );
 };
 
-const DeleteMessage = ({ render, selectedVersion, selectedDeleteJobIds, onToggle, onSelectAll }) => {
+const DeleteMessage = ({
+  render,
+  selectedVersion,
+  selectedDeleteJobIds,
+  onToggle,
+  onSelectAll,
+}) => {
   const [jobsBySession, setJobsBySession] = useState({});
   const [loading, setLoading] = useState(true);
   const [dependentJobs, setDependentJobs] = useState([]);
@@ -704,26 +736,26 @@ const DeleteMessage = ({ render, selectedVersion, selectedDeleteJobIds, onToggle
       setLoading(true);
       try {
         const jobs = await render(
-          `{{ get_jobs_depending_on_version(${selectedVersion.id}) }}`
+          `{{ dao.get_jobs_depending_on_version(${selectedVersion.id}) | tojson }}`,
         );
         setDependentJobs(jobs || []);
-        
+
         // Group jobs by session
         const grouped = {};
         (jobs || []).forEach((job) => {
-          const session = SESSIONS.find(s => s.id === job.session_id);
-          const sessionId = job.session_id || 'unknown';
-          const sessionName = session?.name || 'Unknown Session';
-          
+          const session = SESSIONS.find((s) => s.id === job.session_id);
+          const sessionId = job.session_id || "unknown";
+          const sessionName = session?.name || "Unknown Session";
+
           if (!grouped[sessionId]) {
             grouped[sessionId] = { name: sessionName, jobs: [] };
           }
           grouped[sessionId].jobs.push(job);
         });
-        
+
         setJobsBySession(grouped);
       } catch (e) {
-        console.error('Failed to fetch dependent jobs:', e);
+        console.error("Failed to fetch dependent jobs:", e);
         setDependentJobs([]);
         setJobsBySession({});
       } finally {
@@ -742,7 +774,8 @@ const DeleteMessage = ({ render, selectedVersion, selectedDeleteJobIds, onToggle
     return (
       <Stack spacing={2}>
         <Typography variant="body2">
-          Are you sure you want to delete version <strong>"{selectedVersion?.name}"</strong>?
+          Are you sure you want to delete version{" "}
+          <strong>"{selectedVersion?.name}"</strong>?
         </Typography>
         <Typography variant="body2" color="success.main">
           ✓ No jobs are currently using this version. It's safe to delete.
@@ -756,35 +789,41 @@ const DeleteMessage = ({ render, selectedVersion, selectedDeleteJobIds, onToggle
   return (
     <Stack spacing={2}>
       <Typography variant="body2">
-        Are you sure you want to delete version <strong>"{selectedVersion?.name}"</strong>?
+        Are you sure you want to delete version{" "}
+        <strong>"{selectedVersion?.name}"</strong>?
       </Typography>
-      
+
       <Typography variant="body2" color="error.main" fontWeight={600}>
-        ⚠️ Warning: This version is being used by {dependentJobs.length} job{dependentJobs.length > 1 ? 's' : ''}
+        ⚠️ Warning: This version is being used by {dependentJobs.length} job
+        {dependentJobs.length > 1 ? "s" : ""}
       </Typography>
 
       <Box
         sx={{
           maxHeight: 300,
-          overflow: 'auto',
-          border: '1px solid',
-          borderColor: 'divider',
+          overflow: "auto",
+          border: "1px solid",
+          borderColor: "divider",
           borderRadius: 1,
           p: 1,
-          bgcolor: 'background.paper'
+          bgcolor: "background.paper",
         }}
       >
-        <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ mb: 1, display: "block" }}
+        >
           Jobs that depend on this version
         </Typography>
-        
+
         {sessionIds.map((sessionId) => {
           const { name, jobs } = jobsBySession[sessionId];
 
           return (
             <Box key={sessionId} sx={{ mb: 1 }}>
               <ListItemButton
-                sx={{ bgcolor: 'action.hover', borderRadius: 1, mb: 0.5 }}
+                sx={{ bgcolor: "action.hover", borderRadius: 1, mb: 0.5 }}
               >
                 <ListItemText
                   primary={name}
@@ -795,9 +834,7 @@ const DeleteMessage = ({ render, selectedVersion, selectedDeleteJobIds, onToggle
                 {jobs.map((job) => (
                   <ListItem key={job.id} disablePadding>
                     <ListItemButton>
-                      <ListItemText 
-                        primary={job.description}
-                      />
+                      <ListItemText primary={job.description} />
                     </ListItemButton>
                   </ListItem>
                 ))}
@@ -809,5 +846,3 @@ const DeleteMessage = ({ render, selectedVersion, selectedDeleteJobIds, onToggle
     </Stack>
   );
 };
-
-
