@@ -28,12 +28,12 @@ export type FieldComponentProps = Pick<
 export function adaptField<T extends FC<FieldProps>>(Field: T) {
   return (props: FieldComponentProps) =>
     Field({
-      ...props,
       onBlur: undefined,
       onFocus: undefined,
       fieldPathId: undefined,
       name: '',
-      registry: undefined
+      registry: undefined,
+      ...props
     } as FieldProps);
 }
 
