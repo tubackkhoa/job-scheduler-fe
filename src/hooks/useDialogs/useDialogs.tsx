@@ -8,7 +8,10 @@ import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
 import useEventCallback from '@mui/utils/useEventCallback';
 import DialogsContext from './DialogsContext';
-import { ConfirmationDialog } from '../../components/ConfirmationDialog';
+import {
+  ConfirmationDialog,
+  ConfirmationSeverity
+} from '../../components/ConfirmationDialog';
 
 export interface OpenDialogOptions<R> {
   /**
@@ -49,7 +52,7 @@ export interface ConfirmOptions extends OpenDialogOptions<boolean> {
    * Denotes the purpose of the dialog. This will affect the color of the
    * "Ok" button. Defaults to `undefined`.
    */
-  severity?: 'error' | 'info' | 'success' | 'warning';
+  severity?: ConfirmationSeverity;
   /**
    * The text to show in the "Cancel" button. Defaults to `'Cancel'`.
    */

@@ -15,8 +15,11 @@ import { Select } from './fields';
 import useNotifications from '@/hooks/useNotifications/useNotifications';
 import { RolePolicyTable } from './RolePolicyTable';
 
+const allRoles = new Set<string>();
+
 function groupPolicyByRole(policy: [string, string][]) {
   return policy.reduce<Record<string, string[]>>((acc, [role, perm]) => {
+    allRoles.add(role);
     acc[role] ??= [];
     acc[role].push(perm);
     return acc;
@@ -38,6 +41,7 @@ export default function UserRoleManagement({ setError, setLoading }) {
         const rolePermissions = groupPolicyByRole(policy);
         setRoleMap(rolePermissions);
         const users = await api.getUsers();
+        users.flatMap((u) => u.roles).forEach((r) => allRoles.add(r));
         setUsers(users);
       } catch (ex) {
         // setError(ex.message);
@@ -59,11 +63,6 @@ export default function UserRoleManagement({ setError, setLoading }) {
     }
     setSavingUserId(null);
   };
-
-  // collect all roles from policies and from current users
-  const allRoles = [
-    ...new Set([...Object.keys(roleMap), ...users.flatMap((u) => u.roles)])
-  ];
 
   return (
     <Box p={4}>
@@ -92,7 +91,7 @@ export default function UserRoleManagement({ setError, setLoading }) {
                   schema={{
                     type: 'array',
                     title: 'Roles',
-                    enum: allRoles
+                    enum: Array.from(allRoles)
                   }}
                   uiSchema={{
                     'ui:options': {
