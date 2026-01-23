@@ -14,7 +14,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SearchIcon from '@mui/icons-material/Search';
 import { useMemo, useDeferredValue } from 'react';
-import { jinjaEvaluate } from '../../utils';
+import { jinjaEvaluate } from '@/utils';
 
 /**
  * Types

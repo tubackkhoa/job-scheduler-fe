@@ -12,7 +12,8 @@ declare global {
 
   interface User {
     id: number;
-    roles: Set<string>;
+    username: string;
+    roles: string[];
   }
 
   interface GlobalVariable {

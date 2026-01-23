@@ -16,9 +16,9 @@ import {
   ListItemIcon
 } from '@mui/material';
 import { Save, PublishedWithChanges } from '@mui/icons-material';
-import { buildJinjaContext } from '../../../utils';
+import { buildJinjaContext } from '@/utils';
 import { ConfirmationDialog } from '../ConfirmationDialog';
-import { SESSIONS } from '../../../constants/session';
+import { SESSIONS } from '@/constants/session';
 
 export function VersionField({
   formData,
@@ -181,7 +181,8 @@ export function VersionField({
   const doSave = async (forceNew = false) => {
     setConfirmDialogOpen(false);
     setUpdateChoiceDialogOpen(false);
-    const nameTrimmed = forceNew && newVersionName ? newVersionName.trim() : versionName.trim();
+    const nameTrimmed =
+      forceNew && newVersionName ? newVersionName.trim() : versionName.trim();
     const value = localValue().trim();
 
     setSaving(true);
@@ -208,7 +209,7 @@ export function VersionField({
           tags: ''
         });
         setMessage(`Saved as version #${savedVersion.id}`);
-        
+
         // For "save as new", update the selected version and name
         if (forceNew) {
           setSelectedVersion(savedVersion);
@@ -271,13 +272,13 @@ export function VersionField({
     try {
       await deleteVersion(selectedVersion.id);
       setMessage(`Deleted version "${selectedVersion.name}"`);
-      
+
       // Clear selection and refresh list
       setSelectedVersion(null);
       setVersionName('');
       onChange('', schema['model:binding']);
       if (fieldPathId?.path) onChange(0, fieldPathId.path);
-      
+
       const updatedList = await listVersions(fieldPathId?.$id, searchInput);
       setVersions(updatedList?.versions || []);
     } catch (e) {
@@ -481,8 +482,9 @@ export function VersionField({
         message={
           <Stack spacing={2}>
             <Typography variant="body2">
-              You are about to modify version <strong>"{selectedVersion?.name}"</strong>. 
-              How would you like to proceed?
+              You are about to modify version{' '}
+              <strong>"{selectedVersion?.name}"</strong>. How would you like to
+              proceed?
             </Typography>
             <Stack spacing={1}>
               <Button
@@ -492,9 +494,12 @@ export function VersionField({
                 sx={{ textTransform: 'none' }}
               >
                 <Stack spacing={0.5} sx={{ width: '100%', textAlign: 'left' }}>
-                  <Typography variant="button">Update Existing Version</Typography>
+                  <Typography variant="button">
+                    Update Existing Version
+                  </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    This will replace the current version's content. All jobs using this version will be affected.
+                    This will replace the current version's content. All jobs
+                    using this version will be affected.
                   </Typography>
                 </Stack>
               </Button>
@@ -507,7 +512,8 @@ export function VersionField({
                 <Stack spacing={0.5} sx={{ width: '100%', textAlign: 'left' }}>
                   <Typography variant="button">Save as New Version</Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Create a new version with this content. The original version remains unchanged.
+                    Create a new version with this content. The original version
+                    remains unchanged.
                   </Typography>
                 </Stack>
               </Button>
@@ -541,7 +547,8 @@ export function VersionField({
               autoFocus
             />
             <Typography variant="caption" color="text.secondary">
-              This will create a new version while keeping the original version "{selectedVersion?.name}" intact.
+              This will create a new version while keeping the original version
+              "{selectedVersion?.name}" intact.
             </Typography>
           </Stack>
         }
@@ -689,7 +696,13 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
   );
 };
 
-const DeleteMessage = ({ render, selectedVersion, selectedDeleteJobIds, onToggle, onSelectAll }) => {
+const DeleteMessage = ({
+  render,
+  selectedVersion,
+  selectedDeleteJobIds,
+  onToggle,
+  onSelectAll
+}) => {
   const [jobsBySession, setJobsBySession] = useState({});
   const [loading, setLoading] = useState(true);
   const [dependentJobs, setDependentJobs] = useState([]);
@@ -707,20 +720,20 @@ const DeleteMessage = ({ render, selectedVersion, selectedDeleteJobIds, onToggle
           `{{ get_jobs_depending_on_version(${selectedVersion.id}) }}`
         );
         setDependentJobs(jobs || []);
-        
+
         // Group jobs by session
         const grouped = {};
         (jobs || []).forEach((job) => {
-          const session = SESSIONS.find(s => s.id === job.session_id);
+          const session = SESSIONS.find((s) => s.id === job.session_id);
           const sessionId = job.session_id || 'unknown';
           const sessionName = session?.name || 'Unknown Session';
-          
+
           if (!grouped[sessionId]) {
             grouped[sessionId] = { name: sessionName, jobs: [] };
           }
           grouped[sessionId].jobs.push(job);
         });
-        
+
         setJobsBySession(grouped);
       } catch (e) {
         console.error('Failed to fetch dependent jobs:', e);
@@ -742,7 +755,8 @@ const DeleteMessage = ({ render, selectedVersion, selectedDeleteJobIds, onToggle
     return (
       <Stack spacing={2}>
         <Typography variant="body2">
-          Are you sure you want to delete version <strong>"{selectedVersion?.name}"</strong>?
+          Are you sure you want to delete version{' '}
+          <strong>"{selectedVersion?.name}"</strong>?
         </Typography>
         <Typography variant="body2" color="success.main">
           ✓ No jobs are currently using this version. It's safe to delete.
@@ -756,11 +770,13 @@ const DeleteMessage = ({ render, selectedVersion, selectedDeleteJobIds, onToggle
   return (
     <Stack spacing={2}>
       <Typography variant="body2">
-        Are you sure you want to delete version <strong>"{selectedVersion?.name}"</strong>?
+        Are you sure you want to delete version{' '}
+        <strong>"{selectedVersion?.name}"</strong>?
       </Typography>
-      
+
       <Typography variant="body2" color="error.main" fontWeight={600}>
-        ⚠️ Warning: This version is being used by {dependentJobs.length} job{dependentJobs.length > 1 ? 's' : ''}
+        ⚠️ Warning: This version is being used by {dependentJobs.length} job
+        {dependentJobs.length > 1 ? 's' : ''}
       </Typography>
 
       <Box
@@ -774,10 +790,14 @@ const DeleteMessage = ({ render, selectedVersion, selectedDeleteJobIds, onToggle
           bgcolor: 'background.paper'
         }}
       >
-        <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ mb: 1, display: 'block' }}
+        >
           Jobs that depend on this version
         </Typography>
-        
+
         {sessionIds.map((sessionId) => {
           const { name, jobs } = jobsBySession[sessionId];
 
@@ -795,9 +815,7 @@ const DeleteMessage = ({ render, selectedVersion, selectedDeleteJobIds, onToggle
                 {jobs.map((job) => (
                   <ListItem key={job.id} disablePadding>
                     <ListItemButton>
-                      <ListItemText 
-                        primary={job.description}
-                      />
+                      <ListItemText primary={job.description} />
                     </ListItemButton>
                   </ListItem>
                 ))}
@@ -809,5 +827,3 @@ const DeleteMessage = ({ render, selectedVersion, selectedDeleteJobIds, onToggle
     </Stack>
   );
 };
-
-

@@ -26,10 +26,10 @@ import {
   SettingsApplications
 } from '@mui/icons-material';
 import { ConfigForm } from './ConfigForm';
-import LogViewer from '../../LogViewer';
-import SignalsLogsViewer from '../../SignalsLogsViewer';
+import LogViewer from './LogViewer';
+import SignalsLogsViewer from './SignalsLogsViewer';
 import JinjaEnvDocs from './JinjaEnvDocs';
-import api from '../../api';
+import api from '@/api';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;

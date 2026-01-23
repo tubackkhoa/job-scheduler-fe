@@ -21,11 +21,7 @@ import { javascript } from '@codemirror/lang-javascript';
 import { markdown } from '@codemirror/lang-markdown';
 import { LanguageDescription } from '@codemirror/language';
 import { TemplatePreview } from './TemplatePreview';
-import {
-  JinjaCompletionBuilder,
-  jinjaLinter,
-  jinjaEvaluate
-} from '../../../utils';
+import { JinjaCompletionBuilder, jinjaLinter, jinjaEvaluate } from '@/utils';
 import _ from 'lodash';
 import {
   Check,

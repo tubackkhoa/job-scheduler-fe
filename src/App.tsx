@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { Box, Container, CssBaseline } from '@mui/material';
-import { Header } from './components/dashboard/Header';
-import { LoadingBar } from './components/dashboard/LoadingBar';
-import { ErrorAlert } from './components/dashboard/ErrorAlert';
+import { Header } from './components/Header';
+import { LoadingBar } from './components/LoadingBar';
+import { ErrorAlert } from './components/ErrorAlert';
 import { darkTheme } from './theme';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import PluginManager from './pages/PluginManager';
 import NotificationsProvider from './hooks/useNotifications/NotificationsProvider';
 import DialogsProvider from './hooks/useDialogs/DialogsProvider';

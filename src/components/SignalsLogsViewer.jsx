@@ -25,8 +25,8 @@ import {
   Search,
   Refresh
 } from '@mui/icons-material';
-import { API_BASE_URL } from './api';
-import { formatMessage, getLevelColor } from './utils';
+import { API_BASE_URL } from '@/api';
+import { formatMessage, getLevelColor } from '@/utils';
 
 /* -------------------------------- Utilities -------------------------------- */
 
@@ -211,8 +211,8 @@ const TableMessage = ({ message }) => {
                       color: isNone
                         ? 'text.disabled'
                         : isNumeric
-                        ? 'primary.light'
-                        : 'text.secondary',
+                          ? 'primary.light'
+                          : 'text.secondary',
                       py: 0.75,
                       px: 1.5,
                       borderBottom: '1px solid rgba(255, 255, 255, 0.05)',

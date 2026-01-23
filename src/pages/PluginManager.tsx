@@ -1,14 +1,14 @@
 import { Box, Grid } from '@mui/material';
-import { ContextPanel } from '../components/dashboard/ContextPanel';
-import { JobsList } from '../components/dashboard/JobsList';
-import { JobDetails } from '../components/dashboard/JobDetails';
-import { ResponseCard } from '../components/dashboard/ResponseCard';
-import { CreatePluginModal } from '../components/dashboard/CreatePluginModal';
+import { ContextPanel } from '../components/ContextPanel';
+import { JobsList } from '../components/JobsList';
+import { JobDetails } from '../components/JobDetails';
+import { ResponseCard } from '../components/ResponseCard';
+import { CreatePluginModal } from '../components/CreatePluginModal';
 import { SESSIONS } from '../constants/session';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getDefaultFormState } from '@rjsf/utils';
-import api from '../api';
-import { getEnvDoc } from '../utils';
+import api from '@/api';
+import { getEnvDoc } from '@/utils';
 import { useParams } from 'react-router-dom';
 
 export default function PluginManager({ setLoading, setError }) {
@@ -74,7 +74,7 @@ export default function PluginManager({ setLoading, setError }) {
         ? await api.fetchTemplatePluginSchema(currentPluginId)
         : await api.fetchSchema(currentSessionId ?? sessionId, currentPluginId);
       // assign global ctx
-      window.ctx = { user: { ...user, roles: new Set(user.roles) } };
+      window.ctx = { user };
       setEnv(await getEnvDoc(globals));
       setSchema(fetchedSchema);
       setJobs(jobs);

@@ -114,6 +114,14 @@ export default {
     return postJson(`/api/config/${jobId}`, payload);
   },
 
+  getPolicy(): Promise<string[][]> {
+    return request(`/api/enforcer/policy`);
+  },
+
+  getUsers(): Promise<User[]> {
+    return request(`/api/users`);
+  },
+
   activateJob(
     jobId: number,
     activation: boolean

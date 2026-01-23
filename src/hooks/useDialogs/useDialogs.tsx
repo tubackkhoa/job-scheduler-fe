@@ -8,7 +8,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
 import useEventCallback from '@mui/utils/useEventCallback';
 import DialogsContext from './DialogsContext';
-import { ConfirmationDialog } from '../../components/dashboard/ConfirmationDialog';
+import { ConfirmationDialog } from '../../components/ConfirmationDialog';
 
 export interface OpenDialogOptions<R> {
   /**

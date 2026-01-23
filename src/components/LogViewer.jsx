@@ -19,8 +19,8 @@ import {
   ListItem
 } from '@mui/material';
 import { Terminal, Delete, Search, Refresh } from '@mui/icons-material';
-import { API_BASE_URL } from './api';
-import { formatMessage, getLevelColor } from './utils';
+import { API_BASE_URL } from '@/api';
+import { formatMessage, getLevelColor } from '@/utils';
 
 /* -------------------------------- Utilities -------------------------------- */
 

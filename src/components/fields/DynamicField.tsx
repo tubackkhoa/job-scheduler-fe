@@ -2,7 +2,7 @@ import React, { Suspense, useMemo, useState } from 'react';
 import { Alert } from '@mui/material';
 import { FieldProps } from '@rjsf/utils';
 import * as Mui from '@mui/material';
-import * as Utils from '../../../utils';
+import * as Utils from '@/utils';
 import _ from 'lodash';
 import * as MuiIcon from '@mui/icons-material';
 import { ConfirmationDialog } from '../ConfirmationDialog';
