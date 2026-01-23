@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import {
   Box,
   Stack,
@@ -6,7 +6,6 @@ import {
   IconButton,
   Paper,
   Tooltip,
-  TextField,
   CircularProgress,
   List,
   ListItem,
@@ -19,13 +18,8 @@ import {
   TableHead,
   TableRow
 } from '@mui/material';
-import {
-  SignalCellularAlt,
-  Delete,
-  Search,
-  Refresh
-} from '@mui/icons-material';
-import { API_BASE_URL } from '@/api';
+import { SignalCellularAlt, Delete, Refresh } from '@mui/icons-material';
+import api from '@/api';
 import { formatMessage, getLevelColor } from '@/utils';
 
 /* -------------------------------- Utilities -------------------------------- */
@@ -233,7 +227,7 @@ const TableMessage = ({ message }) => {
 
 /* ------------------------------ Signal Group Row --------------------------- */
 
-const SignalGroupRow = React.memo(function SignalGroupRow({ group }) {
+const SignalGroupRow = ({ group }: { group: ResultGroup }) => {
   return (
     <Box>
       <ListItem
@@ -350,10 +344,10 @@ const SignalGroupRow = React.memo(function SignalGroupRow({ group }) {
       <Divider sx={{ my: 1 }} />
     </Box>
   );
-});
+};
 
 export default function SignalsLogsViewer({
-  jobId,
+  jobId = 0,
   description,
   keyword,
   limit = 2
@@ -371,17 +365,8 @@ export default function SignalsLogsViewer({
 
       setIsLoading(true);
       try {
-        const params = new URLSearchParams();
-        if (searchKeyword) params.append('keyword', searchKeyword);
-        params.append('n_following', nFollowingEntries);
-        params.append('sort', 'desc');
-
-        const res = await fetch(
-          `${API_BASE_URL}/api/logs/${jobId}/signals?${params}`
-        );
-        const data = await res.json();
-
-        setGroups(data.groups || []);
+        const data = await api.getSignals({ jobId });
+        setGroups(data.signals || []);
       } catch (e) {
         console.error('Failed to fetch signals:', e);
         setGroups([]);
@@ -435,9 +420,7 @@ export default function SignalsLogsViewer({
             <IconButton
               onClick={async () => {
                 try {
-                  await fetch(`${API_BASE_URL}/api/logs/${jobId}/clear`, {
-                    method: 'POST'
-                  });
+                  await api.clearLogs(jobId);
                 } catch (e) {
                   console.error('Failed to clear signals:', e);
                 } finally {

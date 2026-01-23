@@ -31,6 +31,21 @@ const SEVERITY_CONFIG = {
   }
 };
 
+export type ConfirmationSeverity = 'info' | 'success' | 'warning' | 'error';
+
+export interface ConfirmationDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title?: string;
+  message?: React.ReactNode;
+  details?: React.ReactNode;
+  severity?: string;
+  confirmText?: string;
+  cancelText?: string;
+  isLoading?: boolean;
+}
+
 export function ConfirmationDialog({
   open,
   onClose,
@@ -42,7 +57,7 @@ export function ConfirmationDialog({
   confirmText = 'Confirm',
   cancelText = 'Cancel',
   isLoading = false
-}) {
+}: ConfirmationDialogProps) {
   const config = SEVERITY_CONFIG[severity] || SEVERITY_CONFIG.warning;
   const IconComponent = config.icon;
 
@@ -83,21 +98,23 @@ export function ConfirmationDialog({
       </DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
-          <Typography
-            variant="body1"
-            color="text.primary"
-            sx={{
-              p: 2,
-              bgcolor: config.bgColor,
-              borderRadius: 1,
-              border: '1px solid',
-              color: 'text.secondary',
-              whiteSpace: 'pre-line',
-              borderColor: config.color
-            }}
-          >
-            {message}
-          </Typography>
+          {message && (
+            <Typography
+              variant="body1"
+              color="text.primary"
+              sx={{
+                p: 2,
+                bgcolor: config.bgColor,
+                borderRadius: 1,
+                border: '1px solid',
+                color: 'text.secondary',
+                whiteSpace: 'pre-line',
+                borderColor: config.color
+              }}
+            >
+              {message}
+            </Typography>
+          )}
 
           {details && <Box>{details}</Box>}
         </Stack>

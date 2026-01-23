@@ -44,6 +44,60 @@ declare global {
     token_type: string;
   }
 
+  interface LogEntry {
+    id?: number;
+    offset: number;
+    timestamp: string;
+    level: string;
+    message: string;
+  }
+
+  interface ResultGroup {
+    matched_entry: LogEntry;
+    following_entries: LogEntry[];
+    offset: number;
+    timestamp: string;
+  }
+
+  interface SearchLogsParams {
+    jobId: number;
+    searchText?: string;
+    limit?: number;
+    offset?: number;
+    sort?: 'asc' | 'desc';
+  }
+
+  interface LogsResponse {
+    // adjust to your backend shape
+    result_groups: ResultGroup[];
+  }
+
+  interface SearchLogsResponse {
+    logs: LogEntry[];
+    total: number;
+    filtered: number;
+    returned: number;
+    min_offset: number | null;
+    max_offset: number | null;
+    has_more: boolean;
+  }
+
+  interface SignalMessage {
+    // adjust fields if you know the exact shape
+    [key: string]: unknown;
+  }
+
+  interface GetSignalsParams {
+    jobId: number;
+    limit?: number; // default 100 (backend)
+  }
+
+  interface GetSignalsResponse {
+    signals: SignalMessage[];
+    count: number;
+    job_id: number;
+  }
+
   interface Window {
     ctx: { user: User };
     // or: ctx?: YourType

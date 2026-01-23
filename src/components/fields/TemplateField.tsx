@@ -31,6 +31,7 @@ import {
 } from '@mui/icons-material';
 
 import { getCodeMirrorStyle } from './TemplatePreview';
+import { FieldProps } from '@rjsf/utils';
 
 const resolveLanguageExtension = (schema) => {
   switch (schema.type) {
@@ -63,7 +64,7 @@ export function TemplateField({
   schema,
   fieldPathId,
   registry
-}) {
+}: FieldProps) {
   const extensions = useMemo(() => {
     const params = _.omit(registry.formContext.formData, fieldPathId?.path);
     const completions = JinjaCompletionBuilder.build(
@@ -77,7 +78,7 @@ export function TemplateField({
         ...completions
       }),
       jinjaLinter(params, registry.formContext.env),
-      keymap.of(commentKeymap)
+      keymap.of(commentKeymap as any)
     ];
   }, [schema, registry.formContext]);
 
@@ -242,7 +243,7 @@ export function TemplateField({
           }}
         >
           <CodeMirror
-            {...getCodeMirrorStyle(fullscreen)}
+            {...(getCodeMirrorStyle(fullscreen) as any)}
             value={localValue}
             extensions={extensions}
             onChange={handleEditorChange}
@@ -278,7 +279,7 @@ export function TemplateField({
             </IconButton>
           </Tooltip>
           <TemplatePreview
-            lang={schema.type}
+            lang={schema.type as string}
             fullscreen={fullscreen}
             text={previewCode}
             extensions={extensions}

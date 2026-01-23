@@ -11,6 +11,18 @@ const JSON_HEADERS = {
   'Content-Type': 'application/json'
 };
 
+function buildQuery(params: Record<string, string | number | undefined>) {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value) {
+      searchParams.append(key, String(value));
+    }
+  });
+
+  return searchParams.toString();
+}
+
 async function handleError(res: Response): Promise<never> {
   const text = await res.text();
   throw new Error(text || `Request failed (${res.status})`);
@@ -174,5 +186,32 @@ export default {
       { template, params },
       'text'
     );
+  },
+
+  fetchLogs({
+    jobId,
+    searchText,
+    limit,
+    sort = 'desc'
+  }: SearchLogsParams): Promise<SearchLogsResponse> {
+    const query = buildQuery({
+      search: searchText,
+      limit,
+      sort
+    });
+
+    return request(`/api/logs/${jobId}?${query}`);
+  },
+  clearLogs(jobId: number): Promise<void> {
+    return request(`/api/logs/${jobId}/clear`, {
+      method: 'POST'
+    });
+  },
+
+  getSignals({
+    jobId,
+    limit = 100
+  }: GetSignalsParams): Promise<GetSignalsResponse> {
+    return request(`/api/signals/${jobId}?limit=${limit}`);
   }
 };

@@ -5,6 +5,7 @@ import { syntaxTree } from '@codemirror/language';
 import _ from 'lodash';
 import api from './api';
 import jinja from './jinja.py?raw';
+import { JinjaCompletionConfig } from '@codemirror/lang-jinja';
 
 export const scrollToTop = () => {
   window.scrollTo({
@@ -169,7 +170,7 @@ export const getSystemTheme = (): 'dark' | 'light' =>
  * Message Formatting
  * ================================ */
 
-export const formatMessage = (message: unknown): unknown => {
+export const formatMessage = (message: any): any => {
   if (typeof message !== 'string') return message;
 
   return message.replace(
@@ -274,7 +275,7 @@ export class JinjaCompletionBuilder {
   }
 
   static buildProperties(params: Record<string, any> = {}) {
-    return (path: string | string[]) => {
+    return (path: readonly string[]) => {
       const value = _.get(params, path);
       if (!_.isPlainObject(value)) return [];
 
@@ -287,13 +288,17 @@ export class JinjaCompletionBuilder {
     };
   }
 
-  static build(params: Record<string, any> = {}, envDoc: EnvDoc) {
+  static build(
+    params: Record<string, any> = {},
+    envDoc: EnvDoc
+  ): JinjaCompletionConfig {
     return {
       variables: [
         ...this.buildTopLevelVariables(params),
         ...this.buildGlobals(envDoc.globals),
         ...this.buildTests(envDoc.tests)
       ],
+      // @ts-ignore : this is custom patched
       filters: this.buildFilters(envDoc.filters),
       tags: this.buildTags(envDoc.tags),
       properties: this.buildProperties(params)

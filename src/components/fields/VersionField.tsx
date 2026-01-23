@@ -19,6 +19,7 @@ import { Save, PublishedWithChanges } from '@mui/icons-material';
 import { buildJinjaContext } from '@/utils';
 import { ConfirmationDialog } from '../ConfirmationDialog';
 import { SESSIONS } from '@/constants/session';
+import { FieldProps } from '@rjsf/utils';
 
 export function VersionField({
   formData,
@@ -26,7 +27,7 @@ export function VersionField({
   schema,
   fieldPathId,
   registry
-}) {
+}: FieldProps) {
   const [versions, setVersions] = useState([]);
   const [selectedVersion, setSelectedVersion] = useState(null);
   const [versionName, setVersionName] = useState('');
@@ -523,7 +524,6 @@ export function VersionField({
         severity="info"
         confirmText="Update"
         cancelText="Cancel"
-        hideActions
       />
 
       {/* Save As New Dialog */}

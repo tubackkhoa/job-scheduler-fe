@@ -32,7 +32,6 @@ type JinjaEnvJson = {
 
 type Props = {
   data: JinjaEnvJson;
-  filters: string[];
   pluginPackage: string;
   params: Record<string, any>;
 };

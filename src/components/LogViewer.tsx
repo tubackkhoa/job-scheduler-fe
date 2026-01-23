@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-  useRef,
-  useCallback,
-  useMemo
-} from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import {
   Box,
   Stack,
@@ -19,7 +13,7 @@ import {
   ListItem
 } from '@mui/material';
 import { Terminal, Delete, Search, Refresh } from '@mui/icons-material';
-import { API_BASE_URL } from '@/api';
+import api from '@/api';
 import { formatMessage, getLevelColor } from '@/utils';
 
 /* -------------------------------- Utilities -------------------------------- */
@@ -114,19 +108,12 @@ export default function LogViewer({
   /* -------------------------- Fetch Historical -------------------------- */
 
   const fetchHistoricalLogs = useCallback(
-    async (searchText, limit = 100) => {
+    async (searchText: string, limit = 100) => {
       if (!jobId) return;
 
       setIsLoading(true);
       try {
-        const params = new URLSearchParams();
-        if (searchText) params.append('search', searchText);
-        params.append('limit', limit);
-        params.append('sort', 'desc');
-
-        const res = await fetch(`${API_BASE_URL}/api/logs/${jobId}?${params}`);
-        const data = await res.json();
-
+        const data = await api.fetchLogs({ jobId, searchText, limit });
         totalLogRef.current = data.total;
 
         setLogs(
@@ -270,9 +257,7 @@ export default function LogViewer({
             <IconButton
               onClick={async () => {
                 try {
-                  await fetch(`${API_BASE_URL}/api/logs/${jobId}/clear`, {
-                    method: 'POST'
-                  });
+                  await api.clearLogs(jobId);
                 } catch (e) {
                   console.error('Failed to clear logs:', e);
                 } finally {
@@ -375,7 +360,7 @@ export default function LogViewer({
                 clearTimeout(debounceRef.current);
                 debounceRef.current = null;
               }
-              fetchHistoricalLogs(searchText || null, 500, sliderOffset || 0);
+              fetchHistoricalLogs(searchText || null, 500);
             }}
             size="small"
             disabled={isLoading}
