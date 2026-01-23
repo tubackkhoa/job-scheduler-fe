@@ -26,24 +26,28 @@ export default function PluginManager({ setLoading, setError }) {
   const [createPluginModalOpen, setCreatePluginModalOpen] = useState(false);
   const [isNewJobMode, setIsNewJobMode] = useState(false);
 
-  // Load plugin list
+  // Load plugin list, only once
   useEffect(() => {
     api
       .fetchPlugins()
       .then((data) => {
         setPlugins(data);
-        if (!plugin_id) return;
-        const pluginIdAsNumber = Number(plugin_id);
-        if (
-          !Number.isNaN(pluginIdAsNumber) &&
-          data.some((p) => p.id == pluginIdAsNumber)
-        ) {
-          loadSchema(pluginIdAsNumber);
-        } else {
-          loadSchema(plugin_id);
-        }
       })
       .catch((err) => setError(err.message));
+  }, []);
+
+  // plugin_id change
+  useEffect(() => {
+    if (!plugin_id) return;
+    const pluginIdAsNumber = Number(plugin_id);
+    if (
+      !Number.isNaN(pluginIdAsNumber) &&
+      plugins.some((p) => p.id == pluginIdAsNumber)
+    ) {
+      loadSchema(pluginIdAsNumber);
+    } else {
+      loadSchema(plugin_id);
+    }
   }, [plugin_id]);
 
   const handleSetResult = (ret) => {
