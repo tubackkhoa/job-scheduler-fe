@@ -8,16 +8,17 @@ import SnackbarContent from '@mui/material/SnackbarContent';
 import type { SnackbarCloseReason } from '@mui/material/Snackbar';
 import type { CloseReason } from '@mui/material/SpeedDial';
 import CloseIcon from '@mui/icons-material/Close';
-import useSlotProps from '@mui/utils/useSlotProps';
 import NotificationsContext from './NotificationsContext';
+import { useTheme } from '@mui/material/styles';
+
 import type {
   CloseNotification,
   ShowNotification,
-  ShowNotificationOptions,
+  ShowNotificationOptions
 } from './useNotifications';
 
 const RootPropsContext = React.createContext<NotificationsProviderProps | null>(
-  null,
+  null
 );
 
 interface NotificationProps {
@@ -33,67 +34,76 @@ function Notification({
   open,
   message,
   options,
-  badge,
+  badge
 }: NotificationProps) {
+  const theme = useTheme();
   const notificationsContext = React.useContext(NotificationsContext);
   if (!notificationsContext) {
     throw new Error('Notifications context was used without a provider.');
   }
-  const { close } = notificationsContext;
 
+  const { close } = notificationsContext;
   const { severity, actionText, onAction, autoHideDuration } = options;
 
   const handleClose = React.useCallback(
     (event: unknown, reason?: CloseReason | SnackbarCloseReason) => {
-      if (reason === 'clickaway') {
-        return;
-      }
+      if (reason === 'clickaway') return;
       close(notificationKey);
     },
-    [notificationKey, close],
+    [notificationKey, close]
   );
 
   const action = (
-    <React.Fragment>
-      {onAction ? (
+    <>
+      {onAction && (
         <Button color="inherit" size="small" onClick={onAction}>
           {actionText ?? 'Action'}
         </Button>
-      ) : null}
-      <IconButton
-        size="small"
-        aria-label="Close"
-        title="Close"
-        color="inherit"
-        onClick={handleClose}
-      >
+      )}
+      <IconButton size="small" color="inherit" onClick={handleClose}>
         <CloseIcon fontSize="small" />
       </IconButton>
-    </React.Fragment>
+    </>
   );
 
-  const props = React.useContext(RootPropsContext);
-  const snackbarSlotProps = useSlotProps({
-    elementType: Snackbar,
-    ownerState: props,
-    externalSlotProps: {},
-    additionalProps: {
-      open,
-      autoHideDuration,
-      onClose: handleClose,
-      action,
-    },
-  });
+  const { anchorOrigin = { vertical: 'bottom', horizontal: 'right' } } =
+    options;
 
   return (
-    <Snackbar key={notificationKey} {...snackbarSlotProps}>
+    <Snackbar
+      key={notificationKey}
+      open={open}
+      autoHideDuration={autoHideDuration}
+      anchorOrigin={anchorOrigin}
+      onClose={handleClose}
+    >
       <Badge badgeContent={badge} color="primary" sx={{ width: '100%' }}>
         {severity ? (
-          <Alert severity={severity} sx={{ width: '100%' }} action={action}>
+          <Alert
+            severity={severity}
+            action={action}
+            sx={{
+              width: '100%',
+              bgcolor: theme.palette.background.paper,
+              color: theme.palette.text.primary,
+              boxShadow: theme.shadows[6],
+              '& .MuiAlert-icon': {
+                color: theme.palette[severity]?.main
+              }
+            }}
+          >
             {message}
           </Alert>
         ) : (
-          <SnackbarContent message={message} action={action} />
+          <SnackbarContent
+            message={message}
+            action={action}
+            sx={{
+              bgcolor: theme.palette.background.paper,
+              color: theme.palette.text.primary,
+              boxShadow: theme.shadows[6]
+            }}
+          />
         )}
       </Badge>
     </Snackbar>
@@ -141,7 +151,9 @@ const generateId = () => {
  * Provider for Notifications. The subtree of this component can use the `useNotifications` hook to
  * access the notifications API. The notifications are shown in the same order they are requested.
  */
-export default function NotificationsProvider(props: NotificationsProviderProps) {
+export default function NotificationsProvider(
+  props: NotificationsProviderProps
+) {
   const { children } = props;
   const [state, setState] = React.useState<NotificationsState>({ queue: [] });
 
@@ -155,7 +167,10 @@ export default function NotificationsProvider(props: NotificationsProviderProps)
       }
       return {
         ...prev,
-        queue: [...prev.queue, { message, options, notificationKey, open: true }],
+        queue: [
+          ...prev.queue,
+          { message, options, notificationKey, open: true }
+        ]
       };
     });
     return notificationKey;
@@ -164,7 +179,7 @@ export default function NotificationsProvider(props: NotificationsProviderProps)
   const close = React.useCallback<CloseNotification>((key) => {
     setState((prev) => ({
       ...prev,
-      queue: prev.queue.filter((n) => n.notificationKey !== key),
+      queue: prev.queue.filter((n) => n.notificationKey !== key)
     }));
   }, []);
 

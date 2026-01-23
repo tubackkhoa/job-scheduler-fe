@@ -15,6 +15,12 @@ export interface ShowNotificationOptions {
    * The duration in milliseconds after which the notification will automatically close.
    */
   autoHideDuration?: number;
+
+  anchorOrigin?: {
+    vertical: 'top' | 'bottom';
+    horizontal: 'left' | 'center' | 'right';
+  };
+
   /**
    * The text to display on the action button.
    */

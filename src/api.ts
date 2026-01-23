@@ -114,12 +114,22 @@ export default {
     return postJson(`/api/config/${jobId}`, payload);
   },
 
-  getPolicy(): Promise<string[][]> {
-    return request(`/api/enforcer/policy`);
+  getRoles(): Promise<string[]> {
+    return request(`/api/roles`);
   },
 
   getUsers(): Promise<User[]> {
     return request(`/api/users`);
+  },
+
+  getPolicy(): Promise<[string, string][]> {
+    return request(`/api/policy`);
+  },
+
+  updateRoles(userId: number, roles: string[]): Promise<User> {
+    return postJson(`/api/user/${userId}`, {
+      roles
+    });
   },
 
   activateJob(

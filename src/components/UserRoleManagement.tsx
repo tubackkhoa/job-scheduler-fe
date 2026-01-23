@@ -1,10 +1,7 @@
 import {
   Box,
-  Chip,
   CircularProgress,
   IconButton,
-  MenuItem,
-  Select,
   Table,
   TableBody,
   TableCell,
@@ -15,23 +12,32 @@ import {
 import SaveIcon from '@mui/icons-material/Save';
 import { useEffect, useState } from 'react';
 import api from '@/api';
+import { Select } from './fields';
+import useNotifications from '@/hooks/useNotifications/useNotifications';
+import { RolePolicyTable } from './RolePolicyTable';
 
-function extractRolesFromPolicy(policy: string[][]): string[] {
-  return Array.from(new Set(policy.map((rule) => rule[0])));
+function groupPolicyByRole(policy: [string, string][]) {
+  return policy.reduce<Record<string, string[]>>((acc, [role, perm]) => {
+    acc[role] ??= [];
+    acc[role].push(perm);
+    return acc;
+  }, {});
 }
 
 export default function UserRoleManagement() {
-  const [allRoles, setAllRoles] = useState([]);
+  const [roleMap, setRoleMap] = useState({});
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [savingUserId, setSavingUserId] = useState<number | null>(null);
+
+  const notifications = useNotifications();
 
   useEffect(() => {
     (async () => {
       setLoading(true);
       const policy = await api.getPolicy();
-      const roles = extractRolesFromPolicy(policy);
-      setAllRoles(roles);
+      const rolePermissions = groupPolicyByRole(policy);
+      setRoleMap(rolePermissions);
       const users = await api.getUsers();
       setUsers(users);
       setLoading(false);
@@ -40,15 +46,15 @@ export default function UserRoleManagement() {
 
   const updateRoles = async (userId: number, roles: string[]) => {
     setSavingUserId(userId);
-    await fetch(`/api/users/${userId}/roles`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ roles })
-    });
-
-    setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, roles } : u))
-    );
+    try {
+      const user = await api.updateRoles(userId, roles);
+      setUsers((prev) => prev.map((u) => (u.id === userId ? user : u)));
+      notifications.show('Update roles for user succeeded', {
+        severity: 'success'
+      });
+    } catch (ex) {
+      notifications.show(ex.message, { severity: 'error' });
+    }
     setSavingUserId(null);
   };
 
@@ -66,6 +72,8 @@ export default function UserRoleManagement() {
         User Role Management
       </Typography>
 
+      <RolePolicyTable roleMap={roleMap} />
+
       <Table>
         <TableHead>
           <TableRow>
@@ -82,32 +90,25 @@ export default function UserRoleManagement() {
 
               <TableCell>
                 <Select
-                  multiple
-                  value={user.roles}
-                  onChange={(e) =>
+                  schema={{
+                    type: 'array',
+                    title: 'Roles',
+                    enum: Object.keys(roleMap)
+                  }}
+                  uiSchema={{
+                    'ui:options': {
+                      multiple: true
+                    }
+                  }}
+                  formData={user.roles}
+                  onChange={(value) =>
                     setUsers((prev) =>
                       prev.map((u) =>
-                        u.id === user.id
-                          ? { ...u, roles: e.target.value as string[] }
-                          : u
+                        u.id === user.id ? { ...u, roles: value } : u
                       )
                     )
                   }
-                  renderValue={(selected) => (
-                    <Box display="flex" gap={1}>
-                      {(selected as string[]).map((role) => (
-                        <Chip key={role} label={role} size="small" />
-                      ))}
-                    </Box>
-                  )}
-                  size="small"
-                >
-                  {allRoles.map((role) => (
-                    <MenuItem key={role} value={role}>
-                      {role}
-                    </MenuItem>
-                  ))}
-                </Select>
+                />
               </TableCell>
 
               <TableCell align="right">

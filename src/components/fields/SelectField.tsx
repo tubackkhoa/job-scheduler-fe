@@ -6,9 +6,9 @@ import {
   InputAdornment,
   Box,
   Select,
-  Divider,
   Typography
 } from '@mui/material';
+import { FieldProps } from '@rjsf/utils';
 import { useMemo, useCallback } from 'react';
 
 export function SelectField({
@@ -17,7 +17,7 @@ export function SelectField({
   schema,
   uiSchema,
   onChange
-}) {
+}: FieldProps) {
   const labelId = `${fieldPathId?.$id}-label`;
   // uiSchema is updated
   const uiOptions = uiSchema['ui:options'] ?? {};
@@ -33,7 +33,7 @@ export function SelectField({
       raw = raw.split(',').map((v) => v.trim());
     }
 
-    return raw.map((opt) =>
+    return (raw as any[]).map((opt) =>
       uiOptions.id
         ? { id: opt[uiOptions.id], title: opt[uiOptions.title ?? uiOptions.id] }
         : { id: opt, title: opt }

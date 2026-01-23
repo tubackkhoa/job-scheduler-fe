@@ -4,10 +4,11 @@ import { Box } from '@mui/material';
 import Form from '@rjsf/mui';
 import validator from '@rjsf/validator-ajv8';
 import { extractUiSchema, buildUiSchemaWithExpr } from '@/utils';
-import fields from './fields';
+import * as fields from './fields';
 import widgets from './widgets';
 import { ErrorBoundary } from './ErrorBound';
 import { ObjectFieldTemplate } from './templates/ObjectFieldTemplate';
+import { IChangeEvent } from '@rjsf/core';
 
 export const ConfigForm = ({
   schema,
@@ -20,9 +21,12 @@ export const ConfigForm = ({
 }) => {
   const [localSchema, setLocalSchema] = useState(schema);
   const [extraErrors, setExtraErrors] = useState({});
-  const changedFieldId = useRef();
+  const changedFieldId = useRef(null);
 
-  const handleChange = ({ formData: newFormData }, fieldPathId) => {
+  const handleChange = (
+    { formData: newFormData }: IChangeEvent,
+    fieldPathId?: string
+  ) => {
     if (onChange) {
       onChange(newFormData);
     }
