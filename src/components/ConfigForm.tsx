@@ -4,7 +4,7 @@ import { Box } from '@mui/material';
 import Form from '@rjsf/mui';
 import validator from '@rjsf/validator-ajv8';
 import { extractUiSchema, buildUiSchemaWithExpr } from '@/utils';
-import * as fields from './fields';
+import fields from './fields';
 import widgets from './widgets';
 import { ErrorBoundary } from './ErrorBound';
 import { ObjectFieldTemplate } from './templates/ObjectFieldTemplate';
