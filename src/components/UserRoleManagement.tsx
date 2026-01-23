@@ -1,6 +1,5 @@
 import {
   Box,
-  CircularProgress,
   IconButton,
   Table,
   TableBody,
@@ -24,10 +23,9 @@ function groupPolicyByRole(policy: [string, string][]) {
   }, {});
 }
 
-export default function UserRoleManagement() {
+export default function UserRoleManagement({ setError, setLoading }) {
   const [roleMap, setRoleMap] = useState({});
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(false);
   const [savingUserId, setSavingUserId] = useState<number | null>(null);
 
   const notifications = useNotifications();
@@ -35,11 +33,15 @@ export default function UserRoleManagement() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const policy = await api.getPolicy();
-      const rolePermissions = groupPolicyByRole(policy);
-      setRoleMap(rolePermissions);
-      const users = await api.getUsers();
-      setUsers(users);
+      try {
+        const policy = await api.getPolicy();
+        const rolePermissions = groupPolicyByRole(policy);
+        setRoleMap(rolePermissions);
+        const users = await api.getUsers();
+        setUsers(users);
+      } catch (ex) {
+        // setError(ex.message);
+      }
       setLoading(false);
     })();
   }, []);
@@ -58,13 +60,10 @@ export default function UserRoleManagement() {
     setSavingUserId(null);
   };
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" p={4}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  // collect all roles from policies and from current users
+  const allRoles = [
+    ...new Set([...Object.keys(roleMap), ...users.flatMap((u) => u.roles)])
+  ];
 
   return (
     <Box p={4}>
@@ -93,7 +92,7 @@ export default function UserRoleManagement() {
                   schema={{
                     type: 'array',
                     title: 'Roles',
-                    enum: Object.keys(roleMap)
+                    enum: allRoles
                   }}
                   uiSchema={{
                     'ui:options': {

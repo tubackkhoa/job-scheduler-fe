@@ -28,7 +28,7 @@ export default function App() {
           <Header />
 
           {error && (
-            <Box sx={{ mt: 3 }}>
+            <Box sx={{ my: 3 }}>
               <ErrorAlert message={error} onClose={() => setError(null)} />
             </Box>
           )}
@@ -37,7 +37,12 @@ export default function App() {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route element={<RequireAuth />}>
-                  <Route index element={<Dashboard />} />
+                  <Route
+                    index
+                    element={
+                      <Dashboard setLoading={setLoading} setError={setError} />
+                    }
+                  />
                   <Route
                     path="/plugins/:plugin_id?"
                     element={

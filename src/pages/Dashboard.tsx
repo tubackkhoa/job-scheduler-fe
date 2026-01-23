@@ -1,7 +1,7 @@
 import UserRoleManagement from '@/components/UserRoleManagement';
 import { Box, Grid, Paper, Typography, Button } from '@mui/material';
 
-export default function Dashboard() {
+export default function Dashboard({ setLoading, setError }) {
   return (
     <Box>
       {/* Page header */}
@@ -68,7 +68,7 @@ export default function Dashboard() {
         </Paper>
       </Box>
 
-      <UserRoleManagement />
+      <UserRoleManagement setError={setError} setLoading={setLoading} />
     </Box>
   );
 }
