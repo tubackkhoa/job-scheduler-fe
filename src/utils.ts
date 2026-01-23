@@ -6,6 +6,13 @@ import _ from 'lodash';
 import api from './api';
 import jinja from './jinja.py?raw';
 
+export const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+};
+
 export const getCodeHash = (str: string) => {
   let hash = 5381;
   for (let i = 0; i < str.length; i++) {

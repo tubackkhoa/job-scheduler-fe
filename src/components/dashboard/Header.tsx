@@ -15,6 +15,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { scrollToTop } from '@/utils';
 
 export function Header() {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -53,7 +54,13 @@ export function Header() {
       })}
     >
       {/* Left: Title */}
-      <Box>
+      <Box
+        onClick={scrollToTop}
+        sx={{
+          cursor: 'pointer',
+          userSelect: 'none'
+        }}
+      >
         <Typography
           variant="h4"
           sx={{
