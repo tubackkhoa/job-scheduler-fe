@@ -126,10 +126,6 @@ export default {
     return postJson(`/api/job/${jobId}/config`, payload);
   },
 
-  getRoles(): Promise<string[]> {
-    return request(`/api/users/roles`);
-  },
-
   getUsers(): Promise<User[]> {
     return request(`/api/users`);
   },
