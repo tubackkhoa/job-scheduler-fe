@@ -91,19 +91,19 @@ export default {
     sessionId: number,
     pluginId: number
   ): Promise<PluginSchemaResponse> {
-    return request(`/api/schema/${sessionId}/${pluginId}`);
+    return request(`/api/plugins/schema/${sessionId}/${pluginId}`);
   },
 
   fetchTemplatePluginSchema(pluginPath: string): Promise<PluginSchemaResponse> {
-    return request(`/api/user/template/${pluginPath}`);
+    return request(`/api/template/user/${pluginPath}`);
   },
 
   updateTemplatePlugin(pluginPath: string, payload: unknown) {
-    return postJson(`/api/user/template/${pluginPath}`, payload);
+    return postJson(`/api/template/user/${pluginPath}`, payload);
   },
 
   runTemplatePlugin(pluginPath: string, payload: unknown): Promise<string> {
-    return postJson(`/api/user/template/run/${pluginPath}`, payload, 'text');
+    return postJson(`/api/template/user/run/${pluginPath}`, payload, 'text');
   },
 
   fetchPlugins(): Promise<PluginData[]> {
@@ -111,11 +111,11 @@ export default {
   },
 
   updateConfig(jobId: number, payload: unknown) {
-    return postJson(`/api/config/${jobId}`, payload);
+    return postJson(`/api/job/${jobId}/config`, payload);
   },
 
   getRoles(): Promise<string[]> {
-    return request(`/api/roles`);
+    return request(`/api/users/roles`);
   },
 
   getUsers(): Promise<User[]> {
@@ -123,11 +123,11 @@ export default {
   },
 
   getPolicy(): Promise<[string, string][]> {
-    return request(`/api/policy`);
+    return request(`/api/users/policy`);
   },
 
   updateRoles(userId: number, roles: string[]): Promise<User> {
-    return postJson(`/api/user/${userId}`, {
+    return postJson(`/api/users/${userId}`, {
       roles
     });
   },
@@ -136,11 +136,16 @@ export default {
     jobId: number,
     activation: boolean
   ): Promise<{ success: boolean }> {
-    return postJson(`/api/activate/${jobId}/${activation}`);
+    return postJson(
+      `/api/job/${jobId}/${activation ? 'activate' : 'deactivate'}`
+    );
   },
 
   deleteJob(jobId: number) {
-    return postJson(`/api/delete/${jobId}`);
+    return request(`/api/job/${jobId}`, {
+      method: 'DELETE',
+      headers: JSON_HEADERS
+    });
   },
 
   reloadPlugin(pkg: string) {
