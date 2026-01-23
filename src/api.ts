@@ -161,7 +161,7 @@ export default {
   },
 
   reloadPlugin(pkg: string) {
-    return postJson(`/api/reload/${pkg}`);
+    return postJson(`/api/plugins/reload/${pkg}`);
   },
 
   createPlugin(
