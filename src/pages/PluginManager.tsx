@@ -38,7 +38,7 @@ export default function PluginManager({ setLoading, setError }) {
 
   // plugin_id change
   useEffect(() => {
-    if (!plugin_id) return;
+    if (!plugin_id || plugins.length === 0) return;
     const pluginIdAsNumber = Number(plugin_id);
     if (
       !Number.isNaN(pluginIdAsNumber) &&
@@ -48,7 +48,7 @@ export default function PluginManager({ setLoading, setError }) {
     } else {
       loadSchema(plugin_id);
     }
-  }, [plugin_id]);
+  }, [plugins, plugin_id]);
 
   const handleSetResult = (ret) => {
     setResult(ret);
