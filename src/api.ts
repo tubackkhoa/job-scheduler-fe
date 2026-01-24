@@ -126,7 +126,7 @@ export default {
   },
 
   updateConfig(jobId: number, payload: unknown) {
-    return postJson(`/api/job/${jobId}/config`, payload);
+    return postJson(`/api/jobs/${jobId}/config`, payload);
   },
 
   getUsers(): Promise<User[]> {
@@ -148,12 +148,12 @@ export default {
     activation: boolean
   ): Promise<{ success: boolean }> {
     return postJson(
-      `/api/job/${jobId}/${activation ? 'activate' : 'deactivate'}`
+      `/api/jobs/${jobId}/${activation ? 'activate' : 'deactivate'}`
     );
   },
 
   deleteJob(jobId: number) {
-    return request(`/api/job/${jobId}`, {
+    return request(`/api/jobs/${jobId}`, {
       method: 'DELETE',
       headers: JSON_HEADERS
     });
