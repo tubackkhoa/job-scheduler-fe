@@ -1,7 +1,14 @@
+import api from '@/api';
 import UserRoleManagement from '@/components/UserRoleManagement';
 import { Box, Grid, Paper, Typography, Button } from '@mui/material';
+import { useEffect, useState } from 'react';
 
 export default function Dashboard({ setLoading, setError }) {
+  const [health, setHealth] = useState<HealthResponse>();
+
+  useEffect(() => {
+    api.health().then(setHealth);
+  }, []);
   return (
     <Box>
       {/* Page header */}
@@ -19,40 +26,42 @@ export default function Dashboard({ setLoading, setError }) {
       </Box>
 
       {/* Summary cards */}
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="subtitle2" color="text.secondary">
-              Plugins
-            </Typography>
-            <Typography variant="h5" fontWeight={600}>
-              12
-            </Typography>
-          </Paper>
-        </Grid>
+      {health && (
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Plugins
+              </Typography>
+              <Typography variant="h5" fontWeight={600}>
+                {health.plugins}
+              </Typography>
+            </Paper>
+          </Grid>
 
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="subtitle2" color="text.secondary">
-              Active Jobs
-            </Typography>
-            <Typography variant="h5" fontWeight={600}>
-              5
-            </Typography>
-          </Paper>
-        </Grid>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Active Jobs
+              </Typography>
+              <Typography variant="h5" fontWeight={600}>
+                {health.active_jobs}
+              </Typography>
+            </Paper>
+          </Grid>
 
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="subtitle2" color="text.secondary">
-              Status
-            </Typography>
-            <Typography variant="h5" fontWeight={600} color="success.main">
-              Healthy
-            </Typography>
-          </Paper>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Status
+              </Typography>
+              <Typography variant="h5" fontWeight={600} color="success.main">
+                {health.status}
+              </Typography>
+            </Paper>
+          </Grid>
         </Grid>
-      </Grid>
+      )}
 
       {/* Actions */}
       <Box sx={{ mt: 4 }}>

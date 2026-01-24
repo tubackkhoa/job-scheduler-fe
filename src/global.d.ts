@@ -72,6 +72,14 @@ declare global {
     result_groups: ResultGroup[];
   }
 
+  interface HealthResponse {
+    status: string;
+    database: string;
+    plugin_manager: string;
+    plugins: number;
+    active_jobs: number;
+  }
+
   interface SearchLogsResponse {
     logs: LogEntry[];
     total: number;

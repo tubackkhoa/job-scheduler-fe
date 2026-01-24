@@ -88,6 +88,9 @@ const postJson = <T = unknown>(
   );
 
 export default {
+  health(): Promise<HealthResponse> {
+    return request('/health');
+  },
   async login(username: string, password: string): Promise<LoginResponse> {
     const data: LoginResponse = await request('/auth/token', {
       method: 'POST',
