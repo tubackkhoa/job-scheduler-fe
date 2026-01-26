@@ -15,7 +15,7 @@ export function CreatePluginModal({ open, onClose, onSubmit, isLoading }) {
   const [packageName, setPackageName] = useState('');
   const [interval, setInterval] = useState(60);
   const [description, setDescription] = useState('');
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<any>({});
 
   const handleClose = () => {
     setPackageName('');
@@ -26,7 +26,7 @@ export function CreatePluginModal({ open, onClose, onSubmit, isLoading }) {
   };
 
   const validate = () => {
-    const newErrors = {};
+    const newErrors: any = {};
 
     if (!packageName.trim()) {
       newErrors.packageName = 'Package name is required';
@@ -84,7 +84,7 @@ export function CreatePluginModal({ open, onClose, onSubmit, isLoading }) {
             label="Interval (seconds)"
             type="number"
             value={interval}
-            onChange={(e) => setInterval(e.target.value)}
+            onChange={(e) => setInterval(Number(e.target.value))}
             error={!!errors.interval}
             helperText={
               errors.interval || 'How often the plugin should run (in seconds)'
@@ -92,7 +92,7 @@ export function CreatePluginModal({ open, onClose, onSubmit, isLoading }) {
             required
             fullWidth
             slotProps={{
-              input: { min: 1 }
+              htmlInput: { min: 1 }
             }}
             disabled={isLoading}
           />

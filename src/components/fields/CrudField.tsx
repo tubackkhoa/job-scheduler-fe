@@ -1,17 +1,16 @@
-export default function CrudField({
+// @ts-nocheck
+import { RJSFSchema } from '@rjsf/utils';
+import { DynamicFieldProps } from '@/components/fields/DynamicField';
+
+export default function ({
   formData,
   onChange,
   schema,
+  uiSchema,
   fieldPathId,
   registry,
-  React,
-  Mui,
-  MuiIcon,
-  Utils,
-}) {
-  // Destructure dependencies from props
-  const { useState, useEffect, useRef, useCallback } = React;
-  const {
+  React: { useState, useEffect, useRef, useCallback },
+  Mui: {
     Stack,
     Typography,
     Box,
@@ -24,19 +23,18 @@ export default function CrudField({
     DialogTitle,
     DialogContent,
     DialogActions,
-    ConfirmationDialog,
-  } = Mui;
-  const { Save, Delete, Add, Refresh } = MuiIcon;
-  const { buildJinjaContext } = Utils;
-  const _ = Utils._;
-
+    ConfirmationDialog
+  },
+  MuiIcon: { Save, Delete, Add, Refresh },
+  Utils: { _, buildJinjaContext }
+}: DynamicFieldProps) {
   const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [searchInput, setSearchInput] = useState("");
+  const [searchInput, setSearchInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // Create dialog state
@@ -44,21 +42,16 @@ export default function CrudField({
   const [createFormData, setCreateFormData] = useState({});
   const [creating, setCreating] = useState(false);
 
-  const createSchema = schema["ui:options"]?.createSchema;
-
+  const createSchema = schema['ui:options']?.createSchema;
 
   // Build context with dependencies
   const render = useCallback(
-    buildJinjaContext(
-      registry.formContext.pluginPackage,
-      {
-        ...registry.formContext.env.filters,
-        ...registry.formContext.formData
-      }
-    ),
+    buildJinjaContext(registry.formContext.pluginPackage, {
+      ...registry.formContext.env.filters,
+      ...registry.formContext.formData
+    }),
     [registry.formContext]
   );
-
 
   // Generic evaluate wrapper
   const evaluateExpr = useCallback(
@@ -68,18 +61,18 @@ export default function CrudField({
 
   // CRUD operations
   const listItems = useCallback(
-    (field_id, searchTerm = "", limit = 20, offset = 0) =>
-      evaluateExpr("list", { field_id, search: searchTerm, limit, offset }),
+    (field_id, searchTerm = '', limit = 20, offset = 0) =>
+      evaluateExpr('list', { field_id, search: searchTerm, limit, offset }),
     [evaluateExpr]
   );
 
   const createItem = useCallback(
-    (payload) => evaluateExpr("create", { payload }),
+    (payload) => evaluateExpr('create', { payload }),
     [evaluateExpr]
   );
 
   const deleteItem = useCallback(
-    (key) => evaluateExpr("delete", {key}),
+    (key) => evaluateExpr('delete', { key }),
     [evaluateExpr]
   );
 
@@ -88,7 +81,7 @@ export default function CrudField({
 
   const refreshList = useCallback(async () => {
     setLoading(true);
-    setError("");
+    setError('');
     try {
       const result = await listItems(fieldPathId?.$id, searchInput);
       const list = result?.versions || result?.items || [];
@@ -105,7 +98,7 @@ export default function CrudField({
       }
     } catch (e) {
       setItems([]);
-      setError(e.message || "Failed to load items");
+      setError(e.message || 'Failed to load items');
       console.error(e);
     } finally {
       setLoading(false);
@@ -127,17 +120,17 @@ export default function CrudField({
   const handleSelect = async (item) => {
     if (!item) {
       setSelectedItem(null);
-      onChange("", schema["model:binding"]);
+      onChange('', schema['model:binding']);
       return;
     }
 
     setSelectedItem(item);
-    setMessage("");
-    setError("");
+    setMessage('');
+    setError('');
 
     // Set the value (key or id) to the binding path
     const value = item.key || item.id || item.name;
-    onChange(value, schema["model:binding"]);
+    onChange(value, schema['model:binding']);
   };
 
   // Create dialog handlers
@@ -152,14 +145,14 @@ export default function CrudField({
 
   const handleCreate = async () => {
     setCreating(true);
-    setError("");
-    setMessage("");
+    setError('');
+    setMessage('');
 
     try {
-      const payload = { ...createFormData, status: "active" };
+      const payload = { ...createFormData, status: 'active' };
 
       // Parse detail field as JSON if it's a string
-      if (payload.detail && typeof payload.detail === "string") {
+      if (payload.detail && typeof payload.detail === 'string') {
         try {
           payload.detail = JSON.parse(payload.detail);
         } catch {
@@ -178,10 +171,10 @@ export default function CrudField({
       // Select the newly created item
       if (result) {
         setSelectedItem(result);
-        onChange(result.key || result.id, schema["model:binding"]);
+        onChange(result.key || result.id, schema['model:binding']);
       }
     } catch (e) {
-      setError(e.message || "Failed to create item");
+      setError(e.message || 'Failed to create item');
     } finally {
       setCreating(false);
     }
@@ -190,7 +183,7 @@ export default function CrudField({
   // Delete handlers
   const handleDeleteClick = () => {
     if (!selectedItem) {
-      setError("Please select an item to deactivate");
+      setError('Please select an item to deactivate');
       return;
     }
     setDeleteDialogOpen(true);
@@ -201,8 +194,8 @@ export default function CrudField({
     if (!selectedItem) return;
 
     setDeleting(true);
-    setError("");
-    setMessage("");
+    setError('');
+    setMessage('');
 
     try {
       const key = selectedItem.key || selectedItem.id;
@@ -211,12 +204,12 @@ export default function CrudField({
 
       // Reset selection
       setSelectedItem(null);
-      onChange("", schema["model:binding"]);
+      onChange('', schema['model:binding']);
 
       // Refresh list
       await refreshList();
     } catch (e) {
-      setError(e.message || "Failed to deactivate item");
+      setError(e.message || 'Failed to deactivate item');
     } finally {
       setDeleting(false);
     }
@@ -232,12 +225,12 @@ export default function CrudField({
         fullWidth
         size="small"
         label={fieldSchema.title || key}
-        value={createFormData[key] || ""}
+        value={createFormData[key] || ''}
         onChange={(e) => handleCreateFormChange(key, e.target.value)}
         required={createSchema.required?.includes(key)}
-        multiline={key === "description" || key === "detail"}
-        rows={key === "detail" ? 4 : key === "description" ? 2 : 1}
-        placeholder={key === "detail" ? '{"key": "value"}' : ""}
+        multiline={key === 'description' || key === 'detail'}
+        rows={key === 'detail' ? 4 : key === 'description' ? 2 : 1}
+        placeholder={key === 'detail' ? '{"key": "value"}' : ''}
         sx={{ mb: 1.5 }}
       />
     ));
@@ -247,22 +240,22 @@ export default function CrudField({
     <Box
       sx={{
         p: 1.5,
-        bgcolor: "rgba(99, 102, 241, 0.08)",
+        bgcolor: 'rgba(99, 102, 241, 0.08)',
         borderRadius: 1,
-        border: "1px solid",
-        borderColor: "divider",
+        border: '1px solid',
+        borderColor: 'divider'
       }}
     >
       <Stack spacing={1.5}>
         <Stack
-          direction={{ xs: "column", sm: "row" }}
+          direction={{ xs: 'column', sm: 'row' }}
           spacing={1}
-          alignItems={{ xs: "stretch", sm: "center" }}
+          alignItems={{ xs: 'stretch', sm: 'center' }}
         >
           <Autocomplete
             size="small"
             options={items}
-            getOptionLabel={(option) => option.name || option.key || ""}
+            getOptionLabel={(option) => option.name || option.key || ''}
             value={selectedItem}
             onChange={(_, v) => handleSelect(v)}
             inputValue={searchInput}
@@ -282,12 +275,12 @@ export default function CrudField({
                   direction="row"
                   spacing={1}
                   alignItems="center"
-                  sx={{ width: "100%" }}
+                  sx={{ width: '100%' }}
                 >
                   <Typography variant="body2" sx={{ flex: 1 }}>
                     {option.name}
                   </Typography>
-                  {option.status === "active" && (
+                  {option.status === 'active' && (
                     <Chip label="Active" size="small" color="success" />
                   )}
                   <Typography variant="caption" color="text.secondary">
@@ -313,7 +306,7 @@ export default function CrudField({
               Create
             </Button>
           )}
-          
+
           {selectedItem && schema['model:expr']?.['delete'] && (
             <IconButton
               size="small"
@@ -347,7 +340,7 @@ export default function CrudField({
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Create New {schema.title || "Item"}</DialogTitle>
+        <DialogTitle>Create New {schema.title || 'Item'}</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1 }}>{renderCreateFormFields()}</Box>
         </DialogContent>
@@ -358,7 +351,7 @@ export default function CrudField({
             onClick={handleCreate}
             disabled={creating || !createFormData.key || !createFormData.name}
           >
-            {creating ? "Creating..." : "Create"}
+            {creating ? 'Creating...' : 'Create'}
           </Button>
         </DialogActions>
       </Dialog>
