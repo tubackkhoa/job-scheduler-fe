@@ -176,10 +176,10 @@ export default function App() {
       setEnv(await getEnvDoc(globals));
       setSchema(fetchedSchema);
       const sortedJobs = jobs.sort((a, b) => {
-        if(a?.config?.model_version && b?.config?.model_version) {
-          return Number(a.config.model_version) - Number(b.config.model_version);
-        }
-       
+        // if(a?.config?.model_version && b?.config?.model_version) {
+        //   return Number(a.config.model_version) - Number(b.config.model_version);
+        // }
+
         return Number(a.id) - Number(b.id);
       });
       setJobs(sortedJobs);
