@@ -52,6 +52,7 @@ export default function App() {
                       />
                     }
                   >
+                    <Route path="sessions/:session_id" />
                     <Route path="sessions/:session_id/jobs/:job_id" />
                   </Route>
                 </Route>

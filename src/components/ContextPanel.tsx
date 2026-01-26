@@ -25,7 +25,6 @@ export function ContextPanel({
   sessionId,
   ctx,
   pluginId,
-  onSessionChange,
   onReloadPlugin,
   onCreatePlugin,
   isLoading
@@ -80,7 +79,10 @@ export function ContextPanel({
             <InputLabel>Session</InputLabel>
             <Select
               value={sessionId}
-              onChange={(e) => onSessionChange(Number(e.target.value))}
+              onChange={(e) => {
+                const newSessionId = Number(e.target.value);
+                navigate(`/plugins/${pluginId}/sessions/${newSessionId}`);
+              }}
               label="Session"
             >
               {sessions.map((session) => (
