@@ -23,13 +23,16 @@ import {
   Save,
   AddCircleOutline,
   SignalCellularAlt,
-  SettingsApplications
+  SettingsApplications,
+  Code
 } from '@mui/icons-material';
+
 import { ConfigForm } from './ConfigForm';
 import LogViewer from './LogViewer';
 import SignalsLogsViewer from './SignalsLogsViewer';
 import JinjaEnvDocs from './JinjaEnvDocs';
 import api from '@/api';
+import UserPluginCode from './UserPluginCode';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -61,7 +64,7 @@ export function JobDetails({
   isSubmitting
 }) {
   const [tabIndex, setTabIndex] = useState(0);
-  const [localFormData, setLocalFormData] = useState();
+  const [localFormData, setLocalFormData] = useState(formData);
   const [isDirty, setIsDirty] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({
     open: false,
@@ -154,10 +157,12 @@ export function JobDetails({
     );
   }
 
+  const isUserPlugin = typeof pluginId === 'string';
+
   return (
     <Card sx={{ bgcolor: 'background.paper' }}>
       <CardHeader
-        title={typeof pluginId === 'number' ? 'Job Details' : 'User Plugin'}
+        title={isUserPlugin ? 'User Plugin' : 'Job Details'}
         subheader={
           pluginPackage
             ? `${pluginPackage}${pluginInterval ? ` • every ${pluginInterval}s` : ''}`
@@ -243,25 +248,40 @@ export function JobDetails({
               }}
             >
               <Tab
+                value={0}
                 icon={<Settings sx={{ fontSize: 18 }} />}
                 iconPosition="start"
                 label="Config Form"
               />
               <Tab
+                value={1}
                 icon={<SettingsApplications sx={{ fontSize: 18 }} />}
                 iconPosition="start"
                 label="Environment"
               />
+
               <Tab
+                value={2}
                 icon={<Terminal sx={{ fontSize: 18 }} />}
                 iconPosition="start"
                 label="Live Logs"
               />
+
               {schema.keyword && (
                 <Tab
+                  value={3}
                   icon={<SignalCellularAlt sx={{ fontSize: 18 }} />}
                   iconPosition="start"
                   label="Signals Logs"
+                />
+              )}
+
+              {isUserPlugin && (
+                <Tab
+                  value={4}
+                  icon={<Code sx={{ fontSize: 18 }} />}
+                  iconPosition="start"
+                  label="Code"
                 />
               )}
             </Tabs>
@@ -275,7 +295,7 @@ export function JobDetails({
               schema={schema}
               sessionId={sessionId}
               env={env}
-              formData={localFormData ?? formData}
+              formData={localFormData}
               onChange={(data) => {
                 setIsDirty(true);
                 setLocalFormData(data);
@@ -301,6 +321,18 @@ export function JobDetails({
                 jobId={jobId}
                 description={jobDesc}
                 keyword={schema.keyword}
+              />
+            </TabPanel>
+          )}
+
+          {isUserPlugin && (
+            <TabPanel value={tabIndex} index={4}>
+              <UserPluginCode
+                pluginPackage={pluginPackage}
+                formData={localFormData}
+                setResult={setResult}
+                setError={setError}
+                env={env}
               />
             </TabPanel>
           )}

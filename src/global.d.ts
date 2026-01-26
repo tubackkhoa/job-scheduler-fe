@@ -39,6 +39,11 @@ declare global {
     user: User;
   }
 
+  interface PluginUserCodeResponse {
+    form: string;
+    script: string;
+  }
+
   interface LoginResponse {
     access_token: string;
     token_type: string;

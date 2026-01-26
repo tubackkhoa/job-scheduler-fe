@@ -1,4 +1,5 @@
 import { createTheme } from '@mui/material/styles';
+import { ReactCodeMirrorProps } from '@uiw/react-codemirror';
 
 export const darkTheme = createTheme({
   palette: {
@@ -70,3 +71,44 @@ export const darkTheme = createTheme({
     }
   }
 });
+
+export const getCodeMirrorStyle = (
+  fullscreen: boolean
+): ReactCodeMirrorProps => {
+  return {
+    style: {
+      resize: fullscreen ? 'none' : 'vertical',
+      overflow: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: fullscreen ? '100%' : 200,
+      maxHeight: fullscreen ? '100%' : 600,
+      height: '100%'
+    },
+    minHeight: fullscreen ? '100%' : '200px',
+    height: '100%',
+    theme: 'dark',
+    basicSetup: {
+      lineNumbers: true,
+      highlightActiveLine: true,
+      foldGutter: false
+    }
+  };
+};
+
+export const getContainerStyle = (fullscreen: boolean) => {
+  return fullscreen
+    ? {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: 'var(--mui-palette-background-default, #121212)',
+        zIndex: 1300,
+        p: 2,
+        display: 'flex',
+        flexDirection: 'column'
+      }
+    : {};
+};

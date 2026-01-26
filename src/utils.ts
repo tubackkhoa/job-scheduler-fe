@@ -4,6 +4,10 @@ import { linter, Diagnostic } from '@codemirror/lint';
 import { syntaxTree } from '@codemirror/language';
 import _ from 'lodash';
 import api from './api';
+import { LanguageSupport, LRLanguage } from '@codemirror/language';
+import { parseMixed } from '@lezer/common';
+import { javascript } from '@codemirror/lang-javascript';
+import { yamlLanguage } from '@codemirror/lang-yaml';
 import jinja from './jinja.py?raw';
 import { JinjaCompletionConfig } from '@codemirror/lang-jinja';
 import * as esbuild from 'esbuild-wasm';
@@ -223,6 +227,42 @@ const applyFunction = (name: string) => {
   };
 };
 
+export const yamlWithEmbeddedJS = (keyNames: string[] = ['code']) => {
+  const jsParser = javascript({ jsx: true, typescript: true }).language.parser;
+
+  // 1. Reconfigure the base YAML parser with the mixed-language logic
+  const mixedYamlParser = yamlLanguage.parser.configure({
+    wrap: parseMixed((node, input) => {
+      // Look for YAML values (Literal or BlockLiteral)
+      if (node.name === 'Literal' || node.name === 'BlockLiteral') {
+        const parent = node.node.parent;
+
+        // Ensure the value belongs to a 'Pair'
+        if (parent?.name === 'Pair') {
+          const keyNode = parent.getChild('Key');
+          if (keyNode) {
+            const keyName = input.read(keyNode.from, keyNode.to).trim();
+            // Match the specific key "code:"
+            if (keyNames.includes(keyName)) {
+              return { parser: jsParser };
+            }
+          }
+        }
+      }
+      return null;
+    })
+  });
+
+  // 2. Use the STATIC LRLanguage.define method to create the new language
+  const mixedYamlLanguage = LRLanguage.define({
+    name: 'yaml-mixed',
+    parser: mixedYamlParser,
+    languageData: yamlLanguage.data // Inherit YAML metadata (comments, etc.)
+  });
+
+  return new LanguageSupport(mixedYamlLanguage);
+};
+
 /* ================================
  * Jinja Completion Builder
  * ================================ */
@@ -380,6 +420,7 @@ const initEsBuild: Promise<typeof esbuild> = (async () => {
     wasmURL: wasmUrl,
     worker: true
   });
+  console.log('ESBuild initialized');
   return esbuild;
 })();
 
@@ -403,8 +444,10 @@ export async function transpile(code: string): Promise<string> {
     minify: true,
     treeShaking: true,
 
-    // Prevent sneaky globals
+    // Prevent sneaky globals, just avoid by mistake
     define: {
+      eval: 'undefined',
+      Function: 'undefined',
       window: 'undefined',
       document: 'undefined',
       globalThis: 'undefined',

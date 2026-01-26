@@ -1,7 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
-import { keymap } from '@codemirror/view';
-import { commentKeymap } from '@codemirror/comment';
 import {
   Stack,
   Typography,
@@ -30,8 +28,8 @@ import {
   FullscreenExit
 } from '@mui/icons-material';
 
-import { getCodeMirrorStyle } from './TemplatePreview';
 import { FieldProps } from '@rjsf/utils';
+import { getCodeMirrorStyle, getContainerStyle } from '@/theme';
 
 const resolveLanguageExtension = (schema) => {
   switch (schema.type) {
@@ -77,8 +75,7 @@ export function TemplateField({
         base: resolveLanguageExtension(schema),
         ...completions
       }),
-      jinjaLinter(params, registry.formContext.env),
-      keymap.of(commentKeymap as any)
+      jinjaLinter(params, registry.formContext.env)
     ];
   }, [schema, registry.formContext]);
 
@@ -163,20 +160,7 @@ export function TemplateField({
   };
 
   // Fullscreen style object
-  const fullscreenStyles = fullscreen
-    ? {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        backgroundColor: 'var(--mui-palette-background-default, #121212)',
-        zIndex: 1300,
-        p: 2,
-        display: 'flex',
-        flexDirection: 'column'
-      }
-    : {};
+  const fullscreenStyles = getContainerStyle(fullscreen);
 
   return (
     <Stack spacing={1} sx={fullscreenStyles}>
@@ -243,7 +227,7 @@ export function TemplateField({
           }}
         >
           <CodeMirror
-            {...(getCodeMirrorStyle(fullscreen) as any)}
+            {...getCodeMirrorStyle(fullscreen)}
             value={localValue}
             extensions={extensions}
             onChange={handleEditorChange}

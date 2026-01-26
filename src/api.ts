@@ -110,15 +110,23 @@ export default {
   },
 
   fetchTemplatePluginSchema(pluginPath: string): Promise<PluginSchemaResponse> {
-    return request(`/api/template/user/${pluginPath}`);
+    return request(`/api/templates/user/${pluginPath}`);
+  },
+
+  fetchTemplatePluginCode(pluginPath: string): Promise<PluginUserCodeResponse> {
+    return request(`/api/templates/user/code/${pluginPath}`);
+  },
+
+  updateTemplatePluginCode(pluginPath: string, payload: unknown) {
+    return postJson(`/api/templates/user/code/${pluginPath}`, payload);
   },
 
   updateTemplatePlugin(pluginPath: string, payload: unknown) {
-    return postJson(`/api/template/user/${pluginPath}`, payload);
+    return postJson(`/api/templates/user/${pluginPath}`, payload);
   },
 
   runTemplatePlugin(pluginPath: string, payload: unknown): Promise<string> {
-    return postJson(`/api/template/user/run/${pluginPath}`, payload, 'text');
+    return postJson(`/api/templates/user/run/${pluginPath}`, payload, 'text');
   },
 
   fetchPlugins(): Promise<PluginData[]> {
@@ -181,7 +189,7 @@ export default {
     params: object
   ): Promise<string> {
     return postJson(
-      `/api/template/${packageName}`,
+      `/api/templates/${packageName}`,
       { template, params },
       'text'
     );
