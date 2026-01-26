@@ -20,7 +20,6 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.6",
     "@mui/material": "^7.3.6",
-    "@mui/x-data-grid": "^8.26.0",
     "@rjsf/core": "^6.1.2",
     "@rjsf/mui": "^6.1.2",
     "@rjsf/utils": "^6.1.2",

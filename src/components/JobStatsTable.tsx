@@ -351,8 +351,11 @@ export default function JobStatsTable() {
   return (
     <Card sx={{ bgcolor: 'background.paper', borderRadius: 2 }}>
       {/* Search & Filter Bar */}
-      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+      <Box
+        sx={{ p: { xs: 1.5, sm: 2 }, borderBottom: 1, borderColor: 'divider' }}
+      >
         <Stack spacing={2}>
+          {/* Search */}
           <TextField
             fullWidth
             variant="outlined"
@@ -368,12 +371,13 @@ export default function JobStatsTable() {
             size="medium"
           />
 
-          {/* Filters Row */}
+          {/* Filters */}
           <Stack
             direction={{ xs: 'column', md: 'row' }}
             spacing={2}
-            alignItems="center"
+            alignItems={{ xs: 'stretch', md: 'center' }}
           >
+            {/* Filters label */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <FilterList fontSize="small" color="action" />
               <Typography
@@ -387,36 +391,16 @@ export default function JobStatsTable() {
 
             <Autocomplete
               options={plugins}
-              renderOption={(props, option) => {
-                const { key, ...otherProps } = props as any;
-                return (
-                  <li key={key} {...otherProps}>
-                    <div
-                      style={{
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        width: '100%'
-                      }}
-                    >
-                      {option.package}
-                    </div>
-                  </li>
-                );
-              }}
               getOptionLabel={(option) => option?.package ?? ''}
               value={plugins.find((p) => p.id === selectedPluginId) || null}
-              onChange={(_, newValue) =>
-                setSelectedPluginId(newValue ? newValue.id : 'all')
-              }
+              onChange={(_, v) => setSelectedPluginId(v ? v.id : 'all')}
               renderInput={(params) => (
-                <TextField {...params} label="Plugins" size="small" />
+                <TextField {...params} label="Plugins" size="small" fullWidth />
               )}
-              sx={{ minWidth: 300 }}
-              size="small"
+              sx={{ minWidth: { md: 260 } }}
             />
 
-            <FormControl size="small" sx={{ minWidth: 200 }}>
+            <FormControl size="small" fullWidth sx={{ minWidth: { md: 180 } }}>
               <InputLabel>Status</InputLabel>
               <Select
                 value={activeFilter}
@@ -431,7 +415,7 @@ export default function JobStatsTable() {
               </Select>
             </FormControl>
 
-            <FormControl size="small" sx={{ minWidth: 200 }}>
+            <FormControl size="small" fullWidth sx={{ minWidth: { md: 180 } }}>
               <InputLabel>Sessions</InputLabel>
               <Select
                 value={selectedSession}
@@ -455,22 +439,27 @@ export default function JobStatsTable() {
               value={
                 sqlVersions.find((v) => v.id === selectedSqlVersion) || null
               }
-              onChange={(_, newValue) =>
-                setSelectedSqlVersion(newValue ? newValue.id : 'all')
-              }
+              onChange={(_, v) => setSelectedSqlVersion(v ? v.id : 'all')}
               renderInput={(params) => (
-                <TextField {...params} label="SQL Version" size="small" />
+                <TextField
+                  {...params}
+                  label="SQL Version"
+                  size="small"
+                  fullWidth
+                />
               )}
-              sx={{ minWidth: 300 }}
-              size="small"
+              sx={{ minWidth: { md: 260 } }}
             />
 
-            <Box sx={{ flexGrow: 1 }} />
+            {/* Spacer only on desktop */}
+            <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'block' } }} />
 
             <Button
               variant="outlined"
               startIcon={<Clear />}
               size="small"
+              fullWidth
+              sx={{ alignSelf: { md: 'center' } }}
               onClick={() => {
                 setSearchText('');
                 setActiveFilter('all');

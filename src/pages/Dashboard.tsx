@@ -1,8 +1,8 @@
-import api from "@/api";
-import UserRoleManagement from "@/components/UserRoleManagement";
-import { Box, Grid, Paper, Typography, Button } from "@mui/material";
-import { useEffect, useState } from "react";
-import JobStatsTable from "@/components/JobStatsTable";
+import api from '@/api';
+import UserRoleManagement from '@/components/UserRoleManagement';
+import { Box, Grid, Paper, Typography, Button } from '@mui/material';
+import { useEffect, useState } from 'react';
+import JobStatsTable from '@/components/JobStatsTable';
 
 export default function Dashboard({ setLoading, setError }) {
   const [health, setHealth] = useState<HealthResponse>();
@@ -15,10 +15,10 @@ export default function Dashboard({ setLoading, setError }) {
       {/* Page header */}
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 4,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 4
         }}
       >
         <Typography variant="h4" fontWeight={600}>
@@ -71,8 +71,12 @@ export default function Dashboard({ setLoading, setError }) {
         </Typography>
         <JobStatsTable />
       </Box>
-
-      <UserRoleManagement setError={setError} setLoading={setLoading} />
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h5" fontWeight={600} gutterBottom>
+          User Role Management
+        </Typography>
+        <UserRoleManagement setError={setError} setLoading={setLoading} />
+      </Box>
     </Box>
   );
 }

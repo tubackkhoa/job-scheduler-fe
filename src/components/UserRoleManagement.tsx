@@ -1,12 +1,11 @@
 import {
-  Box,
   IconButton,
   Table,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
-  TableRow,
-  Typography
+  TableRow
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import { useEffect, useState } from 'react';
@@ -75,14 +74,10 @@ export default function UserRoleManagement({ setError, setLoading }) {
   ];
 
   return (
-    <Box p={4}>
-      <Typography variant="h5" mb={2}>
-        User Role Management
-      </Typography>
-
+    <TableContainer>
       <RolePolicyTable roleMap={roleMap} />
 
-      <Table>
+      <Table size="small">
         <TableHead>
           <TableRow>
             <TableCell>User</TableCell>
@@ -131,6 +126,6 @@ export default function UserRoleManagement({ setError, setLoading }) {
           ))}
         </TableBody>
       </Table>
-    </Box>
+    </TableContainer>
   );
 }
