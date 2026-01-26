@@ -19,8 +19,8 @@ export function JobsList({
   jobs,
   selectedJobId,
   pluginPackage,
-  onSelectJob,
   pluginId,
+  sessionId,
   onToggleJob,
   onNewJob,
   isNewJobMode,
@@ -109,8 +109,9 @@ export function JobsList({
               key={job.id}
               selected={selectedJobId === job.id && !isNewJobMode}
               onClick={() => {
-                navigate(`/plugins/${pluginId}/jobs/${job.id}`);
-                onSelectJob(job.id);
+                navigate(
+                  `/plugins/${pluginId}/sessions/${sessionId}/jobs/${job.id}`
+                );
               }}
               sx={{
                 mb: 1,
@@ -183,7 +184,7 @@ export function JobsList({
                 checked={!!job.active}
                 onChange={(e) => {
                   e.stopPropagation();
-                  onToggleJob(job.id, e.target.checked);
+                  onToggleJob(e.target.checked, job.id);
                 }}
                 onClick={(e) => e.stopPropagation()}
                 color="success"

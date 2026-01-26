@@ -265,8 +265,8 @@ export default function PluginManager({ setLoading, setError }) {
                 pluginId={pluginId}
                 selectedJobId={jobId}
                 pluginPackage={pluginInfo?.package}
-                onSelectJob={handleChangeJob}
-                onToggleJob={(id, a) => handleJobActivation(a, id)}
+                sessionId={sessionId}
+                onToggleJob={handleJobActivation}
                 onNewJob={handleNewJob}
                 isNewJobMode={isNewJobMode}
                 disabled={!schema}
