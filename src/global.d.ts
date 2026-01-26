@@ -1,4 +1,4 @@
-import { RJSFSchema } from '@rjsf/utils';
+import { RJSFSchema } from "@rjsf/utils";
 
 export {};
 
@@ -17,7 +17,7 @@ declare global {
   }
 
   interface GlobalVariable {
-    type: 'variable' | 'function' | string;
+    type: "variable" | "function" | string;
     doc: string;
   }
 
@@ -33,10 +33,10 @@ declare global {
   type Globals = Record<string, GlobalVariable>;
 
   interface PluginSchemaResponse {
-    globals: Globals;
     jobs: Job[];
     schema: RJSFSchema;
     user: User;
+    globals?: Globals;
   }
 
   interface PluginUserCodeResponse {
@@ -69,7 +69,7 @@ declare global {
     searchText?: string;
     limit?: number;
     offset?: number;
-    sort?: 'asc' | 'desc';
+    sort?: "asc" | "desc";
   }
 
   interface LogsResponse {
@@ -106,9 +106,62 @@ declare global {
   }
 
   interface GetSignalsResponse {
-    signals: SignalMessage[];
+    signals: Signal[];
     count: number;
     job_id: number;
+  }
+
+  interface SqlVersion {
+    id: number;
+    name: string;
+    description?: string;
+    value?: string;
+    is_active?: boolean;
+  }
+
+  interface Signal {
+    id: number;
+    job_id: number;
+    model_key: string;
+    message: string;
+    created_at: string;
+    captured_at: string;
+  }
+
+  interface JobStatsItem extends Job {
+    sql_version?: SqlVersion;
+    last_signal?: string; // ISO timestamp
+    signals?: Signal[];
+  }
+
+  interface JobStatsParams {
+    limit?: number;
+    offset?: number;
+    include_signals?: boolean;
+    search_text?: string;
+    active?: boolean;
+    plugin_id?: number[];
+    model_key?: string[];
+    sql_id?: number[];
+    order_by?: string;
+    sort?: "asc" | "desc";
+    session_id?: number[];
+  }
+
+  interface JobStatsResponse {
+    items: JobStatsItem[];
+    total: number;
+    limit: number;
+    offset: number;
+  }
+
+  interface SqlVersionsResponse {
+    versions: SqlVersion[];
+    count: number;
+    total: number;
+    search: string | null;
+    limit: number;
+    offset: number;
   }
 
   interface Window {

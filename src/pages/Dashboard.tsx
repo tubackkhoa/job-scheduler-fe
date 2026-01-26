@@ -1,7 +1,8 @@
-import api from '@/api';
-import UserRoleManagement from '@/components/UserRoleManagement';
-import { Box, Grid, Paper, Typography, Button } from '@mui/material';
-import { useEffect, useState } from 'react';
+import api from "@/api";
+import UserRoleManagement from "@/components/UserRoleManagement";
+import { Box, Grid, Paper, Typography, Button } from "@mui/material";
+import { useEffect, useState } from "react";
+import JobStatsTable from "@/components/JobStatsTable";
 
 export default function Dashboard({ setLoading, setError }) {
   const [health, setHealth] = useState<HealthResponse>();
@@ -14,10 +15,10 @@ export default function Dashboard({ setLoading, setError }) {
       {/* Page header */}
       <Box
         sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          mb: 4
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 4,
         }}
       >
         <Typography variant="h4" fontWeight={600}>
@@ -63,18 +64,12 @@ export default function Dashboard({ setLoading, setError }) {
         </Grid>
       )}
 
-      {/* Actions */}
+      {/* Job Statistics */}
       <Box sx={{ mt: 4 }}>
-        <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Quick Actions
-          </Typography>
-
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button variant="contained">Create Plugin</Button>
-            <Button variant="outlined">View Logs</Button>
-          </Box>
-        </Paper>
+        <Typography variant="h5" fontWeight={600} gutterBottom>
+          Job Statistics
+        </Typography>
+        <JobStatsTable />
       </Box>
 
       <UserRoleManagement setError={setError} setLoading={setLoading} />

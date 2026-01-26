@@ -1,22 +1,25 @@
-import { Box, Grid } from '@mui/material';
-import { ContextPanel } from '../components/ContextPanel';
-import { JobsList } from '../components/JobsList';
-import { JobDetails } from '../components/JobDetails';
-import { ResponseCard } from '../components/ResponseCard';
-import { CreatePluginModal } from '../components/CreatePluginModal';
-import { SESSIONS } from '../constants/session';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getDefaultFormState } from '@rjsf/utils';
-import api from '@/api';
-import { getEnvDoc } from '@/utils';
-import { useParams } from 'react-router-dom';
+import { Box, Grid } from "@mui/material";
+import { ContextPanel } from "../components/ContextPanel";
+import { JobsList } from "../components/JobsList";
+import { JobDetails } from "../components/JobDetails";
+import { ResponseCard } from "../components/ResponseCard";
+import { CreatePluginModal } from "../components/CreatePluginModal";
+import { SESSIONS } from "../constants/session";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { getDefaultFormState } from "@rjsf/utils";
+import api from "@/api";
+import { getEnvDoc } from "@/utils";
+import { useParams } from "react-router-dom";
 
 export default function PluginManager({ setLoading, setError }) {
-  const { plugin_id } = useParams<{ plugin_id?: string }>();
+  const { plugin_id, job_id } = useParams<{
+    plugin_id?: string;
+    job_id?: string;
+  }>();
   const [plugins, setPlugins] = useState<PluginData[]>([]);
   const [pluginId, setPluginId] = useState<string | number>(0);
   const [jobId, setJobId] = useState(0);
-  const [jobDesc, setJobDesc] = useState('');
+  const [jobDesc, setJobDesc] = useState("");
   const [jobs, setJobs] = useState([]);
   const [schema, setSchema] = useState(null);
   const [env, setEnv] = useState(null);
@@ -39,16 +42,24 @@ export default function PluginManager({ setLoading, setError }) {
   // plugin_id change
   useEffect(() => {
     if (!plugin_id || plugins.length === 0) return;
+
     const pluginIdAsNumber = Number(plugin_id);
-    if (
+    const resolvedPluginId =
       !Number.isNaN(pluginIdAsNumber) &&
       plugins.some((p) => p.id == pluginIdAsNumber)
-    ) {
-      loadSchema(pluginIdAsNumber);
-    } else {
-      loadSchema(plugin_id);
+        ? pluginIdAsNumber
+        : plugin_id;
+
+    const targetJobId = job_id ? Number(job_id) : undefined;
+
+    // Load schema if plugin changed
+    if (resolvedPluginId != pluginId) {
+      loadSchema(resolvedPluginId, undefined, targetJobId);
+    } else if (targetJobId && targetJobId !== jobId && jobs.length > 0) {
+      // If plugin same but job changed, just switch job
+      handleChangeJob(targetJobId, jobs);
     }
-  }, [plugins, plugin_id]);
+  }, [plugins, plugin_id, job_id, pluginId, jobId, jobs.length]);
 
   const handleSetResult = (ret) => {
     setResult(ret);
@@ -58,7 +69,7 @@ export default function PluginManager({ setLoading, setError }) {
   const loadSchema = async (
     currentPluginId: string | number,
     currentSessionId?: number,
-    currentJobId?: number
+    currentJobId?: number,
   ) => {
     if (!currentPluginId) return;
     setPluginId(currentPluginId);
@@ -73,8 +84,8 @@ export default function PluginManager({ setLoading, setError }) {
         schema: fetchedSchema,
         jobs,
         user,
-        globals
-      } = typeof currentPluginId === 'string'
+        globals,
+      } = typeof currentPluginId === "string"
         ? await api.fetchTemplatePluginSchema(currentPluginId)
         : await api.fetchSchema(currentSessionId ?? sessionId, currentPluginId);
       // assign global ctx
@@ -99,11 +110,11 @@ export default function PluginManager({ setLoading, setError }) {
     try {
       const jobItem = {
         config: formData,
-        description: jobDesc
+        description: jobDesc,
       };
 
       let response;
-      if (typeof pluginId === 'string') {
+      if (typeof pluginId === "string") {
         response = await api.updateTemplatePlugin(pluginId, jobItem);
       } else {
         if (!jobId || saveNew) {
@@ -111,7 +122,7 @@ export default function PluginManager({ setLoading, setError }) {
           response = await api.updateConfig(0, {
             ...jobItem,
             sessionId,
-            pluginId
+            pluginId,
           });
         } else {
           response = await api.updateConfig(jobId, jobItem);
@@ -135,8 +146,8 @@ export default function PluginManager({ setLoading, setError }) {
         // update the config at local to sync with server
         setJobs((prev) =>
           prev.map((v) =>
-            v.id === targetJobId ? { ...v, active: activation ? 1 : 0 } : v
-          )
+            v.id === targetJobId ? { ...v, active: activation ? 1 : 0 } : v,
+          ),
         );
         setJobId(targetJobId);
       }
@@ -151,13 +162,13 @@ export default function PluginManager({ setLoading, setError }) {
     setIsNewJobMode(false);
     const collection = newJobs ?? jobs;
     const found = collection.find((version) => version.id === newJobId);
-    setJobDesc(found?.description ?? '');
+    setJobDesc(found?.description ?? "");
   };
 
   const handleNewJob = useCallback(() => {
     setIsNewJobMode(true);
     setJobId(0);
-    setJobDesc('');
+    setJobDesc("");
   }, []);
 
   const handleChangeSession = async (currentSessionId) => {
@@ -210,11 +221,11 @@ export default function PluginManager({ setLoading, setError }) {
       const response = await api.createPlugin(
         pluginData.package,
         pluginData.interval,
-        pluginData.description
+        pluginData.description,
       );
       handleSetResult({
         success: true,
-        message: 'Plugin created successfully'
+        message: "Plugin created successfully",
       });
       setCreatePluginModalOpen(false);
       // Reload plugins list
@@ -232,7 +243,7 @@ export default function PluginManager({ setLoading, setError }) {
   };
 
   const pluginInfo = useMemo(() => {
-    return typeof pluginId === 'number'
+    return typeof pluginId === "number"
       ? plugins.find((p) => p.id === pluginId)
       : { package: pluginId, interval: undefined };
   }, [pluginId]);
@@ -245,7 +256,7 @@ export default function PluginManager({ setLoading, setError }) {
       (isNewJobMode && schema
         ? getDefaultFormState(schema, undefined, schema)
         : undefined),
-    [currentJob, isNewJobMode, schema]
+    [currentJob, isNewJobMode, schema],
   );
 
   const isActive = !!currentJob?.active;
@@ -257,11 +268,11 @@ export default function PluginManager({ setLoading, setError }) {
         <Grid size={{ xs: 12, md: 3 }}>
           <Box
             sx={{
-              display: 'flex',
-              flexDirection: 'column',
+              display: "flex",
+              flexDirection: "column",
               gap: 3,
-              position: { xs: 'static', md: 'sticky' },
-              top: 125
+              position: { xs: "static", md: "sticky" },
+              top: 125,
             }}
           >
             <ContextPanel
@@ -276,7 +287,7 @@ export default function PluginManager({ setLoading, setError }) {
               isLoading={submitting}
             />
 
-            {typeof pluginId === 'number' && (
+            {typeof pluginId === "number" && (
               <JobsList
                 jobs={jobs}
                 selectedJobId={jobId}
