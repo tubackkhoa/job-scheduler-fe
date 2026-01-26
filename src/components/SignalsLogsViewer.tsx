@@ -349,6 +349,7 @@ const SignalGroupRow = ({ group }: { group: ResultGroup }) => {
 export default function SignalsLogsViewer({
   jobId = 0,
   description,
+  setError,
   keyword,
   limit = 2
 }) {
@@ -368,7 +369,7 @@ export default function SignalsLogsViewer({
         const data = await api.getSignals({ jobId });
         setGroups(data.signals || []);
       } catch (e) {
-        console.error('Failed to fetch signals:', e);
+        setError(e.message);
         setGroups([]);
       } finally {
         setIsLoading(false);

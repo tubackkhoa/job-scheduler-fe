@@ -60,8 +60,12 @@ export default function PluginManager({ setLoading, setError }) {
     currentSessionId?: number,
     currentJobId?: number
   ) => {
-    if (!currentPluginId) return;
-    setPluginId(currentPluginId);
+    if (!currentPluginId) {
+      if (!pluginId) return;
+      currentPluginId = pluginId;
+    } else {
+      setPluginId(currentPluginId);
+    }
     setLoading(true);
     setError(null);
     // schema and configs should be clear before processing
@@ -302,6 +306,7 @@ export default function PluginManager({ setLoading, setError }) {
             setError={setError}
             isActive={isActive}
             formData={formData}
+            onRefresh={loadSchema}
             env={env}
             schema={schema}
             onDescChange={setJobDesc}

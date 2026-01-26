@@ -46,6 +46,7 @@ function TabPanel(props) {
 export function JobDetails({
   jobId,
   pluginId,
+  onRefresh,
   sessionId,
   jobDesc,
   pluginPackage,
@@ -132,6 +133,9 @@ export function JobDetails({
   useEffect(() => {
     setLocalFormData(formData);
     setIsDirty(false);
+    if (tabIndex !== 0) {
+      setTabIndex(0);
+    }
   }, [formData]);
 
   if (!schema) {
@@ -318,6 +322,7 @@ export function JobDetails({
           {schema.keyword && (
             <TabPanel value={tabIndex} index={3}>
               <SignalsLogsViewer
+                setError={setError}
                 jobId={jobId}
                 description={jobDesc}
                 keyword={schema.keyword}
@@ -329,6 +334,7 @@ export function JobDetails({
             <TabPanel value={tabIndex} index={4}>
               <UserPluginCode
                 pluginPackage={pluginPackage}
+                onRefresh={onRefresh}
                 formData={localFormData}
                 setResult={setResult}
                 setError={setError}
