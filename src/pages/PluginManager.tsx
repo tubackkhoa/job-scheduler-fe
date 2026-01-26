@@ -254,7 +254,6 @@ export default function PluginManager({ setLoading, setError }) {
               ctx={window.ctx}
               sessionId={sessionId}
               pluginId={pluginId}
-              onSessionChange={setSessionId}
               onReloadPlugin={() => loadSchema(pluginId, sessionId, jobId)}
               onCreatePlugin={() => setCreatePluginModalOpen(true)}
               isLoading={submitting}
