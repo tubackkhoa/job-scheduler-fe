@@ -349,6 +349,7 @@ const SignalGroupRow = ({ group }: { group: ResultGroup }) => {
 export default function SignalsLogsViewer({
   jobId = 0,
   description,
+  setError,
   keyword,
   limit = 2,
   signals: providedSignals,

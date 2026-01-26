@@ -63,27 +63,25 @@ export const ConfigForm = ({
         }
       }}
     >
-      {formData && (
-        <ErrorBoundary>
-          <Form
-            extraErrors={extraErrors}
-            schema={localSchema}
-            uiSchema={uiSchema}
-            formContext={{ formData, pluginPackage, env, sessionId }}
-            idPrefix={localSchema.pluginId ?? pluginId}
-            idSeparator="."
-            fields={fields}
-            widgets={widgets}
-            formData={formData}
-            validator={validator}
-            onChange={handleChange}
-            liveValidate={false}
-            templates={{
-              ObjectFieldTemplate
-            }}
-          />
-        </ErrorBoundary>
-      )}
+      <ErrorBoundary>
+        <Form
+          extraErrors={extraErrors}
+          schema={localSchema}
+          uiSchema={uiSchema}
+          formContext={{ formData, pluginPackage, env, sessionId }}
+          idPrefix={localSchema.pluginId ?? pluginId}
+          idSeparator="."
+          fields={fields}
+          widgets={widgets}
+          formData={formData}
+          validator={validator}
+          onChange={handleChange}
+          liveValidate={false}
+          templates={{
+            ObjectFieldTemplate
+          }}
+        />
+      </ErrorBoundary>
     </Box>
   );
 };

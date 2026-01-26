@@ -9,7 +9,14 @@ import { Paper, Stack, Typography } from '@mui/material';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { useEffect, useState } from 'react';
 
-export default ({ pluginPackage, formData, env, setResult, setError }) => {
+export default ({
+  pluginPackage,
+  formData,
+  env,
+  setResult,
+  setError,
+  onRefresh
+}) => {
   const [isDirty, setIsDirty] = useState(false);
   const [code, setCode] = useState<PluginUserCodeResponse>({
     form: '',
@@ -28,6 +35,7 @@ export default ({ pluginPackage, formData, env, setResult, setError }) => {
       const result = await api.updateTemplatePluginCode(pluginPackage, code);
       setResult(result);
       setIsDirty(false);
+      onRefresh();
     } catch (ex) {
       setError(ex.message);
     }

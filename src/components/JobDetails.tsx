@@ -46,6 +46,7 @@ function TabPanel(props) {
 export function JobDetails({
   jobId,
   pluginId,
+  onRefresh,
   sessionId,
   jobDesc,
   pluginPackage,
@@ -64,7 +65,7 @@ export function JobDetails({
   isSubmitting,
 }) {
   const [tabIndex, setTabIndex] = useState(0);
-  const [localFormData, setLocalFormData] = useState(formData);
+  const [localFormData, setLocalFormData] = useState();
   const [isDirty, setIsDirty] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({
     open: false,
@@ -132,6 +133,9 @@ export function JobDetails({
   useEffect(() => {
     setLocalFormData(formData);
     setIsDirty(false);
+    if (tabIndex !== 0) {
+      setTabIndex(0);
+    }
   }, [formData]);
 
   if (!schema) {
@@ -289,18 +293,20 @@ export function JobDetails({
 
           {/* Tab panels */}
           <TabPanel value={tabIndex} index={0}>
-            <ConfigForm
-              pluginId={pluginId}
-              pluginPackage={pluginPackage}
-              schema={schema}
-              sessionId={sessionId}
-              env={env}
-              formData={localFormData}
-              onChange={(data) => {
-                setIsDirty(true);
-                setLocalFormData(data);
-              }}
-            />
+            {localFormData && (
+              <ConfigForm
+                pluginId={pluginId}
+                pluginPackage={pluginPackage}
+                schema={schema}
+                sessionId={sessionId}
+                env={env}
+                formData={localFormData}
+                onChange={(data) => {
+                  setIsDirty(true);
+                  setLocalFormData(data);
+                }}
+              />
+            )}
           </TabPanel>
 
           <TabPanel value={tabIndex} index={1}>
@@ -318,6 +324,7 @@ export function JobDetails({
           {schema.keyword && (
             <TabPanel value={tabIndex} index={3}>
               <SignalsLogsViewer
+                setError={setError}
                 jobId={jobId}
                 description={jobDesc}
                 keyword={schema.keyword}
@@ -329,6 +336,7 @@ export function JobDetails({
             <TabPanel value={tabIndex} index={4}>
               <UserPluginCode
                 pluginPackage={pluginPackage}
+                onRefresh={onRefresh}
                 formData={localFormData}
                 setResult={setResult}
                 setError={setError}
