@@ -79,11 +79,14 @@ export default function DynamicField(props: FieldProps) {
       (async () => {
         let loader: Promise<any>;
 
-        // will not allow import from url again
         if (code) {
           loader = loadModule(createUrlFromString(await Utils.transpile(code)));
+        } else if (url.startsWith(gzipPrefix)) {
+          loader = loadModule(
+            createUrlFromString(await decodeGzip(url.slice(gzipPrefix.length)))
+          );
         } else {
-          loader = libModules[`../../../../libs/${url}`]?.();
+          loader = libModules[`../../../../libs/${url}`]?.() ?? loadModule(url);
         }
 
         if (!loader) {

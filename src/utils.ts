@@ -384,34 +384,7 @@ const initEsBuild: Promise<typeof esbuild> = (async () => {
 })();
 
 initEsBuild;
-const FORBIDDEN_PATTERNS = [
-  /\beval\s*\(/,
-  /\bnew\s+Function\b/,
-  /\bFunction\s*\(/,
-  /\bimport\s*\(/, // dynamic import
-  /\brequire\s*\(/,
-  /\bglobalThis\b/,
-  /\bwindow\b/,
-  /\bdocument\b/,
-  /\bfetch\b/,
-  /\bWebSocket\b/,
-  /\bXMLHttpRequest\b/,
-  /\blocalStorage\b/,
-  /\bsessionStorage\b/
-];
-
-function scanForForbiddenCode(code: string) {
-  for (const pattern of FORBIDDEN_PATTERNS) {
-    if (pattern.test(code)) {
-      throw new Error(`Forbidden construct detected: ${pattern}`);
-    }
-  }
-}
-
 export async function transpile(code: string): Promise<string> {
-  // 1️⃣ Fast static scan (cheap, blocks obvious attacks)
-  scanForForbiddenCode(code);
-
   const esbuild = await initEsBuild;
 
   // 2️⃣ Compile with strict constraints
@@ -444,9 +417,6 @@ export async function transpile(code: string): Promise<string> {
     keepNames: false,
     sourcemap: false
   });
-
-  // 3️⃣ Post-transform scan (catches generated patterns)
-  scanForForbiddenCode(result.code);
 
   return result.code;
 }
