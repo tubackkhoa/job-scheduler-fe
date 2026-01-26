@@ -175,9 +175,16 @@ export default function App() {
       window.ctx = { user: { ...user, roles: new Set(user.roles) } };
       setEnv(await getEnvDoc(globals));
       setSchema(fetchedSchema);
-      setJobs(jobs);
-      const newJobId = currentJobId ?? jobs[0]?.id ?? 0;
-      handleChangeJob(newJobId, jobs);
+      const sortedJobs = jobs.sort((a, b) => {
+        if(a?.config?.model_version && b?.config?.model_version) {
+          return Number(a.config.model_version) - Number(b.config.model_version);
+        }
+       
+        return Number(a.id) - Number(b.id);
+      });
+      setJobs(sortedJobs);
+      const newJobId = currentJobId ?? sortedJobs[0]?.id ?? 0;
+      handleChangeJob(newJobId, sortedJobs);
     } catch (err) {
       setError(err.message);
     } finally {
