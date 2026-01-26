@@ -105,9 +105,14 @@ export function ContextPanel({
             }}
             isOptionEqualToValue={(opt, val) => opt.id === val.id}
             onChange={(event, value) => {
-              const valueId = typeof value === 'string' ? value : value?.id;
+              const isUserPlugin = typeof value === 'string';
+              const valueId = isUserPlugin ? value : value?.id;
               if (valueId) {
-                navigate(`/plugins/${valueId}`);
+                navigate(
+                  isUserPlugin
+                    ? `/plugins/${valueId}`
+                    : `/plugins/${valueId}/sessions/${sessionId}`
+                );
               }
             }}
             renderInput={(params) => (

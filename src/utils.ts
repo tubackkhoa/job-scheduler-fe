@@ -1,22 +1,26 @@
-import json5 from "json5";
-import { PyodideAPI } from "pyodide";
-import { linter, Diagnostic } from "@codemirror/lint";
-import { syntaxTree } from "@codemirror/language";
-import _ from "lodash";
-import api from "./api";
-import { LanguageSupport, LRLanguage } from "@codemirror/language";
-import { parseMixed } from "@lezer/common";
-import { javascript } from "@codemirror/lang-javascript";
-import { yamlLanguage } from "@codemirror/lang-yaml";
-import jinja from "./jinja.py?raw";
-import { JinjaCompletionConfig } from "@codemirror/lang-jinja";
-import * as esbuild from "esbuild-wasm";
-import wasmUrl from "esbuild-wasm/esbuild.wasm?url";
+import json5 from 'json5';
+import { PyodideAPI } from 'pyodide';
+import { linter, Diagnostic } from '@codemirror/lint';
+import { syntaxTree } from '@codemirror/language';
+import _ from 'lodash';
+import api from './api';
+import { LanguageSupport, LRLanguage } from '@codemirror/language';
+import { parseMixed } from '@lezer/common';
+import { javascript } from '@codemirror/lang-javascript';
+import { yamlLanguage } from '@codemirror/lang-yaml';
+import jinja from './jinja.py?raw';
+import { JinjaCompletionConfig } from '@codemirror/lang-jinja';
+import * as esbuild from 'esbuild-wasm';
+import wasmUrl from 'esbuild-wasm/esbuild.wasm?url';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 export const scrollToTop = () => {
   window.scrollTo({
     top: 0,
-    behavior: "smooth",
+    behavior: 'smooth'
   });
 };
 
@@ -32,22 +36,22 @@ export const getCodeHash = (str: string) => {
 // Helper to resolve $ref schema if present
 const resolveRef = (schema: any, ref: string) => {
   if (!schema.$defs || !ref) return null;
-  const defKey = ref.replace("#/$defs/", "");
+  const defKey = ref.replace('#/$defs/', '');
   return schema.$defs[defKey] ?? null;
 };
 
 export const convertByType = (value: string, field: any) => {
   switch (typeof field) {
-    case "number":
+    case 'number':
       return Number(value);
 
-    case "boolean":
-      return value === "true";
+    case 'boolean':
+      return value === 'true';
 
-    case "bigint":
+    case 'bigint':
       return BigInt(value);
 
-    case "object":
+    case 'object':
       return json5.parse(value);
 
     default:
@@ -59,7 +63,7 @@ export const buildUiSchemaWithExpr = async (
   packageName: string,
   context: Record<string, any>,
   schema: any,
-  changedFieldId: string,
+  changedFieldId: string
 ): Promise<[any, string[]]> => {
   if (!schema) return schema;
 
@@ -71,21 +75,21 @@ export const buildUiSchemaWithExpr = async (
     const { node } = stack.pop()!;
 
     for (const [sKey, sValue] of Object.entries(node)) {
-      if (sKey.startsWith("ui:expr")) {
+      if (sKey.startsWith('ui:expr')) {
         const [expr, deps] =
-          typeof sValue === "string"
+          typeof sValue === 'string'
             ? [sValue]
             : (sValue as [string, string[]]);
 
         // only render if deps changed, or first time when no changedFieldId
         if (!deps || !changedFieldId || deps.includes(changedFieldId)) {
-          const subKey = sKey === "ui:expr" ? "" : sKey.replace("ui:expr:", "");
+          const subKey = sKey === 'ui:expr' ? '' : sKey.replace('ui:expr:', '');
           try {
             const extraOptions = await jinjaEvaluate(
               packageName,
               expr,
               context,
-              !!subKey,
+              !!subKey
             );
 
             if (subKey) {
@@ -100,7 +104,7 @@ export const buildUiSchemaWithExpr = async (
       }
     }
 
-    if (node.type === "object" && node.properties) {
+    if (node.type === 'object' && node.properties) {
       for (const child of Object.values(node.properties)) {
         stack.push({ node: child });
       }
@@ -120,7 +124,7 @@ export const extractUiSchema = (schema: any): Record<string, any> => {
   if (!schema?.properties) return {};
 
   const uiSchema: Record<string, any> = {
-    "ui:submitButtonOptions": { norender: true },
+    'ui:submitButtonOptions': { norender: true }
   };
 
   const stack: Array<{
@@ -135,18 +139,18 @@ export const extractUiSchema = (schema: any): Record<string, any> => {
       const uiEntry: Record<string, any> = {};
 
       for (const [uiKey, uiValue] of Object.entries(prop)) {
-        if (uiKey.startsWith("ui:") && !uiKey.startsWith("ui:expr")) {
+        if (uiKey.startsWith('ui:') && !uiKey.startsWith('ui:expr')) {
           uiEntry[uiKey] = uiValue;
         }
       }
 
       let nestedProps: Record<string, any> | null = null;
 
-      if (prop.type === "object" && prop.properties) {
+      if (prop.type === 'object' && prop.properties) {
         nestedProps = prop.properties;
       } else if (prop.$ref) {
         const defSchema = resolveRef(schema, prop.$ref);
-        if (defSchema?.type === "object" && defSchema.properties) {
+        if (defSchema?.type === 'object' && defSchema.properties) {
           nestedProps = defSchema.properties;
         }
       }
@@ -167,38 +171,38 @@ export const extractUiSchema = (schema: any): Record<string, any> => {
  * Theme
  * ================================ */
 
-export const getSystemTheme = (): "dark" | "light" =>
-  window.matchMedia?.("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+export const getSystemTheme = (): 'dark' | 'light' =>
+  window.matchMedia?.('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light';
 
 /* ================================
  * Message Formatting
  * ================================ */
 
 export const formatMessage = (message: any): any => {
-  if (typeof message !== "string") return message;
+  if (typeof message !== 'string') return message;
 
   return message.replace(
     /\[?datetime\.datetime\(([^)]+)\)/g,
     (match, dtStr) => {
       try {
-        const parts = dtStr.split(", ").map(Number);
+        const parts = dtStr.split(', ').map(Number);
         const [year, month, day, hour, minute, second] = parts;
         const date = new Date(year, month - 1, day, hour, minute, second || 0);
         return date.toLocaleString(undefined, {
-          year: "numeric",
-          month: "numeric",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: true,
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true
         });
       } catch {
         return match;
       }
-    },
+    }
   );
 };
 
@@ -207,12 +211,12 @@ export const formatMessage = (message: any): any => {
  * ================================ */
 
 const LEVEL_COLOR_MAP: Record<string, string> = {
-  CRITICAL: "error.dark",
-  ERROR: "error.main",
-  WARNING: "warning.main",
-  INFO: "info.main",
-  DEBUG: "success.main",
-  NOTSET: "primary.main",
+  CRITICAL: 'error.dark',
+  ERROR: 'error.main',
+  WARNING: 'warning.main',
+  INFO: 'info.main',
+  DEBUG: 'success.main',
+  NOTSET: 'primary.main'
 };
 
 export const getLevelColor = (level: string): string =>
@@ -222,24 +226,24 @@ const applyFunction = (name: string) => {
   return (view: any, completion: any, from: number, to: number) => {
     view.dispatch({
       changes: { from, to, insert: `${name}()` },
-      selection: { anchor: from + name.length + 1 },
+      selection: { anchor: from + name.length + 1 }
     });
   };
 };
 
-export const yamlWithEmbeddedJS = (keyNames: string[] = ["code"]) => {
+export const yamlWithEmbeddedJS = (keyNames: string[] = ['code']) => {
   const jsParser = javascript({ jsx: true, typescript: true }).language.parser;
 
   // 1. Reconfigure the base YAML parser with the mixed-language logic
   const mixedYamlParser = yamlLanguage.parser.configure({
     wrap: parseMixed((node, input) => {
       // Look for YAML values (Literal or BlockLiteral)
-      if (node.name === "Literal" || node.name === "BlockLiteral") {
+      if (node.name === 'Literal' || node.name === 'BlockLiteral') {
         const parent = node.node.parent;
 
         // Ensure the value belongs to a 'Pair'
-        if (parent?.name === "Pair") {
-          const keyNode = parent.getChild("Key");
+        if (parent?.name === 'Pair') {
+          const keyNode = parent.getChild('Key');
           if (keyNode) {
             const keyName = input.read(keyNode.from, keyNode.to).trim();
             // Match the specific key "code:"
@@ -250,14 +254,14 @@ export const yamlWithEmbeddedJS = (keyNames: string[] = ["code"]) => {
         }
       }
       return null;
-    }),
+    })
   });
 
   // 2. Use the STATIC LRLanguage.define method to create the new language
   const mixedYamlLanguage = LRLanguage.define({
-    name: "yaml-mixed",
+    name: 'yaml-mixed',
     parser: mixedYamlParser,
-    languageData: yamlLanguage.data, // Inherit YAML metadata (comments, etc.)
+    languageData: yamlLanguage.data // Inherit YAML metadata (comments, etc.)
   });
 
   return new LanguageSupport(mixedYamlLanguage);
@@ -272,47 +276,47 @@ export class JinjaCompletionBuilder {
     return Object.entries(globals).map(([label, meta]) => ({
       label,
       type: meta.type,
-      detail: "global",
-      section: "Globals",
-      info: `${meta.signature}\n\n${meta.doc ?? ""}`,
-      apply: meta.type === "function" ? applyFunction(label) : label,
+      detail: 'global',
+      section: 'Globals',
+      info: `${meta.signature}\n\n${meta.doc ?? ''}`,
+      apply: meta.type === 'function' ? applyFunction(label) : label
     }));
   }
 
   static buildFilters(filters: Record<string, any> = {}) {
     return Object.entries(filters).map(([label, meta]) => ({
       label,
-      type: "function",
-      detail: "filter",
-      section: "Filters",
-      info: `${meta.signature}\n\n${meta.doc ?? ""}`,
+      type: 'function',
+      detail: 'filter',
+      section: 'Filters',
+      info: `${meta.signature}\n\n${meta.doc ?? ''}`
     }));
   }
 
   static buildTests(tests: string[] = []) {
     return tests.map((name) => ({
       label: name,
-      type: "keyword",
-      detail: "test",
-      section: "Tests",
+      type: 'keyword',
+      detail: 'test',
+      section: 'Tests'
     }));
   }
 
   static buildTags(tags: string[] = []) {
     return tags.map((name) => ({
       label: name,
-      type: "keyword",
-      detail: "tag",
-      section: "Tags",
+      type: 'keyword',
+      detail: 'tag',
+      section: 'Tags'
     }));
   }
 
   static buildTopLevelVariables(params: Record<string, any> = {}) {
     return Object.keys(params).map((key) => ({
       label: key,
-      type: "variable",
-      detail: "param",
-      section: "Variables",
+      type: 'variable',
+      detail: 'param',
+      section: 'Variables'
     }));
   }
 
@@ -323,27 +327,27 @@ export class JinjaCompletionBuilder {
 
       return Object.keys(value).map((key) => ({
         label: key,
-        type: "property",
-        detail: "param",
-        section: "Properties",
+        type: 'property',
+        detail: 'param',
+        section: 'Properties'
       }));
     };
   }
 
   static build(
     params: Record<string, any> = {},
-    envDoc: EnvDoc,
+    envDoc: EnvDoc
   ): JinjaCompletionConfig {
     return {
       variables: [
         ...this.buildTopLevelVariables(params),
         ...this.buildGlobals(envDoc.globals),
-        ...this.buildTests(envDoc.tests),
+        ...this.buildTests(envDoc.tests)
       ],
       // @ts-ignore : this is custom patched
       filters: this.buildFilters(envDoc.filters),
       tags: this.buildTags(envDoc.tags),
-      properties: this.buildProperties(params),
+      properties: this.buildProperties(params)
     };
   }
 }
@@ -355,11 +359,11 @@ type JinjaSymbols = {
 
 export const jinjaLinter = (
   params: Record<string, any>,
-  symbols: JinjaSymbols,
+  symbols: JinjaSymbols
 ) => {
   return linter((view) => {
     const diagnostics: Diagnostic[] = [];
-    const definitions = new Set<string>(["this"]);
+    const definitions = new Set<string>(['this']);
     const cursor = syntaxTree(view.state).cursor();
 
     do {
@@ -367,18 +371,18 @@ export const jinjaLinter = (
       const text = view.state.doc.sliceString(node.from, node.to);
 
       switch (node.name) {
-        case "Definition":
+        case 'Definition':
           definitions.add(text);
           break;
 
-        case "VariableName":
-          if (node.parent?.name === "NamedArgument") {
+        case 'VariableName':
+          if (node.parent?.name === 'NamedArgument') {
             // if left key and value is False, True, None then return
             if (
               node.cursor().nextSibling() ||
-              text === "False" ||
-              text === "True" ||
-              text === "None"
+              text === 'False' ||
+              text === 'True' ||
+              text === 'None'
             ) {
               break;
             }
@@ -392,19 +396,19 @@ export const jinjaLinter = (
             diagnostics.push({
               from: node.from,
               to: node.to,
-              severity: "warning",
-              message: `${node.name} "${text}" is not defined`,
+              severity: 'warning',
+              message: `${node.name} "${text}" is not defined`
             });
           }
           break;
 
-        case "FilterName":
+        case 'FilterName':
           if (!symbols.filters[text]) {
             diagnostics.push({
               from: node.from,
               to: node.to,
-              severity: "warning",
-              message: `${node.name} "${text}" is not defined`,
+              severity: 'warning',
+              message: `${node.name} "${text}" is not defined`
             });
           }
           break;
@@ -418,9 +422,9 @@ export const jinjaLinter = (
 const initEsBuild: Promise<typeof esbuild> = (async () => {
   await esbuild.initialize({
     wasmURL: wasmUrl,
-    worker: true,
+    worker: true
   });
-  console.log("ESBuild initialized");
+  console.log('ESBuild initialized');
   return esbuild;
 })();
 
@@ -430,15 +434,15 @@ export async function transpile(code: string): Promise<string> {
 
   // 2️⃣ Compile with strict constraints
   const result = await esbuild.transform(code, {
-    loader: "tsx",
-    format: "esm",
-    platform: "browser",
-    target: "es2020",
+    loader: 'tsx',
+    format: 'esm',
+    platform: 'browser',
+    target: 'es2020',
 
     // Lock down JSX
-    jsx: "transform",
-    jsxFactory: "React.createElement",
-    jsxFragment: "React.Fragment",
+    jsx: 'transform',
+    jsxFactory: 'React.createElement',
+    jsxFragment: 'React.Fragment',
 
     // Reduce attack surface
     minify: true,
@@ -446,19 +450,19 @@ export async function transpile(code: string): Promise<string> {
 
     // Prevent sneaky globals, just avoid by mistake
     define: {
-      eval: "undefined",
-      Function: "undefined",
-      window: "undefined",
-      document: "undefined",
-      globalThis: "undefined",
-      fetch: "undefined",
-      WebSocket: "undefined",
-      XMLHttpRequest: "undefined",
+      eval: 'undefined',
+      Function: 'undefined',
+      window: 'undefined',
+      document: 'undefined',
+      globalThis: 'undefined',
+      fetch: 'undefined',
+      WebSocket: 'undefined',
+      XMLHttpRequest: 'undefined'
     },
 
     // Make output deterministic
     keepNames: false,
-    sourcemap: false,
+    sourcemap: false
   });
 
   return result.code;
@@ -468,9 +472,9 @@ const initPyodide: Promise<PyodideAPI> = (async () => {
   // @ts-ignore
   const pyodide: PyodideAPI = await loadPyodide();
   // Ensure Jinja2 is available
-  await pyodide.loadPackage("jinja2");
+  await pyodide.loadPackage('jinja2');
   await pyodide.runPythonAsync(jinja);
-  console.log("Pyodide initialized");
+  console.log('Pyodide initialized');
   return pyodide;
 })();
 
@@ -485,7 +489,7 @@ type EnvDoc = {
 
 const envDocPromise: Promise<EnvDoc> = (async () => {
   const pyodide = await initPyodide;
-  const envDoc = JSON.parse(pyodide.globals.get("doc_json"));
+  const envDoc = JSON.parse(pyodide.globals.get('doc_json'));
   return Object.freeze(envDoc);
 })();
 
@@ -498,16 +502,16 @@ const extractUndeclaredVariables = async (
   tpl: string,
   data: {
     [key: string]: any;
-  },
+  }
 ): Promise<string[] | string> => {
   const pyodide = await initPyodide;
-  const renderFn = pyodide.globals.get("render");
+  const renderFn = pyodide.globals.get('render');
   const params = renderFn(
     tpl,
     pyodide.toPy(data),
-    pyodide.toPy(window.ctx ?? {}),
+    pyodide.toPy(window.ctx ?? {})
   );
-  return typeof params === "string" ? params : Array.from(params.toJs());
+  return typeof params === 'string' ? params : Array.from(params.toJs());
 };
 
 export const buildJinjaContext = (
@@ -515,13 +519,13 @@ export const buildJinjaContext = (
   params: {
     [key: string]: any;
   },
-  raw: boolean = false,
+  raw: boolean = false
 ) => {
   return (
     tmpl: string,
     context: {
       [key: string]: any;
-    },
+    }
   ) => jinjaEvaluate(packageName, tmpl, { ...params, ...context }, raw);
 };
 
@@ -531,17 +535,17 @@ export const jinjaEvaluate = async (
   params: {
     [key: string]: any;
   },
-  raw = false,
+  raw = false
 ) => {
   // extract includeKeys to pass to server
   const includeKeys = await extractUndeclaredVariables(tmpl, params);
   const result =
-    typeof includeKeys === "string"
+    typeof includeKeys === 'string'
       ? includeKeys
       : await api.renderTemplate(
           packageName,
           tmpl,
-          includeKeys.includes("this") ? params : _.pick(params, includeKeys),
+          includeKeys.includes('this') ? params : _.pick(params, includeKeys)
         );
 
   if (!raw) {
@@ -558,14 +562,14 @@ export const transformSignals = (signals: Signal[]) => {
     offset: signal.id,
     matched_entry: {
       id: signal.id,
-      timestamp: new Date(signal.created_at).toLocaleString("en-GB", {
-        timeZone: "UTC",
-        dateStyle: "full",
-        timeStyle: "medium",
+      timestamp: new Date(signal.created_at).toLocaleString('en-GB', {
+        timeZone: 'UTC',
+        dateStyle: 'full',
+        timeStyle: 'medium'
       }),
-      level: "INFO",
-      message: signal.message || "",
+      level: 'INFO',
+      message: signal.message || ''
     },
-    following_entries: [],
+    following_entries: []
   }));
 };

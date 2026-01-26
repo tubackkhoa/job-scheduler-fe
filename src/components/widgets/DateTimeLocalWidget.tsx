@@ -1,8 +1,5 @@
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
 import { TextField } from '@mui/material';
-
-dayjs.extend(utc);
+import dayjs from 'dayjs';
 
 export const DateTimeLocalWidget = (props) => {
   const {
