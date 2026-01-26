@@ -6,6 +6,8 @@ import _ from 'lodash';
 import api from './api';
 import jinja from './jinja.py?raw';
 import { JinjaCompletionConfig } from '@codemirror/lang-jinja';
+import * as esbuild from 'esbuild-wasm';
+import wasmUrl from 'esbuild-wasm/esbuild.wasm?url';
 
 export const scrollToTop = () => {
   window.scrollTo({
@@ -372,6 +374,82 @@ export const jinjaLinter = (
     return diagnostics;
   });
 };
+
+const initEsBuild: Promise<typeof esbuild> = (async () => {
+  await esbuild.initialize({
+    wasmURL: wasmUrl,
+    worker: true
+  });
+  return esbuild;
+})();
+
+initEsBuild;
+const FORBIDDEN_PATTERNS = [
+  /\beval\s*\(/,
+  /\bnew\s+Function\b/,
+  /\bFunction\s*\(/,
+  /\bimport\s*\(/, // dynamic import
+  /\brequire\s*\(/,
+  /\bglobalThis\b/,
+  /\bwindow\b/,
+  /\bdocument\b/,
+  /\bfetch\b/,
+  /\bWebSocket\b/,
+  /\bXMLHttpRequest\b/,
+  /\blocalStorage\b/,
+  /\bsessionStorage\b/
+];
+
+function scanForForbiddenCode(code: string) {
+  for (const pattern of FORBIDDEN_PATTERNS) {
+    if (pattern.test(code)) {
+      throw new Error(`Forbidden construct detected: ${pattern}`);
+    }
+  }
+}
+
+export async function transpile(code: string): Promise<string> {
+  // 1️⃣ Fast static scan (cheap, blocks obvious attacks)
+  scanForForbiddenCode(code);
+
+  const esbuild = await initEsBuild;
+
+  // 2️⃣ Compile with strict constraints
+  const result = await esbuild.transform(code, {
+    loader: 'tsx',
+    format: 'esm',
+    platform: 'browser',
+    target: 'es2020',
+
+    // Lock down JSX
+    jsx: 'transform',
+    jsxFactory: 'React.createElement',
+    jsxFragment: 'React.Fragment',
+
+    // Reduce attack surface
+    minify: true,
+    treeShaking: true,
+
+    // Prevent sneaky globals
+    define: {
+      window: 'undefined',
+      document: 'undefined',
+      globalThis: 'undefined',
+      fetch: 'undefined',
+      WebSocket: 'undefined',
+      XMLHttpRequest: 'undefined'
+    },
+
+    // Make output deterministic
+    keepNames: false,
+    sourcemap: false
+  });
+
+  // 3️⃣ Post-transform scan (catches generated patterns)
+  scanForForbiddenCode(result.code);
+
+  return result.code;
+}
 
 const initPyodide: Promise<PyodideAPI> = (async () => {
   // @ts-ignore

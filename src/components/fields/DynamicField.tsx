@@ -8,6 +8,8 @@ import * as MuiIcon from '@mui/icons-material';
 import { ConfirmationDialog } from '../ConfirmationDialog';
 import { ErrorBoundary } from '../ErrorBound';
 
+window.React = React;
+
 /* ---------------- blob cache ---------------- */
 
 const blobCache = new Map<string, string>();
@@ -77,14 +79,11 @@ export default function DynamicField(props: FieldProps) {
       (async () => {
         let loader: Promise<any>;
 
+        // will not allow import from url again
         if (code) {
-          loader = loadModule(createUrlFromString(code));
-        } else if (url.startsWith(gzipPrefix)) {
-          loader = loadModule(
-            createUrlFromString(await decodeGzip(url.slice(gzipPrefix.length)))
-          );
+          loader = loadModule(createUrlFromString(await Utils.transpile(code)));
         } else {
-          loader = libModules[`../../../../libs/${url}`]?.() ?? loadModule(url);
+          loader = libModules[`../../../../libs/${url}`]?.();
         }
 
         if (!loader) {

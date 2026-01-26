@@ -81,15 +81,6 @@ export default function (
 
 ---
 
-## 📦 Bundling the Component
-
-Once the Field component is written, bundle it into a single JavaScript
-file.
-
-```bash
-node bundle.js libs/input.tsx plugins/sample_plugin/field.js --base64
-```
-
 This produces a self-contained artifact that can be embedded into your
 schema configuration.
 
@@ -123,7 +114,7 @@ dynamic: str = Field(
 ## ✅ Summary
 
 - Write a reusable React Field component
-- Bundle it into a standalone JS file
+- Bundle it into a standalone JS code
 - Inject it dynamically via `ui:field`
 - Render runtime data using Jinja-powered context
 
