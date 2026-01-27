@@ -148,7 +148,7 @@ export default function ChatBot() {
         px: { xs: 0, sm: 2 }
       }}
     >
-      <Typography variant="h4" fontWeight={700} gutterBottom>
+      <Typography variant="h5" fontWeight={700} gutterBottom>
         🧩 Plugin Generator
       </Typography>
 
