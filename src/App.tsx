@@ -1,18 +1,18 @@
-import { useState } from "react";
-import { ThemeProvider } from "@mui/material/styles";
-import { Box, Container, CssBaseline } from "@mui/material";
-import { Header } from "./components/Header";
-import { LoadingBar } from "./components/LoadingBar";
-import { ErrorAlert } from "./components/ErrorAlert";
-import { darkTheme } from "./theme";
-import { Routes, Route } from "react-router-dom";
-import PluginManager from "./pages/PluginManager";
-import NotificationsProvider from "./hooks/useNotifications/NotificationsProvider";
-import DialogsProvider from "./hooks/useDialogs/DialogsProvider";
-import Login from "./pages/Login";
-import RequireAuth from "./auth/RequireAuth";
-import Dashboard from "./pages/Dashboard";
-import ChatBot from "./pages/ChatBot";
+import { useState } from 'react';
+import { ThemeProvider } from '@mui/material/styles';
+import { Box, Container, CssBaseline } from '@mui/material';
+import { Header } from './components/Header';
+import { LoadingBar } from './components/LoadingBar';
+import { ErrorAlert } from './components/ErrorAlert';
+import { darkTheme } from './theme';
+import { Routes, Route } from 'react-router-dom';
+import PluginManager from './pages/PluginManager';
+import NotificationsProvider from './hooks/useNotifications/NotificationsProvider';
+import DialogsProvider from './hooks/useDialogs/DialogsProvider';
+import Login from './pages/Login';
+import RequireAuth from './auth/RequireAuth';
+import Dashboard from './pages/Dashboard';
+import ChatBot from './pages/ChatBot';
 
 export default function App() {
   // to show loading and error global
@@ -22,7 +22,7 @@ export default function App() {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         <LoadingBar isLoading={loading} />
 
         <Container maxWidth={false} sx={{ pb: 3, px: { xs: 2, sm: 3, md: 4 } }}>
@@ -56,7 +56,9 @@ export default function App() {
                     <Route path="sessions/:session_id" />
                     <Route path="sessions/:session_id/jobs/:job_id" />
                   </Route>
-                  <Route path="/chatbot" element={<ChatBot />} />
+                  {import.meta.env.VITE_CHATBOT_ENABLED && (
+                    <Route path="/chatbot" element={<ChatBot />} />
+                  )}
                   <Route path="*" element={<div>404 Not Found</div>} />
                 </Route>
               </Routes>
