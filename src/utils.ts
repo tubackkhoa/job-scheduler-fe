@@ -562,7 +562,7 @@ export const transformSignals = (signals: Signal[]) => {
     offset: signal.id,
     matched_entry: {
       id: signal.id,
-      timestamp: new Date(signal.created_at).toUTCString(),
+      timestamp: new Date(signal.created_at).toLocaleString(),
       level: "INFO",
       message: signal.message || "",
     },
