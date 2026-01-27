@@ -17,10 +17,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import { LanguageDescription } from '@codemirror/language';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
-import { yaml } from '@codemirror/lang-yaml';
 import { jinja } from '@codemirror/lang-jinja';
 import { json } from '@codemirror/lang-json';
 import api from '@/api';
+import { yamlWithEmbeddedJS } from '@/utils';
 
 const GENERATE_SAMPLES = [
   {
@@ -250,6 +250,7 @@ export default function ChatBot() {
               <ReactCodeMirror
                 theme="dark"
                 minHeight="200px"
+                maxHeight="100vh"
                 width="100%"
                 value={output}
                 extensions={[
@@ -257,7 +258,7 @@ export default function ChatBot() {
                     codeLanguages: [
                       LanguageDescription.of({
                         name: 'yaml',
-                        support: yaml()
+                        support: yamlWithEmbeddedJS()
                       }),
                       LanguageDescription.of({
                         name: 'jinja2',
