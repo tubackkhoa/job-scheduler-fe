@@ -119,12 +119,14 @@ export function Header() {
             Plugin Manager
           </MenuItem>
 
-          <MenuItem onClick={() => handleNavigate('/chatbot')}>
-            <ListItemIcon>
-              <ChatbotIcon fontSize="small" />
-            </ListItemIcon>
-            Chatbot
-          </MenuItem>
+          {import.meta.env.VITE_CHATBOT_ENABLED && (
+            <MenuItem onClick={() => handleNavigate('/chatbot')}>
+              <ListItemIcon>
+                <ChatbotIcon fontSize="small" />
+              </ListItemIcon>
+              Chatbot
+            </MenuItem>
+          )}
 
           <MenuItem onClick={() => logout()}>
             <ListItemIcon>
