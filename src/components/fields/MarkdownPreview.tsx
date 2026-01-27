@@ -1,6 +1,7 @@
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import json5 from 'json5';
 import MarkdownIt from 'markdown-it';
+import markdownItAttrs from 'markdown-it-attrs';
 import DOMPurify from 'dompurify';
 import { Box, useTheme } from '@mui/material';
 import { Chart } from 'chart.js/auto';
@@ -20,7 +21,7 @@ const md = new MarkdownIt({
   html: true,
   linkify: true,
   breaks: true
-});
+}).use(markdownItAttrs);
 
 const md_renderer_rules_fence = md.renderer.rules.fence.bind(md.renderer.rules);
 
