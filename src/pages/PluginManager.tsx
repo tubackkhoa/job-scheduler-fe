@@ -34,15 +34,10 @@ export default function PluginManager({ setLoading, setError }) {
   const [result, setResult] = useState<any>(null);
   const [createPluginModalOpen, setCreatePluginModalOpen] = useState(false);
 
-  const mountedRef = useRef(false);
-
   /* ----------------------------------------
    * Initial load (plugins list)
    * ------------------------------------- */
   useEffect(() => {
-    if (mountedRef.current) return;
-    mountedRef.current = true;
-
     api
       .fetchPlugins()
       .then(setPlugins)
