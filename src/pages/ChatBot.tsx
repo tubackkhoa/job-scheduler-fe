@@ -269,7 +269,7 @@ export default function ChatBot() {
                 ]}
               />
             ) : (
-              <Typography color="gray">
+              <Typography color="gray" sx={{ minHeight: 300 }}>
                 Streaming output will appear here…
               </Typography>
             )}
