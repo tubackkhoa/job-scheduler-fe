@@ -12,6 +12,7 @@ import DialogsProvider from './hooks/useDialogs/DialogsProvider';
 import Login from './pages/Login';
 import RequireAuth from './auth/RequireAuth';
 import Dashboard from './pages/Dashboard';
+import ChatBot from './pages/ChatBot';
 
 export default function App() {
   // to show loading and error global
@@ -55,6 +56,8 @@ export default function App() {
                     <Route path="sessions/:session_id" />
                     <Route path="sessions/:session_id/jobs/:job_id" />
                   </Route>
+                  <Route path="/chatbot" element={<ChatBot />} />
+                  <Route path="*" element={<div>404 Not Found</div>} />
                 </Route>
               </Routes>
             </DialogsProvider>

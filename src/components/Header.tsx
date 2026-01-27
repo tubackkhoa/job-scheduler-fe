@@ -12,6 +12,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import LogoutIcon from '@mui/icons-material/Logout';
+import ChatbotIcon from '@mui/icons-material/ChatBubbleOutline';
 
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -116,6 +117,13 @@ export function Header() {
               <ExtensionIcon fontSize="small" />
             </ListItemIcon>
             Plugin Manager
+          </MenuItem>
+
+          <MenuItem onClick={() => handleNavigate('/chatbot')}>
+            <ListItemIcon>
+              <ChatbotIcon fontSize="small" />
+            </ListItemIcon>
+            Chatbot
           </MenuItem>
 
           <MenuItem onClick={() => logout()}>
