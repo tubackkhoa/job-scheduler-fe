@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, Fragment } from 'react';
+import { useState, useEffect, useCallback, Fragment } from "react";
 import {
   Box,
   Table,
@@ -24,9 +24,9 @@ import {
   TextField,
   Button,
   Card,
-  Autocomplete
-} from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+  Autocomplete,
+} from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 import {
   KeyboardArrowDown,
   KeyboardArrowUp,
@@ -41,12 +41,12 @@ import {
   FilterList,
   Clear,
   SignalCellularAlt,
-  Edit
-} from '@mui/icons-material';
-import dayjs from 'dayjs';
-import api from '@/api';
-import SignalsLogsViewer from './SignalsLogsViewer';
-import { SESSIONS } from '@/constants/session';
+  Edit,
+} from "@mui/icons-material";
+import dayjs from "dayjs";
+import api from "@/api";
+import SignalsLogsViewer from "./SignalsLogsViewer";
+import { SESSIONS } from "@/constants/session";
 
 // --- Utils ---
 
@@ -65,26 +65,30 @@ function useDebounce<T>(value: T, delay: number): T {
 
 function JobRowComponent({
   job,
-  onToggle
+  onToggle,
+  pluginName,
+  env,
 }: {
   job: JobStatsItem;
   onToggle: (active: boolean) => void;
+  pluginName?: string;
+  env?: string;
 }) {
   const [open, setOpen] = useState(false);
 
   // Parse config if it is a string, otherwise use as is
   const configObj =
-    typeof job.config === 'string' ? JSON.parse(job.config) : job.config;
+    typeof job.config === "string" ? JSON.parse(job.config) : job.config;
 
   return (
     <Fragment>
       <TableRow
         hover
         sx={{
-          cursor: 'pointer',
-          '& > *': { borderBottom: 'unset' },
-          bgcolor: open ? 'rgba(99, 102, 241, 0.05)' : 'transparent',
-          transition: 'background-color 0.2s'
+          cursor: "pointer",
+          "& > *": { borderBottom: "unset" },
+          bgcolor: open ? "rgba(99, 102, 241, 0.05)" : "transparent",
+          transition: "background-color 0.2s",
         }}
         onClick={() => setOpen(!open)}
       >
@@ -96,7 +100,7 @@ function JobRowComponent({
         <TableCell>
           <Stack spacing={0.5}>
             <Typography variant="body2" fontWeight={600}>
-              {job.description || 'Untitled job'}
+              {job.description || "Untitled job"}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               #{job.id}
@@ -111,13 +115,13 @@ function JobRowComponent({
                   sx={{
                     width: 8,
                     height: 8,
-                    borderRadius: '50%',
-                    bgcolor: 'success.light',
-                    animation: 'pulse 2s infinite',
-                    '@keyframes pulse': {
-                      '0%, 100%': { opacity: 1 },
-                      '50%': { opacity: 0.5 }
-                    }
+                    borderRadius: "50%",
+                    bgcolor: "success.light",
+                    animation: "pulse 2s infinite",
+                    "@keyframes pulse": {
+                      "0%, 100%": { opacity: 1 },
+                      "50%": { opacity: 0.5 },
+                    },
                   }}
                 />
               ) : (
@@ -125,47 +129,77 @@ function JobRowComponent({
                   sx={{
                     width: 8,
                     height: 8,
-                    borderRadius: '50%',
-                    bgcolor: 'text.disabled'
+                    borderRadius: "50%",
+                    bgcolor: "text.disabled",
                   }}
                 />
               )
             }
-            label={job.active ? 'Active' : 'Paused'}
+            label={job.active ? "Active" : "Paused"}
             size="small"
-            color={job.active ? 'success' : 'default'}
-            variant={job.active ? 'filled' : 'outlined'}
+            color={job.active ? "success" : "default"}
+            variant={job.active ? "filled" : "outlined"}
           />
         </TableCell>
         <TableCell>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Memory sx={{ fontSize: 16, color: 'text.secondary' }} />
+            <Memory sx={{ fontSize: 16, color: "text.secondary" }} />
             <Typography variant="body2">
-              {(configObj as any)?.model_key ||
-                (job.config as any)?.model_key ||
-                '-'}
+              {(configObj as any)?.model_key || (job as any)?.model_key || "-"}
             </Typography>
           </Stack>
         </TableCell>
         <TableCell>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Storage sx={{ fontSize: 16, color: 'text.secondary' }} />
-            <Tooltip title={job.sql_version?.description || ''}>
+            <Storage sx={{ fontSize: 16, color: "text.secondary" }} />
+            <Tooltip title={job.sql_version?.name || ""}>
               <Typography variant="body2">
-                {job.sql_version?.name || '-'}
+                {job.sql_version?.name || "-"}
               </Typography>
             </Tooltip>
           </Stack>
         </TableCell>
+
+        <TableCell sx={{ maxWidth: 250 }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            sx={{ minWidth: 0 }}
+          >
+            <Storage sx={{ fontSize: 16, color: "text.secondary" }} />
+            <Tooltip title={pluginName}>
+              <Typography
+                variant="body2"
+                sx={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {pluginName || "-"}
+              </Typography>
+            </Tooltip>
+          </Stack>
+        </TableCell>
+
+        <TableCell>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Storage sx={{ fontSize: 16, color: "text.secondary" }} />
+            <Tooltip title={env}>
+              <Typography variant="body2">{env}</Typography>
+            </Tooltip>
+          </Stack>
+        </TableCell>
+
         <TableCell>
           <Tooltip title="Last Signal">
             <Stack direction="row" spacing={1} alignItems="center">
-              <AccessTime sx={{ fontSize: 16, color: 'text.secondary' }} />
+              <AccessTime sx={{ fontSize: 16, color: "text.secondary" }} />
               <Typography variant="body2">
                 {job.last_signal
-                  ? dayjs.utc(job.last_signal).format('DD:MM:YY HH:mm:ss') +
-                    ' UTC'
-                  : '-'}
+                  ? dayjs(job.last_signal).format("DD:MM:YYYY HH:mm:ss")
+                  : "-"}
               </Typography>
             </Stack>
           </Tooltip>
@@ -193,7 +227,7 @@ function JobRowComponent({
 
       {/* Expanded content */}
       <TableRow>
-        <TableCell colSpan={8} sx={{ py: 0, bgcolor: 'rgba(0,0,0,0.2)' }}>
+        <TableCell colSpan={8} sx={{ py: 0, bgcolor: "rgba(0,0,0,0.2)" }}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ py: 3, px: 2 }}>
               <Stack direction="column" spacing={3}>
@@ -206,7 +240,7 @@ function JobRowComponent({
                     sx={{ mb: 2 }}
                   >
                     <SignalCellularAlt
-                      sx={{ fontSize: 18, color: 'secondary.main' }}
+                      sx={{ fontSize: 18, color: "secondary.main" }}
                     />
                     <Typography variant="subtitle2" fontWeight={600}>
                       Latest Signals
@@ -215,11 +249,11 @@ function JobRowComponent({
                   <Paper
                     variant="outlined"
                     sx={{
-                      bgcolor: 'rgba(0, 0, 0, 0.3)',
+                      bgcolor: "rgba(0, 0, 0, 0.3)",
                       maxHeight: 400,
-                      overflow: 'hidden',
-                      display: 'flex',
-                      flexDirection: 'column'
+                      overflow: "hidden",
+                      display: "flex",
+                      flexDirection: "column",
                     }}
                   >
                     <SignalsLogsViewer
@@ -228,10 +262,10 @@ function JobRowComponent({
                       limit={1}
                       hideHeader
                       sx={{
-                        height: 'auto',
-                        maxHeight: '100%',
-                        bgcolor: 'transparent',
-                        boxShadow: 'none'
+                        height: "auto",
+                        maxHeight: "100%",
+                        bgcolor: "transparent",
+                        boxShadow: "none",
                       }}
                     />
                   </Paper>
@@ -258,17 +292,17 @@ export default function JobStatsTable() {
   const [rowsPerPage, setRowsPerPage] = useState(20);
 
   // Filter State
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
   const debouncedSearchText = useDebounce(searchText, 500);
 
-  const [activeFilter, setActiveFilter] = useState<boolean | 'all'>('all');
-  const [selectedPluginId, setSelectedPluginId] = useState<number | 'all'>(
-    'all'
+  const [activeFilter, setActiveFilter] = useState<boolean | "all">("all");
+  const [selectedPluginId, setSelectedPluginId] = useState<number | "all">(
+    "all",
   );
-  const [selectedSqlVersion, setSelectedSqlVersion] = useState<number | 'all'>(
-    'all'
+  const [selectedSqlVersion, setSelectedSqlVersion] = useState<number | "all">(
+    "all",
   );
-  const [selectedSession, setSelectedSession] = useState<number | 'all'>('all');
+  const [selectedSession, setSelectedSession] = useState<number | "all">("all");
 
   // Metadata State
   const [sqlVersions, setSqlVersions] = useState<SqlVersion[]>([]);
@@ -291,18 +325,18 @@ export default function JobStatsTable() {
         limit: rowsPerPage,
         offset: page * rowsPerPage,
         search_text: debouncedSearchText || undefined,
-        active: activeFilter === 'all' ? undefined : (activeFilter as boolean),
+        active: activeFilter === "all" ? undefined : (activeFilter as boolean),
         plugin_id:
-          selectedPluginId === 'all' ? undefined : [selectedPluginId as number],
+          selectedPluginId === "all" ? undefined : [selectedPluginId as number],
         sql_id:
-          selectedSqlVersion === 'all'
+          selectedSqlVersion === "all"
             ? undefined
             : [selectedSqlVersion as number],
         session_id:
-          selectedSession === 'all' ? undefined : [selectedSession as number],
+          selectedSession === "all" ? undefined : [selectedSession as number],
         include_signals: true, // Always fetch signals to populate the expanded view
-        sort: 'desc',
-        order_by: 'id'
+        sort: "desc",
+        order_by: "id",
       });
       setRows(res.items);
       setTotal(res.total);
@@ -318,7 +352,7 @@ export default function JobStatsTable() {
     activeFilter,
     selectedPluginId,
     selectedSqlVersion,
-    selectedSession
+    selectedSession,
   ]);
 
   useEffect(() => {
@@ -331,11 +365,11 @@ export default function JobStatsTable() {
       // Optimistic update
       setRows((prev) =>
         prev.map((job) =>
-          job.id === id ? { ...job, active: active ? 1 : 0 } : job
-        )
+          job.id === id ? { ...job, active: active ? 1 : 0 } : job,
+        ),
       );
     } catch (err) {
-      console.error('Failed to toggle job', err);
+      console.error("Failed to toggle job", err);
       fetchData();
     }
   };
@@ -349,10 +383,10 @@ export default function JobStatsTable() {
   const endRow = Math.min((page + 1) * rowsPerPage, total);
 
   return (
-    <Card sx={{ bgcolor: 'background.paper', borderRadius: 2 }}>
+    <Card sx={{ bgcolor: "background.paper", borderRadius: 2 }}>
       {/* Search & Filter Bar */}
       <Box
-        sx={{ p: { xs: 1.5, sm: 2 }, borderBottom: 1, borderColor: 'divider' }}
+        sx={{ p: { xs: 1.5, sm: 2 }, borderBottom: 1, borderColor: "divider" }}
       >
         <Stack spacing={2}>
           {/* Search */}
@@ -365,20 +399,20 @@ export default function JobStatsTable() {
             slotProps={{
               input: {
                 startAdornment: <Search color="action" sx={{ mr: 1 }} />,
-                sx: { borderRadius: 2, bgcolor: 'background.default' }
-              }
+                sx: { borderRadius: 2, bgcolor: "background.default" },
+              },
             }}
             size="medium"
           />
 
           {/* Filters */}
           <Stack
-            direction={{ xs: 'column', md: 'row' }}
+            direction={{ xs: "column", md: "row" }}
             spacing={2}
-            alignItems={{ xs: 'stretch', md: 'center' }}
+            alignItems={{ xs: "stretch", md: "center" }}
           >
             {/* Filters label */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <FilterList fontSize="small" color="action" />
               <Typography
                 variant="body2"
@@ -391,9 +425,9 @@ export default function JobStatsTable() {
 
             <Autocomplete
               options={plugins}
-              getOptionLabel={(option) => option?.package ?? ''}
+              getOptionLabel={(option) => option?.package ?? ""}
               value={plugins.find((p) => p.id === selectedPluginId) || null}
-              onChange={(_, v) => setSelectedPluginId(v ? v.id : 'all')}
+              onChange={(_, v) => setSelectedPluginId(v ? v.id : "all")}
               renderInput={(params) => (
                 <TextField {...params} label="Plugins" size="small" fullWidth />
               )}
@@ -406,7 +440,7 @@ export default function JobStatsTable() {
                 value={activeFilter}
                 label="Status"
                 onChange={(e) =>
-                  setActiveFilter(e.target.value as boolean | 'all')
+                  setActiveFilter(e.target.value as boolean | "all")
                 }
               >
                 <MenuItem value="all">All Status</MenuItem>
@@ -421,7 +455,7 @@ export default function JobStatsTable() {
                 value={selectedSession}
                 label="Sessions"
                 onChange={(e) =>
-                  setSelectedSession(e.target.value as number | 'all')
+                  setSelectedSession(e.target.value as number | "all")
                 }
               >
                 <MenuItem value="all">All Sessions</MenuItem>
@@ -439,7 +473,7 @@ export default function JobStatsTable() {
               value={
                 sqlVersions.find((v) => v.id === selectedSqlVersion) || null
               }
-              onChange={(_, v) => setSelectedSqlVersion(v ? v.id : 'all')}
+              onChange={(_, v) => setSelectedSqlVersion(v ? v.id : "all")}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -452,19 +486,19 @@ export default function JobStatsTable() {
             />
 
             {/* Spacer only on desktop */}
-            <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'block' } }} />
+            <Box sx={{ flexGrow: 1, display: { xs: "none", md: "block" } }} />
 
             <Button
               variant="outlined"
               startIcon={<Clear />}
               size="small"
               fullWidth
-              sx={{ alignSelf: { md: 'center' } }}
+              sx={{ alignSelf: { md: "center" } }}
               onClick={() => {
-                setSearchText('');
-                setActiveFilter('all');
-                setSelectedPluginId('all');
-                setSelectedSqlVersion('all');
+                setSearchText("");
+                setActiveFilter("all");
+                setSelectedPluginId("all");
+                setSelectedSqlVersion("all");
               }}
             >
               Clear
@@ -477,12 +511,14 @@ export default function JobStatsTable() {
       <TableContainer>
         <Table size="small">
           <TableHead>
-            <TableRow sx={{ bgcolor: 'rgba(255,255,255,0.02)' }}>
+            <TableRow sx={{ bgcolor: "rgba(255,255,255,0.02)" }}>
               <TableCell sx={{ width: 50 }} />
               <TableCell>Job</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Model</TableCell>
               <TableCell>SQL Version</TableCell>
+              <TableCell>Plugin</TableCell>
+              <TableCell>Environment</TableCell>
               <TableCell>Last Signal</TableCell>
               <TableCell sx={{ width: 120 }}>Actions</TableCell>
             </TableRow>
@@ -491,7 +527,7 @@ export default function JobStatsTable() {
             {loading && rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                  <LinearProgress sx={{ width: '50%', mx: 'auto', mb: 2 }} />
+                  <LinearProgress sx={{ width: "50%", mx: "auto", mb: 2 }} />
                   <Typography variant="body2" color="text.secondary">
                     Loading jobs...
                   </Typography>
@@ -502,6 +538,16 @@ export default function JobStatsTable() {
                 <JobRowComponent
                   key={job.id}
                   job={job}
+                  pluginName={
+                    plugins.find(
+                      (item) => Number(item.id) === Number(job.plugin_id),
+                    )?.package
+                  }
+                  env={
+                    SESSIONS.find(
+                      (item) => Number(item.id) === Number(job.session_id),
+                    )?.name
+                  }
                   onToggle={(active) => handleToggleJob(job.id, active)}
                 />
               ))
@@ -510,7 +556,7 @@ export default function JobStatsTable() {
             {!loading && rows.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7}>
-                  <Box sx={{ py: 6, textAlign: 'center' }}>
+                  <Box sx={{ py: 6, textAlign: "center" }}>
                     <Typography variant="body2" color="text.secondary">
                       No jobs found matching your filters.
                     </Typography>
@@ -525,16 +571,16 @@ export default function JobStatsTable() {
       {/* Pagination Controls */}
       <Box
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
           gap: 2,
           px: 2,
           py: 1.5,
           borderTop: 1,
-          borderColor: 'divider',
-          bgcolor: 'rgba(255,255,255,0.02)'
+          borderColor: "divider",
+          bgcolor: "rgba(255,255,255,0.02)",
         }}
       >
         <Stack direction="row" spacing={2} alignItems="center">
@@ -549,7 +595,7 @@ export default function JobStatsTable() {
                 setPage(0);
               }}
               disableUnderline
-              sx={{ fontWeight: 600, fontSize: '0.875rem' }}
+              sx={{ fontWeight: 600, fontSize: "0.875rem" }}
             >
               {ROWS_PER_PAGE_OPTIONS.map((opt) => (
                 <MenuItem key={opt} value={opt}>
@@ -562,7 +608,7 @@ export default function JobStatsTable() {
 
         <Stack direction="row" spacing={1} alignItems="center">
           <Typography variant="body2" color="text.secondary">
-            {total === 0 ? '0-0 of 0' : `${startRow}–${endRow} of ${total}`}
+            {total === 0 ? "0-0 of 0" : `${startRow}–${endRow} of ${total}`}
           </Typography>
 
           <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
@@ -597,8 +643,8 @@ export default function JobStatsTable() {
             variant="outlined"
             sx={{
               fontWeight: 500,
-              borderColor: 'divider',
-              bgcolor: 'rgba(255,255,255,0.05)'
+              borderColor: "divider",
+              bgcolor: "rgba(255,255,255,0.05)",
             }}
           />
 
