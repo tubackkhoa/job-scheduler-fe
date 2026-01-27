@@ -15,12 +15,12 @@ import {
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import EditIcon from '@mui/icons-material/Edit';
 import { LanguageDescription } from '@codemirror/language';
-import { streamChat } from '@/chatbot';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { yaml } from '@codemirror/lang-yaml';
 import { jinja } from '@codemirror/lang-jinja';
 import { json } from '@codemirror/lang-json';
+import api from '@/api';
 
 const GENERATE_SAMPLES = [
   {
@@ -116,16 +116,15 @@ export default function ChatBot() {
 
     try {
       if (mode === 'generate') {
-        const result = await streamChat({
-          path: '/generate',
+        const result = await api.streamChat({
           payload: { query },
           onToken: setOutput
         });
 
         setPlugin(result);
       } else {
-        const result = await streamChat({
-          path: '/edit',
+        const result = await api.streamChat({
+          followUp: true,
           payload: {
             plugin,
             instruction: query
