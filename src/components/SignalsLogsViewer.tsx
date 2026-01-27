@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
   Box,
   Stack,
@@ -16,11 +16,11 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
-} from '@mui/material';
-import { SignalCellularAlt, Delete, Refresh } from '@mui/icons-material';
-import api from '@/api';
-import { formatMessage, getLevelColor, transformSignals } from '@/utils';
+  TableRow,
+} from "@mui/material";
+import { SignalCellularAlt, Delete, Refresh } from "@mui/icons-material";
+import api from "@/api";
+import { formatMessage, getLevelColor, transformSignals } from "@/utils";
 
 /* -------------------------------- Utilities -------------------------------- */
 
@@ -30,11 +30,11 @@ const parseTableMessage = (message) => {
   let cleanedMessage = message.trim();
   cleanedMessage = cleanedMessage.replace(
     /^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\s+\[.*?\]\s+/,
-    ''
+    "",
   );
 
   const lines = cleanedMessage
-    .split('\n')
+    .split("\n")
     .map((line) => line.trim())
     .filter((line) => line);
   if (lines.length < 2) return null;
@@ -44,7 +44,7 @@ const parseTableMessage = (message) => {
 
   // Find pred_time column index
   const predTimeIndex = header.findIndex(
-    (col) => col.toLowerCase() === 'pred_time'
+    (col) => col.toLowerCase() === "pred_time",
   );
 
   const dataRows = [];
@@ -80,7 +80,7 @@ const parseTableMessage = (message) => {
 
     // Pad or trim to match header length
     while (cells.length < header.length) {
-      cells.push('');
+      cells.push("");
     }
     cells = cells.slice(0, header.length);
 
@@ -103,18 +103,18 @@ const TableMessage = ({ message }) => {
     return (
       <Box
         sx={{
-          overflowX: 'auto',
-          overflowY: 'hidden',
-          maxWidth: '100%'
+          overflowX: "auto",
+          overflowY: "hidden",
+          maxWidth: "100%",
         }}
       >
         <Typography
           variant="body2"
           sx={{
             fontFamily: '"JetBrains Mono", monospace',
-            whiteSpace: 'pre',
-            fontSize: '0.75rem',
-            minWidth: 'max-content'
+            whiteSpace: "pre",
+            fontSize: "0.75rem",
+            minWidth: "max-content",
           }}
         >
           {formatMessage(message)}
@@ -129,27 +129,27 @@ const TableMessage = ({ message }) => {
     <TableContainer
       component={Box}
       sx={{
-        bgcolor: 'rgba(0, 0, 0, 0.3)',
+        bgcolor: "rgba(0, 0, 0, 0.3)",
         maxHeight: 500,
-        maxWidth: '100%',
-        overflowX: 'auto',
-        overflowY: 'auto',
+        maxWidth: "100%",
+        overflowX: "auto",
+        overflowY: "auto",
         borderRadius: 1,
-        border: '1px solid rgba(255, 193, 7, 0.2)',
-        '&::-webkit-scrollbar': {
-          width: '8px',
-          height: '8px'
+        border: "1px solid rgba(255, 193, 7, 0.2)",
+        "&::-webkit-scrollbar": {
+          width: "8px",
+          height: "8px",
         },
-        '&::-webkit-scrollbar-track': {
-          bgcolor: 'rgba(0, 0, 0, 0.2)'
+        "&::-webkit-scrollbar-track": {
+          bgcolor: "rgba(0, 0, 0, 0.2)",
         },
-        '&::-webkit-scrollbar-thumb': {
-          bgcolor: 'rgba(255, 193, 7, 0.3)',
-          borderRadius: '4px',
-          '&:hover': {
-            bgcolor: 'rgba(255, 193, 7, 0.5)'
-          }
-        }
+        "&::-webkit-scrollbar-thumb": {
+          bgcolor: "rgba(255, 193, 7, 0.3)",
+          borderRadius: "4px",
+          "&:hover": {
+            bgcolor: "rgba(255, 193, 7, 0.5)",
+          },
+        },
       }}
     >
       <Table size="small" stickyHeader sx={{ minWidth: 800 }}>
@@ -160,15 +160,15 @@ const TableMessage = ({ message }) => {
                 key={idx}
                 sx={{
                   fontFamily: '"JetBrains Mono", monospace',
-                  fontSize: '0.7rem',
+                  fontSize: "0.7rem",
                   fontWeight: 700,
-                  bgcolor: 'rgba(255, 193, 7, 0.25)',
-                  color: 'warning.light',
-                  borderBottom: '2px solid rgba(255, 193, 7, 0.4)',
-                  whiteSpace: 'nowrap',
+                  bgcolor: "rgba(255, 193, 7, 0.25)",
+                  color: "warning.light",
+                  borderBottom: "2px solid rgba(255, 193, 7, 0.4)",
+                  whiteSpace: "nowrap",
                   px: 1.5,
                   py: 1,
-                  textTransform: 'uppercase'
+                  textTransform: "uppercase",
                 }}
               >
                 {col}
@@ -181,36 +181,36 @@ const TableMessage = ({ message }) => {
             <TableRow
               key={rowIdx}
               sx={{
-                '&:nth-of-type(even)': {
-                  bgcolor: 'rgba(255, 255, 255, 0.03)'
+                "&:nth-of-type(even)": {
+                  bgcolor: "rgba(255, 255, 255, 0.03)",
                 },
-                '&:hover': {
-                  bgcolor: 'rgba(255, 193, 7, 0.15)'
+                "&:hover": {
+                  bgcolor: "rgba(255, 193, 7, 0.15)",
                 },
-                transition: 'background-color 0.2s'
+                transition: "background-color 0.2s",
               }}
             >
               {header.map((_, colIdx) => {
-                const cellValue = row[colIdx] || '-';
+                const cellValue = row[colIdx] || "-";
                 const isNumeric =
                   !isNaN(parseFloat(cellValue)) && isFinite(cellValue);
-                const isNone = cellValue === 'None' || cellValue === 'none';
+                const isNone = cellValue === "None" || cellValue === "none";
 
                 return (
                   <TableCell
                     key={colIdx}
                     sx={{
                       fontFamily: '"JetBrains Mono", monospace',
-                      fontSize: '0.7rem',
+                      fontSize: "0.7rem",
                       color: isNone
-                        ? 'text.disabled'
+                        ? "text.disabled"
                         : isNumeric
-                          ? 'primary.light'
-                          : 'text.secondary',
+                          ? "primary.light"
+                          : "text.secondary",
                       py: 0.75,
                       px: 1.5,
-                      borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                      whiteSpace: 'nowrap'
+                      borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+                      whiteSpace: "nowrap",
                     }}
                   >
                     {cellValue}
@@ -235,17 +235,17 @@ const SignalGroupRow = ({ group }: { group: ResultGroup }) => {
         sx={{
           py: 1,
           px: 0,
-          flexDirection: 'column',
-          alignItems: 'stretch'
+          flexDirection: "column",
+          alignItems: "stretch",
         }}
       >
         {/* Matched Entry */}
         <Paper
           sx={{
-            bgcolor: 'rgba(255, 193, 7, 0.1)',
-            border: '1px solid rgba(255, 193, 7, 0.3)',
+            bgcolor: "rgba(255, 193, 7, 0.1)",
+            border: "1px solid rgba(255, 193, 7, 0.3)",
             p: 1.5,
-            mb: 1
+            mb: 1,
           }}
         >
           <Stack direction="row" spacing={2} alignItems="flex-start">
@@ -261,8 +261,8 @@ const SignalGroupRow = ({ group }: { group: ResultGroup }) => {
                 color="text.secondary"
                 sx={{
                   fontFamily: '"JetBrains Mono", monospace',
-                  display: 'block',
-                  mb: 0.5
+                  display: "block",
+                  mb: 0.5,
                 }}
               >
                 {group.matched_entry.timestamp}
@@ -272,10 +272,10 @@ const SignalGroupRow = ({ group }: { group: ResultGroup }) => {
                 sx={{
                   fontFamily: '"JetBrains Mono", monospace',
                   fontWeight: 600,
-                  textTransform: 'uppercase',
+                  textTransform: "uppercase",
                   color: getLevelColor(group.matched_entry.level),
-                  display: 'block',
-                  mb: 0.5
+                  display: "block",
+                  mb: 0.5,
                 }}
               >
                 [{group.matched_entry.level}]
@@ -292,8 +292,8 @@ const SignalGroupRow = ({ group }: { group: ResultGroup }) => {
           <Box
             sx={{
               pl: 2,
-              borderLeft: '2px solid rgba(255, 193, 7, 0.3)',
-              mt: 0.5
+              borderLeft: "2px solid rgba(255, 193, 7, 0.3)",
+              mt: 0.5,
             }}
           >
             <Typography
@@ -302,8 +302,8 @@ const SignalGroupRow = ({ group }: { group: ResultGroup }) => {
               sx={{
                 fontFamily: '"JetBrains Mono", monospace',
                 mb: 0.5,
-                display: 'block',
-                fontSize: '0.7rem'
+                display: "block",
+                fontSize: "0.7rem",
               }}
             >
               Following ({group.following_entries.length}):
@@ -314,24 +314,24 @@ const SignalGroupRow = ({ group }: { group: ResultGroup }) => {
                   key={item.id || idx}
                   sx={{
                     p: 1,
-                    bgcolor: 'rgba(0, 0, 0, 0.2)',
+                    bgcolor: "rgba(0, 0, 0, 0.2)",
                     borderRadius: 1,
-                    maxWidth: '100%',
-                    overflowX: 'auto',
-                    overflowY: 'hidden',
-                    '&::-webkit-scrollbar': {
-                      height: '6px'
+                    maxWidth: "100%",
+                    overflowX: "auto",
+                    overflowY: "hidden",
+                    "&::-webkit-scrollbar": {
+                      height: "6px",
                     },
-                    '&::-webkit-scrollbar-track': {
-                      bgcolor: 'rgba(0, 0, 0, 0.2)'
+                    "&::-webkit-scrollbar-track": {
+                      bgcolor: "rgba(0, 0, 0, 0.2)",
                     },
-                    '&::-webkit-scrollbar-thumb': {
-                      bgcolor: 'rgba(255, 193, 7, 0.3)',
-                      borderRadius: '3px',
-                      '&:hover': {
-                        bgcolor: 'rgba(255, 193, 7, 0.5)'
-                      }
-                    }
+                    "&::-webkit-scrollbar-thumb": {
+                      bgcolor: "rgba(255, 193, 7, 0.3)",
+                      borderRadius: "3px",
+                      "&:hover": {
+                        bgcolor: "rgba(255, 193, 7, 0.5)",
+                      },
+                    },
                   }}
                 >
                   <TableMessage message={formatMessage(item.message)} />
@@ -354,7 +354,7 @@ export default function SignalsLogsViewer({
   limit = 2,
   signals: providedSignals,
   hideHeader = false,
-  sx
+  sx,
 }: {
   jobId?: number;
   description?: string;
@@ -382,7 +382,7 @@ export default function SignalsLogsViewer({
       const transformedGroups = transformSignals(data.signals || []);
       setGroups(transformedGroups);
     } catch (e) {
-      console.error('Failed to fetch signals:', e);
+      console.error("Failed to fetch signals:", e);
       if (setError) setError(e.message);
       setGroups([]);
     } finally {
@@ -405,7 +405,7 @@ export default function SignalsLogsViewer({
   /* ----------------------------- Render -------------------------------- */
 
   return (
-    <Stack spacing={2} sx={{ height: 'auto' }}>
+    <Stack spacing={2} sx={{ height: "auto" }}>
       {/* Header */}
       {!hideHeader && (
         <Stack direction="row" justifyContent="space-between">
@@ -442,7 +442,7 @@ export default function SignalsLogsViewer({
                   try {
                     await api.clearLogs(jobId);
                   } catch (e) {
-                    console.error('Failed to clear signals:', e);
+                    console.error("Failed to clear signals:", e);
                   } finally {
                     setGroups([]);
                   }
@@ -460,22 +460,22 @@ export default function SignalsLogsViewer({
       {/* Signals Container */}
       <Paper
         sx={{
-          height: '600px',
-          overflow: 'auto',
-          bgcolor: 'rgba(0,0,0,0.4)',
+          height: "600px",
+          overflow: "auto",
+          bgcolor: "rgba(0,0,0,0.4)",
           fontFamily: '"JetBrains Mono", monospace',
           p: 1,
           flex: 1,
-          ...sx
+          ...sx,
         }}
       >
         {isLoading ? (
           <Box
             sx={{
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             <CircularProgress size={24} />
@@ -483,10 +483,10 @@ export default function SignalsLogsViewer({
         ) : groups.length === 0 ? (
           <Box
             sx={{
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           ></Box>
         ) : (
