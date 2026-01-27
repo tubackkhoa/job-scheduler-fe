@@ -60,7 +60,9 @@ export function JobsList({
           }
         }}
       />
-      <CardContent sx={{ pt: 0, maxHeight: 450, overflowY: 'auto' }}>
+      <CardContent
+        sx={{ pt: 0, maxHeight: 'calc(100vh - 540px)', overflowY: 'auto' }}
+      >
         <List disablePadding>
           {/* New Job Mode Indicator */}
           {isNewJobMode && (
