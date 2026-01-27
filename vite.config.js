@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import path from 'path';
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -16,13 +17,18 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react({ babel: { plugins: ['babel-plugin-react-compiler'] } })],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, 'src')
+      }
+    },
     preview: {
       allowedHosts
     },
     server: {
       ...(enableProxy && {
         proxy: {
-          '/api': {
+          '^/(api|auth|health)': {
             target: env.VITE_API_BASE_URL,
             changeOrigin: true
           }

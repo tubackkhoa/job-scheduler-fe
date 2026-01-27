@@ -4,7 +4,25 @@ import { linter, Diagnostic } from '@codemirror/lint';
 import { syntaxTree } from '@codemirror/language';
 import _ from 'lodash';
 import api from './api';
+import { LanguageSupport, LRLanguage } from '@codemirror/language';
+import { parseMixed } from '@lezer/common';
+import { javascript } from '@codemirror/lang-javascript';
+import { yamlLanguage } from '@codemirror/lang-yaml';
 import jinja from './jinja.py?raw';
+import { JinjaCompletionConfig } from '@codemirror/lang-jinja';
+import * as esbuild from 'esbuild-wasm';
+import wasmUrl from 'esbuild-wasm/esbuild.wasm?url';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
+
+export const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+};
 
 export const getCodeHash = (str: string) => {
   let hash = 5381;
@@ -162,7 +180,7 @@ export const getSystemTheme = (): 'dark' | 'light' =>
  * Message Formatting
  * ================================ */
 
-export const formatMessage = (message: unknown): unknown => {
+export const formatMessage = (message: any): any => {
   if (typeof message !== 'string') return message;
 
   return message.replace(
@@ -211,6 +229,42 @@ const applyFunction = (name: string) => {
       selection: { anchor: from + name.length + 1 }
     });
   };
+};
+
+export const yamlWithEmbeddedJS = (keyNames: string[] = ['code']) => {
+  const jsParser = javascript({ jsx: true, typescript: true }).language.parser;
+
+  // 1. Reconfigure the base YAML parser with the mixed-language logic
+  const mixedYamlParser = yamlLanguage.parser.configure({
+    wrap: parseMixed((node, input) => {
+      // Look for YAML values (Literal or BlockLiteral)
+      if (node.name === 'Literal' || node.name === 'BlockLiteral') {
+        const parent = node.node.parent;
+
+        // Ensure the value belongs to a 'Pair'
+        if (parent?.name === 'Pair') {
+          const keyNode = parent.getChild('Key');
+          if (keyNode) {
+            const keyName = input.read(keyNode.from, keyNode.to).trim();
+            // Match the specific key "code:"
+            if (keyNames.includes(keyName)) {
+              return { parser: jsParser };
+            }
+          }
+        }
+      }
+      return null;
+    })
+  });
+
+  // 2. Use the STATIC LRLanguage.define method to create the new language
+  const mixedYamlLanguage = LRLanguage.define({
+    name: 'yaml-mixed',
+    parser: mixedYamlParser,
+    languageData: yamlLanguage.data // Inherit YAML metadata (comments, etc.)
+  });
+
+  return new LanguageSupport(mixedYamlLanguage);
 };
 
 /* ================================
@@ -267,7 +321,7 @@ export class JinjaCompletionBuilder {
   }
 
   static buildProperties(params: Record<string, any> = {}) {
-    return (path: string | string[]) => {
+    return (path: readonly string[]) => {
       const value = _.get(params, path);
       if (!_.isPlainObject(value)) return [];
 
@@ -280,13 +334,17 @@ export class JinjaCompletionBuilder {
     };
   }
 
-  static build(params: Record<string, any> = {}, envDoc: EnvDoc) {
+  static build(
+    params: Record<string, any> = {},
+    envDoc: EnvDoc
+  ): JinjaCompletionConfig {
     return {
       variables: [
         ...this.buildTopLevelVariables(params),
         ...this.buildGlobals(envDoc.globals),
         ...this.buildTests(envDoc.tests)
       ],
+      // @ts-ignore : this is custom patched
       filters: this.buildFilters(envDoc.filters),
       tags: this.buildTags(envDoc.tags),
       properties: this.buildProperties(params)
@@ -295,8 +353,8 @@ export class JinjaCompletionBuilder {
 }
 
 type JinjaSymbols = {
-  globals: Record<string, any>;
-  filters: Record<string, any>;
+  globals: Globals;
+  filters: Globals;
 };
 
 export const jinjaLinter = (
@@ -360,6 +418,55 @@ export const jinjaLinter = (
     return diagnostics;
   });
 };
+
+const initEsBuild: Promise<typeof esbuild> = (async () => {
+  await esbuild.initialize({
+    wasmURL: wasmUrl,
+    worker: true
+  });
+  console.log('ESBuild initialized');
+  return esbuild;
+})();
+
+initEsBuild;
+export async function transpile(code: string): Promise<string> {
+  const esbuild = await initEsBuild;
+
+  // 2️⃣ Compile with strict constraints
+  const result = await esbuild.transform(code, {
+    loader: 'tsx',
+    format: 'esm',
+    platform: 'browser',
+    target: 'es2020',
+
+    // Lock down JSX
+    jsx: 'transform',
+    jsxFactory: 'React.createElement',
+    jsxFragment: 'React.Fragment',
+
+    // Reduce attack surface
+    minify: true,
+    treeShaking: true,
+
+    // Prevent sneaky globals, just avoid by mistake
+    define: {
+      eval: 'undefined',
+      Function: 'undefined',
+      window: 'undefined',
+      document: 'undefined',
+      globalThis: 'undefined',
+      fetch: 'undefined',
+      WebSocket: 'undefined',
+      XMLHttpRequest: 'undefined'
+    },
+
+    // Make output deterministic
+    keepNames: false,
+    sourcemap: false
+  });
+
+  return result.code;
+}
 
 const initPyodide: Promise<PyodideAPI> = (async () => {
   // @ts-ignore
@@ -448,4 +555,21 @@ export const jinjaEvaluate = async (
   }
   // not a string, return as is
   return result;
+};
+
+export const transformSignals = (signals: Signal[]) => {
+  return signals.map((signal) => ({
+    offset: signal.id,
+    matched_entry: {
+      id: signal.id,
+      timestamp: new Date(signal.created_at).toLocaleString('en-GB', {
+        timeZone: 'UTC',
+        dateStyle: 'full',
+        timeStyle: 'medium'
+      }),
+      level: 'INFO',
+      message: signal.message || ''
+    },
+    following_entries: []
+  }));
 };

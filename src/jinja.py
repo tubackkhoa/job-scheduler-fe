@@ -5,16 +5,6 @@ import json
 from datetime import datetime, timedelta, timezone
 
 
-def tolist(obj, *include):
-    if include:
-        include_set = set(include)
-        return [
-            {k: v for k, v in item.to_dict().items() if k in include_set}
-            for item in obj
-        ]
-    return [item.to_dict() for item in obj]
-
-
 sandbox = SandboxedEnvironment(autoescape=False, trim_blocks=True, lstrip_blocks=True)
 sandbox.globals.update(
     {"datetime": datetime, "timedelta": timedelta, "timezone": timezone}
@@ -24,7 +14,6 @@ sandbox.filters.update(
         "in_clause": lambda values: (
             "()" if not values else f"({','.join(map(repr, values))})"
         ),
-        "tolist": tolist,
     }
 )
 

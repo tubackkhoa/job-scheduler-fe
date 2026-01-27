@@ -56,12 +56,10 @@ export default function (
     const [plugins, setPlugins] = useState<Plugin[]>([]);
 
     useEffect(() => {
-      render(`{{ get_all_plugins() | tolist | tojson }}`, {}).then(
-        (plugins) => {
-          console.log(plugins);
-          setPlugins(plugins);
-        }
-      );
+      render(`{{ get_all_plugins() | list | tojson }}`, {}).then((plugins) => {
+        console.log(plugins);
+        setPlugins(plugins);
+      });
     }, []);
 
     return (
