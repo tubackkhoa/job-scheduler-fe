@@ -213,6 +213,52 @@ export default function PluginManager({ setLoading, setError }) {
     }
   };
 
+  const reloadPlugin = async () => {
+    if (!pluginId) return;
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const pkg = plugins.find((p) => p.id === pluginId).package;
+      const response = await api.reloadPlugin(pkg);
+      setResult(response);
+      // update schema
+      loadSchema(pluginId, sessionId, jobId);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCreatePlugin = async (data: PluginData) => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const { id } = await api.createPlugin(
+        data.package,
+        data.interval,
+        data.description
+      );
+      // new plugin data
+      const newPlugin: PluginData = {
+        ...data,
+        id
+      };
+      setPlugins((prev) => [...prev, newPlugin]);
+      setResult({
+        success: true,
+        message: 'Plugin created successfully'
+      });
+      setCreatePluginModalOpen(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   /* ----------------------------------------
    * Memoized derived state
    * ------------------------------------- */
@@ -247,14 +293,22 @@ export default function PluginManager({ setLoading, setError }) {
     <>
       <Grid container spacing={3} sx={{ mt: 1 }}>
         <Grid size={{ xs: 12, md: 3 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 3,
+              position: { xs: 'static', md: 'sticky' },
+              top: 125
+            }}
+          >
             <ContextPanel
               sessions={SESSIONS}
               plugins={plugins}
               ctx={window.ctx}
               sessionId={sessionId}
               pluginId={pluginId}
-              onReloadPlugin={() => loadSchema(pluginId, sessionId, jobId)}
+              onReloadPlugin={reloadPlugin}
               onCreatePlugin={() => setCreatePluginModalOpen(true)}
               isLoading={submitting}
             />
@@ -309,10 +363,7 @@ export default function PluginManager({ setLoading, setError }) {
       <CreatePluginModal
         open={createPluginModalOpen}
         onClose={() => setCreatePluginModalOpen(false)}
-        onSubmit={async (data) => {
-          await api.createPlugin(data.package, data.interval, data.description);
-          setPlugins(await api.fetchPlugins());
-        }}
+        onSubmit={handleCreatePlugin}
         isLoading={submitting}
       />
     </>
