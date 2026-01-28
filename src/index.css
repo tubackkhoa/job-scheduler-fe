@@ -25,14 +25,6 @@
   display: none;
 }
 
-.pnl--profit { color: #28a745; }
-.pnl--loss { color: #dc3545; }
-.pnl--flat { color: #6c757d; }
-
-.status--active { color: #28a745; }
-.status--inactive { color: #ffc107; }
-.status--muted { color: #6c757d; }
-
 /* Smaller font on mobile */
 @media (max-width: 600px) {
   .cm-editor {
