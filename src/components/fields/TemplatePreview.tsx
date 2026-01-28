@@ -5,23 +5,30 @@ import CodeMirror, { Extension } from '@uiw/react-codemirror'; // Or your CodeMi
 import { JavascriptPreview } from './JavascriptPreview';
 import { getCodeMirrorStyle } from '@/theme';
 
-interface Props {
+type Props = {
   lang: string;
   text: string;
   fullscreen: boolean;
   extensions: Extension[]; // You can be more specific based on your extensions type
-}
+} & CodeSchema;
 
 export const TemplatePreview: React.FC<Props> = ({
   lang,
   text,
   fullscreen,
-  extensions
+  extensions,
+  code,
+  url
 }) => {
   switch (lang) {
     case 'markdown':
       return (
-        <MarkdownPreview text={text} maxHeight={fullscreen ? '100%' : 600} />
+        <MarkdownPreview
+          code={code}
+          url={url}
+          text={text}
+          maxHeight={fullscreen ? '100%' : 600}
+        />
       );
     case 'js':
       return (

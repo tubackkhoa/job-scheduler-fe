@@ -1,7 +1,12 @@
-import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import DOMPurify from 'dompurify';
 import { Box, useTheme } from '@mui/material';
-import { makeCanvasCharts, makeTablesSortable, markdown } from '@/utils';
+import {
+  getModule,
+  makeCanvasCharts,
+  makeTablesSortable,
+  markdown
+} from '@/utils';
 
 // patch markdown for chartjs
 const md_renderer_rules_fence = markdown.renderer.rules.fence.bind(
@@ -25,13 +30,13 @@ markdown.renderer.rules.fence = (tokens, idx, options, env, slf) => {
 
 /* ---------- Component ---------- */
 
-export const MarkdownPreview = ({ text = '', maxHeight }) => {
-  const ref = useRef<HTMLElement>(null);
+export const MarkdownPreview = ({ text = '', maxHeight, code, url }) => {
+  const contentRef = useRef<HTMLElement>(null);
+  const [ModComponent, setModComponent] =
+    useState<React.ComponentType<any> | null>(null);
   const theme = useTheme();
   const boxStyles = useMemo(
     () => ({
-      height: '100%',
-      maxHeight,
       typography: 'body1',
       overflowX: 'auto',
       '--alert-bg':
@@ -104,20 +109,20 @@ export const MarkdownPreview = ({ text = '', maxHeight }) => {
         my: 2
       }
     }),
-    [theme, maxHeight]
+    [theme]
   );
 
   // ✅ Memoize markdown → HTML → sanitize
   const htmlContent = useMemo(() => {
     return DOMPurify.sanitize(markdown.render(text), {
       ADD_TAGS: ['canvas'],
-      ADD_ATTR: ['class']
+      ADD_ATTR: ['class', 'data-*']
     });
   }, [text]);
 
   // ✅ Chart.js needs layout-ready DOM
   useLayoutEffect(() => {
-    const root = ref.current;
+    const root = contentRef.current;
     if (!root) return;
 
     // ✅ NEW: enable table sorting
@@ -131,11 +136,44 @@ export const MarkdownPreview = ({ text = '', maxHeight }) => {
     };
   });
 
+  /* ---------- Load module ---------- */
+  useEffect(() => {
+    if ((!url && !code) || !contentRef.current || !htmlContent) {
+      setModComponent(null);
+      return;
+    }
+
+    let mounted = true;
+
+    getModule({ url, code }).then((mod) => {
+      if (!mounted) return;
+      setModComponent(() => mod.default);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [url, code, htmlContent]);
+
   return (
-    <Box
-      ref={ref}
-      sx={boxStyles}
-      dangerouslySetInnerHTML={{ __html: htmlContent }}
-    />
+    <Box sx={{ height: '100%', maxHeight }}>
+      {/* Markdown HTML */}
+      <Box
+        sx={boxStyles}
+        ref={contentRef}
+        dangerouslySetInnerHTML={{ __html: htmlContent }}
+      />
+
+      {/* React island (safe to re-render) */}
+      {ModComponent && (
+        <Box sx={{ mt: 2 }}>
+          <ModComponent
+            root={contentRef.current}
+            theme={theme}
+            {...window.globalProps}
+          />
+        </Box>
+      )}
+    </Box>
   );
 };

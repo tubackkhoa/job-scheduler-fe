@@ -266,6 +266,8 @@ export function TemplateField({
             lang={schema.type as string}
             fullscreen={fullscreen}
             text={previewCode}
+            code={schema.code}
+            url={schema.url}
             extensions={extensions}
           />
         </Box>

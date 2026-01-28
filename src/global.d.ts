@@ -1,6 +1,25 @@
-import { RJSFSchema } from '@rjsf/utils';
+import { FieldProps, RJSFSchema } from '@rjsf/utils';
+import React from 'react';
+import { ConfirmationDialog } from '@/components/ConfirmationDialog';
+import * as Mui from '@mui/material';
+import * as Utils from '@/utils';
+import _ from 'lodash';
+import * as MuiIcon from '@mui/icons-material';
 
-export {};
+export interface GlobalProps {
+  React: typeof React;
+  MuiIcon: typeof MuiIcon;
+  Mui: typeof Mui & {
+    ConfirmationDialog: typeof ConfirmationDialog;
+  };
+  Utils: typeof Utils & {
+    _: typeof _;
+  };
+}
+
+export type DynamicFieldProps = FieldProps & GlobalProps;
+export type MarkdownFieldProps = GlobalProps & { root: HTMLElement };
+export type ModuleProps = DynamicFieldProps | MarkdownFieldProps;
 
 declare global {
   type Order = 'asc' | 'desc';
@@ -9,6 +28,15 @@ declare global {
     package: string;
     description: string;
     interval: number;
+  }
+
+  interface CodeSchema {
+    code?: string;
+    url?: string;
+  }
+
+  interface ModuleCode {
+    default: React.FC<ModuleProps>;
   }
 
   interface User {
@@ -167,6 +195,7 @@ declare global {
 
   interface Window {
     ctx: { user: User };
+    globalProps: GlobalProps;
     // or: ctx?: YourType
   }
 }

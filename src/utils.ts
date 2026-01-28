@@ -1,5 +1,4 @@
 import json5 from 'json5';
-import DOMPurify from 'dompurify';
 import { PyodideAPI } from 'pyodide';
 import { linter, Diagnostic } from '@codemirror/lint';
 import { syntaxTree } from '@codemirror/language';
@@ -19,7 +18,6 @@ import {
   CandlestickController,
   CandlestickElement
 } from 'chartjs-chart-financial';
-
 import 'chartjs-adapter-luxon';
 import utc from 'dayjs/plugin/utc';
 import MarkdownIt from 'markdown-it';
@@ -666,7 +664,7 @@ const renderAlertHTML = (message: string) => `
 
     <div class="MuiAlert-message">
       <strong style="font-weight: 500;">Chart error</strong><br />
-      ${DOMPurify.sanitize(message)}
+      ${message}
     </div>
   </div>
 `;
@@ -699,4 +697,69 @@ export const makeCanvasCharts = (canvases: NodeListOf<HTMLCanvasElement>) => {
   });
 
   return charts;
+};
+
+/* ---------------- blob cache ---------------- */
+
+const blobCache = new Map<string, string>();
+const gzipPrefix = 'data:application/gzip;base64,';
+
+async function decodeGzip(base64: string) {
+  // base64 → bytes
+  const compressed = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+
+  // gunzip
+  const stream = new Blob([compressed]).stream();
+  const decompressedStream = stream.pipeThrough(
+    new DecompressionStream('gzip')
+  );
+
+  return await new Response(decompressedStream).text();
+}
+
+export const createUrlFromString = (code: string) => {
+  const hash = getCodeHash(code);
+
+  let url = blobCache.get(hash);
+  if (url) return url;
+
+  const blob = new Blob([code], {
+    type: 'application/javascript'
+  });
+
+  url = URL.createObjectURL(blob);
+  blobCache.set(hash, url);
+
+  return url;
+};
+
+// known at build time
+// Define the shape of your expected module
+const libModules = import.meta.env.DEV
+  ? import.meta.glob('../libs/*.{ts,js,tsx,jsx}')
+  : {};
+
+const loadModule = (modUrl: string) => import(/* @vite-ignore */ modUrl);
+
+export const getModule = async ({
+  url,
+  code
+}: CodeSchema): Promise<ModuleCode> => {
+  let loader: Promise<any>;
+  if (code) {
+    loader = loadModule(createUrlFromString(await transpile(code)));
+  } else if (url.startsWith(gzipPrefix)) {
+    loader = loadModule(
+      createUrlFromString(await decodeGzip(url.slice(gzipPrefix.length)))
+    );
+  } else {
+    loader = libModules[`../libs/${url}`]?.() ?? loadModule(url);
+  }
+
+  if (!loader) {
+    throw new Error('Module loader is undefined');
+  }
+
+  const mod = await loader;
+  return mod;
 };
