@@ -38,28 +38,12 @@ export const MarkdownPreview = ({ text = '', maxHeight, code, url }) => {
   const boxStyles = useMemo(
     () => ({
       typography: 'body1',
-      overflowX: 'auto',
       '--alert-bg':
         theme.palette.mode === 'dark'
           ? theme.palette.error.main + '29' // ~16% alpha
           : theme.palette.error.light,
       '--alert-text': theme.palette.error.contrastText,
       '--alert-icon': theme.palette.error.main,
-      maxWidth: '100%',
-      '&::-webkit-scrollbar': {
-        height: '8px'
-      },
-      '&::-webkit-scrollbar-track': {
-        bgcolor: 'rgba(0, 0, 0, 0.2)'
-      },
-      '&::-webkit-scrollbar-thumb': {
-        bgcolor: 'rgba(255, 255, 255, 0.2)',
-        borderRadius: '4px',
-        '&:hover': {
-          bgcolor: 'rgba(255, 255, 255, 0.3)'
-        }
-      },
-
       '& h1': { typography: 'h4', mb: 2 },
       '& h2': { typography: 'h5', mt: 3 },
       '& h3': { typography: 'h6', mt: 2 },
@@ -156,7 +140,7 @@ export const MarkdownPreview = ({ text = '', maxHeight, code, url }) => {
   }, [url, code, htmlContent]);
 
   return (
-    <Box sx={{ height: '100%', maxHeight }}>
+    <Box sx={{ height: '100%', maxWidth: '100%', maxHeight }}>
       {/* Markdown HTML */}
       <Box
         sx={boxStyles}
