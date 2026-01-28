@@ -1,8 +1,9 @@
-import { RJSFSchema } from "@rjsf/utils";
+import { RJSFSchema } from '@rjsf/utils';
 
 export {};
 
 declare global {
+  type Order = 'asc' | 'desc';
   interface PluginData {
     id: number;
     package: string;
@@ -17,7 +18,7 @@ declare global {
   }
 
   interface GlobalVariable {
-    type: "variable" | "function" | string;
+    type: 'variable' | 'function' | string;
     doc: string;
   }
 
@@ -69,7 +70,7 @@ declare global {
     searchText?: string;
     limit?: number;
     offset?: number;
-    sort?: "asc" | "desc";
+    sort?: 'asc' | 'desc';
   }
 
   interface LogsResponse {
@@ -144,7 +145,7 @@ declare global {
     model_key?: string[];
     sql_id?: number[];
     order_by?: string;
-    sort?: "asc" | "desc";
+    sort?: 'asc' | 'desc';
     session_id?: number[];
   }
 
