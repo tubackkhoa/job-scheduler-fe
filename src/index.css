@@ -25,6 +25,38 @@
   display: none;
 }
 
+table.sortable th {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: 24px; /* Space for the arrow */
+
+  /* Base style for the arrow container */
+  &::after {
+    position: absolute;
+    right: 8px; /* Fixed distance from the right edge */
+    top: 10px;
+    content: "▾";
+    opacity: 0.3; /* Subtle when inactive */
+    font-size: 0.8em;
+  }
+
+  /* Ascending state */
+  &[aria-sort="asc"]::after {    
+    opacity: 0.9;
+  }
+
+  /* Descending state */
+  &[aria-sort="desc"]::after {
+    top: 12px;
+    transform: rotate(180deg);
+    opacity: 0.9;
+  }
+
+}
+
+
+
 /* Smaller font on mobile */
 @media (max-width: 600px) {
   .cm-editor {
