@@ -18,10 +18,6 @@ export interface GlobalProps {
 }
 
 export type DynamicFieldProps = FieldProps & GlobalProps;
-export type MarkdownFieldProps = GlobalProps & {
-  source: string;
-};
-export type ModuleProps = DynamicFieldProps | MarkdownFieldProps;
 
 declare global {
   type Order = 'asc' | 'desc';
@@ -38,7 +34,7 @@ declare global {
   }
 
   interface ModuleCode {
-    default: React.FC<ModuleProps>;
+    default: React.FC<DynamicFieldProps>;
   }
 
   interface User {

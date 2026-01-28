@@ -3,7 +3,7 @@ import remarkGfm from 'remark-gfm';
 import DOMPurify from 'dompurify';
 import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { MarkdownChart } from '../MarkdownChart';
-import { MarkdownModule } from '../MarkdownModule';
+import { Dynamic } from './index';
 import ReactCodeMirror, { Extension } from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import { yaml } from '@codemirror/lang-yaml';
@@ -88,10 +88,9 @@ export const MarkdownPreview = ({ text = '', maxHeight, code, url }) => {
                 return <MarkdownChart source={children as string} />;
               case 'module':
                 return (
-                  <MarkdownModule
-                    url={url}
-                    code={code}
-                    source={children as string}
+                  <Dynamic
+                    schema={{ url, code }}
+                    formData={children as string}
                   />
                 );
               case 'json':

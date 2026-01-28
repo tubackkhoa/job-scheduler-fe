@@ -603,34 +603,3 @@ export const createUrlFromString = (code: string) => {
 
   return url;
 };
-
-// known at build time
-// Define the shape of your expected module
-export const libModules = import.meta.env.DEV
-  ? import.meta.glob('../libs/**/*.{ts,js,tsx,jsx}')
-  : {};
-
-export const loadModule = (modUrl: string) => import(/* @vite-ignore */ modUrl);
-
-export const getModule = async ({
-  url,
-  code
-}: CodeSchema): Promise<ModuleCode> => {
-  let loader: Promise<any>;
-  if (code) {
-    loader = loadModule(createUrlFromString(await transpile(code)));
-  } else if (url.startsWith(gzipPrefix)) {
-    loader = loadModule(
-      createUrlFromString(await decodeGzip(url.slice(gzipPrefix.length)))
-    );
-  } else {
-    loader = libModules[`../libs/${url}`]?.() ?? loadModule(url);
-  }
-
-  if (!loader) {
-    throw new Error('Module loader is undefined');
-  }
-
-  const mod = await loader;
-  return mod;
-};
