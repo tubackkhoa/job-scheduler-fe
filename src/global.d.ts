@@ -5,7 +5,6 @@ import * as Mui from '@mui/material';
 import * as Utils from '@/utils';
 import _ from 'lodash';
 import * as MuiIcon from '@mui/icons-material';
-import { createPortal } from 'react-dom';
 
 export interface GlobalProps {
   React: typeof React;
