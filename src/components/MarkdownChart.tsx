@@ -24,7 +24,6 @@ type MarkdownChartProps = {
 
 export const MarkdownChart = ({ source }: MarkdownChartProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const chartRef = useRef<Chart | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -44,19 +43,15 @@ export const MarkdownChart = ({ source }: MarkdownChartProps) => {
 
     // 🔥 Destroy ANY chart bound to this canvas (registry-safe)
     Chart.getChart(canvas)?.destroy();
-    chartRef.current?.destroy();
 
     // 2️⃣ Create fresh chart
-    chartRef.current = new Chart(canvas, config);
-  }, [source]);
+    const chart = new Chart(canvas, config);
 
-  // 3️⃣ Cleanup on unmount / HMR
-  useEffect(() => {
+    // 3️⃣ Cleanup on unmount / HMR
     return () => {
-      chartRef.current?.destroy();
-      chartRef.current = null;
+      chart.destroy();
     };
-  }, []);
+  }, [source]);
 
   if (error) {
     return <Alert severity="error">{error}</Alert>;

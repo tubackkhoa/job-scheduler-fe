@@ -573,9 +573,9 @@ export const transformSignals = (signals: Signal[]) => {
 /* ---------------- blob cache ---------------- */
 
 const blobCache = new Map<string, string>();
-const gzipPrefix = 'data:application/gzip;base64,';
+export const gzipPrefix = 'data:application/gzip;base64,';
 
-async function decodeGzip(base64: string) {
+export async function decodeGzip(base64: string) {
   // base64 → bytes
   const compressed = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
 
@@ -606,11 +606,11 @@ export const createUrlFromString = (code: string) => {
 
 // known at build time
 // Define the shape of your expected module
-const libModules = import.meta.env.DEV
-  ? import.meta.glob('../libs/*.{ts,js,tsx,jsx}')
+export const libModules = import.meta.env.DEV
+  ? import.meta.glob('../libs/**/*.{ts,js,tsx,jsx}')
   : {};
 
-const loadModule = (modUrl: string) => import(/* @vite-ignore */ modUrl);
+export const loadModule = (modUrl: string) => import(/* @vite-ignore */ modUrl);
 
 export const getModule = async ({
   url,
