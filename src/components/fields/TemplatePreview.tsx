@@ -1,7 +1,7 @@
 import React from 'react';
 import { EditorView } from '@codemirror/view';
 import { MarkdownPreview } from './MarkdownPreview'; // Adjust import path as needed
-import CodeMirror, { Extension } from '@uiw/react-codemirror'; // Or your CodeMirror React wrapper
+import ReactCodeMirror, { Extension } from '@uiw/react-codemirror'; // Or your CodeMirror React wrapper
 import { JavascriptPreview } from './JavascriptPreview';
 import { getCodeMirrorStyle } from '@/theme';
 
@@ -40,7 +40,7 @@ export const TemplatePreview: React.FC<Props> = ({
       );
     default:
       return (
-        <CodeMirror
+        <ReactCodeMirror
           {...getCodeMirrorStyle(fullscreen)}
           readOnly
           value={text}

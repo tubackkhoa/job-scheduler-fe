@@ -35,14 +35,14 @@
     "json5": "^2.2.3",
     "lodash": "^4.17.21",
     "luxon": "^3.7.2",
-    "markdown-it": "^14.1.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-router-dom": "^7.12.0"
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.12.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.21",
-    "@types/markdown-it": "^14.1.2",
     "@types/nunjucks": "^3.2.6",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",

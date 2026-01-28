@@ -13,26 +13,9 @@ import { JinjaCompletionConfig } from '@codemirror/lang-jinja';
 import * as esbuild from 'esbuild-wasm';
 import wasmUrl from 'esbuild-wasm/esbuild.wasm?url';
 import dayjs from 'dayjs';
-import { Chart } from 'chart.js/auto';
-import {
-  CandlestickController,
-  CandlestickElement
-} from 'chartjs-chart-financial';
-import 'chartjs-adapter-luxon';
 import utc from 'dayjs/plugin/utc';
-import MarkdownIt from 'markdown-it';
-
-Chart.register(CandlestickController, CandlestickElement);
 
 dayjs.extend(utc);
-
-/* ---------- Markdown instance (singleton) ---------- */
-
-export const markdown = new MarkdownIt({
-  html: true,
-  linkify: true,
-  breaks: true
-});
 
 export const scrollToTop = () => {
   window.scrollTo({
@@ -585,118 +568,6 @@ export const transformSignals = (signals: Signal[]) => {
     },
     following_entries: []
   }));
-};
-
-export const makeTablesSortable = (tables: NodeListOf<HTMLTableElement>) => {
-  tables.forEach((table) => {
-    const thead = table.querySelector('thead');
-    const tbody = table.querySelector('tbody');
-    if (!thead || !tbody) return;
-
-    const headers = Array.from(thead.querySelectorAll('th'));
-
-    headers.forEach((th, columnIndex) => {
-      let direction: 'asc' | 'desc' = 'asc';
-
-      th.setAttribute('aria-sort', 'none');
-
-      th.onclick = () => {
-        const rows = Array.from(tbody.querySelectorAll('tr'));
-
-        const sorted = rows.sort((a, b) => {
-          const aText = a.children[columnIndex]?.textContent?.trim() ?? '';
-          const bText = b.children[columnIndex]?.textContent?.trim() ?? '';
-
-          const aNum = Number(aText);
-          const bNum = Number(bText);
-          const isNumeric = !Number.isNaN(aNum) && !Number.isNaN(bNum);
-
-          if (isNumeric) {
-            return direction === 'asc' ? aNum - bNum : bNum - aNum;
-          }
-
-          return direction === 'asc'
-            ? aText.localeCompare(bText)
-            : bText.localeCompare(aText);
-        });
-
-        // reset other headers
-        headers.forEach((h) => h.setAttribute('aria-sort', 'none'));
-
-        direction = direction === 'asc' ? 'desc' : 'asc';
-        th.setAttribute('aria-sort', direction);
-
-        sorted.forEach((tr) => tbody.appendChild(tr));
-      };
-    });
-  });
-};
-
-const renderAlertHTML = (message: string) => `
-  <div
-    role="alert"
-    class="MuiAlert-root MuiAlert-standardError MuiAlert-standard"
-    style="
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 12px 16px;
-      margin: 8px 0;
-      border-radius: 4px;
-      background-color: var(--alert-bg);
-      color: var(--alert-text);
-      font-family: Roboto, Helvetica, Arial, sans-serif;
-      font-size: 0.875rem;
-      line-height: 1.43;
-    "
-  >
-    <div
-      class="MuiAlert-icon"
-      style="
-        margin-top: 2px;
-        color: var(--alert-icon);
-        font-size: 22px;
-        display: flex;
-      "
-    >
-      &#9888;
-    </div>
-
-    <div class="MuiAlert-message">
-      <strong style="font-weight: 500;">Chart error</strong><br />
-      ${message}
-    </div>
-  </div>
-`;
-
-export const makeCanvasCharts = (canvases: NodeListOf<HTMLCanvasElement>) => {
-  const charts = [];
-
-  canvases.forEach((canvas: HTMLCanvasElement, index) => {
-    try {
-      const raw = canvas.textContent?.trim();
-      if (!raw) return;
-      // this is for human typing, not serialization
-      const config = json5.parse(raw);
-      canvas.textContent = '';
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      charts.push(new Chart(ctx, config));
-    } catch (err) {
-      console.error('Invalid chart JSON:', err);
-      const alertHTML = renderAlertHTML(
-        err instanceof Error ? err.message : 'Invalid chart configuration'
-      );
-
-      canvas.replaceWith(
-        document.createRange().createContextualFragment(alertHTML)
-      );
-    }
-  });
-
-  return charts;
 };
 
 /* ---------------- blob cache ---------------- */

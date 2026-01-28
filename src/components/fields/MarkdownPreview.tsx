@@ -1,164 +1,152 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import DOMPurify from 'dompurify';
-import { Box, useTheme } from '@mui/material';
-import {
-  getModule,
-  makeCanvasCharts,
-  makeTablesSortable,
-  markdown
-} from '@/utils';
+import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import { MarkdownChart } from '../MarkdownChart';
+import { MarkdownModule } from '../MarkdownModule';
+import ReactCodeMirror, { Extension } from '@uiw/react-codemirror';
+import { json } from '@codemirror/lang-json';
+import { yaml } from '@codemirror/lang-yaml';
+import { sql } from '@codemirror/lang-sql';
+import { jinja } from '@codemirror/lang-jinja';
+import { markdown } from '@codemirror/lang-markdown';
+import { javascript } from '@codemirror/lang-javascript';
+import { useMemo } from 'react';
+import { SortableTable } from '../SortableTable';
 
-// patch markdown for chartjs
-const md_renderer_rules_fence = markdown.renderer.rules.fence.bind(
-  markdown.renderer.rules
-);
-
-markdown.renderer.rules.fence = (tokens, idx, options, env, slf) => {
-  const token = tokens[idx];
-  const info = token.info.trim();
-
-  switch (info) {
-    case 'chart':
-      return `<canvas class="chartjs">${markdown.utils.escapeHtml(
-        token.content
-      )}</canvas>`;
-
+const resolveLanguageExtensions = (lang: string): Extension[] => {
+  switch (lang) {
+    case 'json':
+      return [json()];
+    case 'yaml':
+    case 'yml':
+      return [yaml()];
+    case 'markdown':
+      return [markdown()];
+    case 'sql':
+      return [sql()];
+    case 'js':
+      return [javascript()];
     default:
-      return md_renderer_rules_fence(tokens, idx, options, env, slf);
+      return [jinja()];
   }
 };
 
-/* ---------- Component ---------- */
-
 export const MarkdownPreview = ({ text = '', maxHeight, code, url }) => {
-  const contentRef = useRef<HTMLElement>(null);
-  const [ModComponent, setModComponent] =
-    useState<React.ComponentType<any> | null>(null);
-  const theme = useTheme();
-  const boxStyles = useMemo(
+  const styles = useMemo(
     () => ({
-      typography: 'body1',
-      '--alert-bg':
-        theme.palette.mode === 'dark'
-          ? theme.palette.error.main + '29' // ~16% alpha
-          : theme.palette.error.light,
-      '--alert-text': theme.palette.error.contrastText,
-      '--alert-icon': theme.palette.error.main,
+      height: '100%',
+      maxWidth: '100%',
+      maxHeight,
+      '& .cm-editor': {
+        backgroundColor: 'transparent'
+      },
+      '& .cm-scroller': {
+        backgroundColor: 'transparent'
+      },
+      typography: 'body2',
       '& h1': { typography: 'h4', mb: 2 },
       '& h2': { typography: 'h5', mt: 3 },
       '& h3': { typography: 'h6', mt: 2 },
-
-      '& p': { mb: 1.5 },
-
-      '& ul': { pl: 3 },
-      '& li': { mb: 0.5 },
-
       '& table': {
         width: '100%',
         borderCollapse: 'collapse',
-        my: 2,
-        minWidth: 'max-content'
+        my: 2
       },
       '& th, & td': {
+        p: 1,
         border: '1px solid',
         borderColor: 'divider',
-        p: 1,
-        whiteSpace: 'nowrap'
+        whiteSpace: 'nowrap',
+        font: 'inherit'
       },
       '& th': {
         bgcolor: 'action.hover',
-        fontWeight: 'bold'
-      },
-
-      '& pre': {
-        bgcolor: 'grey.900',
-        color: 'grey.100',
-        p: 2,
-        borderRadius: 1,
-        overflowX: 'auto'
-      },
-
-      '& code': {
-        bgcolor: 'action.hover',
-        px: 0.5,
-        borderRadius: 0.5,
-        fontFamily: 'monospace'
-      },
-
-      '& blockquote': {
-        borderLeft: '4px solid',
-        borderColor: 'primary.main',
-        pl: 2,
-        color: 'text.secondary',
-        my: 2
+        fontWeight: 'medium'
       }
     }),
-    [theme]
+    [maxHeight]
   );
-
-  // ✅ Memoize markdown → HTML → sanitize
-  const htmlContent = useMemo(() => {
-    return DOMPurify.sanitize(markdown.render(text), {
-      ADD_TAGS: ['canvas'],
-      ADD_ATTR: ['class', 'data-*']
-    });
-  }, [text]);
-
-  // ✅ Chart.js needs layout-ready DOM
-  useLayoutEffect(() => {
-    const root = contentRef.current;
-    if (!root) return;
-
-    // ✅ NEW: enable table sorting
-    makeTablesSortable(root.querySelectorAll('table.sortable'));
-
-    const charts = makeCanvasCharts(root.querySelectorAll('canvas.chartjs'));
-
-    // ✅ Cleanup on unmount OR text change
-    return () => {
-      charts.forEach((chart) => chart.destroy());
-    };
-  });
-
-  /* ---------- Load module ---------- */
-  useEffect(() => {
-    if ((!url && !code) || !contentRef.current || !htmlContent) {
-      setModComponent(null);
-      return;
-    }
-
-    let mounted = true;
-
-    getModule({ url, code }).then((mod) => {
-      if (!mounted) return;
-      setModComponent(() => mod.default);
-    });
-
-    return () => {
-      mounted = false;
-    };
-  }, [url, code, htmlContent]);
-
   return (
-    <Box sx={{ height: '100%', maxWidth: '100%', maxHeight }}>
-      {/* Markdown HTML */}
-      <Box
-        sx={boxStyles}
-        ref={contentRef}
-        dangerouslySetInnerHTML={{ __html: htmlContent }}
-      />
+    <Box sx={styles}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          code({ className, children }) {
+            const lang = className?.replace('language-', '');
 
-      {/* React island (safe to re-render) */}
-      {ModComponent && (
-        <Box sx={{ mt: 2 }}>
-          <ModComponent
-            root={contentRef.current}
-            createPortal={createPortal}
-            {...window.globalProps}
-          />
-        </Box>
-      )}
+            switch (lang) {
+              case 'html':
+                return (
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(children as string)
+                    }}
+                  />
+                );
+              case 'chart':
+                return <MarkdownChart source={children as string} />;
+              case 'module':
+                return (
+                  <MarkdownModule
+                    url={url}
+                    code={code}
+                    source={children as string}
+                  />
+                );
+              case 'json':
+              case 'yml':
+              case 'yaml':
+              case 'markdown':
+              case 'sql':
+              case 'jinja':
+              case 'js':
+                return (
+                  <ReactCodeMirror
+                    theme="dark"
+                    basicSetup={{
+                      lineNumbers: false,
+                      foldGutter: false
+                    }}
+                    editable={false}
+                    value={children as string}
+                    extensions={resolveLanguageExtensions(lang)}
+                  />
+                );
+
+              default:
+                return <code className={className}>{children}</code>;
+            }
+          },
+
+          table({ children, className }) {
+            return (
+              <SortableTable className={className}>{children}</SortableTable>
+            );
+          },
+          thead({ children }) {
+            return <TableHead>{children}</TableHead>;
+          },
+          tbody({ children }) {
+            return <TableBody>{children}</TableBody>;
+          },
+          tr({ children }) {
+            return <TableRow>{children}</TableRow>;
+          },
+          th({ children }) {
+            return (
+              <TableCell sx={{ fontWeight: 'bold', cursor: 'pointer' }}>
+                {children}
+              </TableCell>
+            );
+          },
+          td({ children }) {
+            return <TableCell>{children}</TableCell>;
+          }
+        }}
+      >
+        {text}
+      </ReactMarkdown>
     </Box>
   );
 };

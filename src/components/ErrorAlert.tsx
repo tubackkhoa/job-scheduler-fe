@@ -1,24 +1,30 @@
-import { Alert, AlertTitle, IconButton } from "@mui/material";
-import { Close } from "@mui/icons-material";
+import { Alert, AlertTitle, IconButton } from '@mui/material';
+import { Close } from '@mui/icons-material';
 
-export function ErrorAlert({ message, onClose }) {
+interface Props {
+  message: string;
+  onClose?: () => void;
+}
+export function ErrorAlert({ message, onClose }: Props) {
   return (
     <Alert
       severity="error"
       variant="outlined"
       action={
-        <IconButton
-          aria-label="close"
-          color="inherit"
-          size="small"
-          onClick={onClose}
-        >
-          <Close fontSize="small" />
-        </IconButton>
+        onClose && (
+          <IconButton
+            aria-label="close"
+            color="inherit"
+            size="small"
+            onClick={onClose}
+          >
+            <Close fontSize="small" />
+          </IconButton>
+        )
       }
       sx={{
         borderRadius: 2,
-        bgcolor: 'rgba(239, 68, 68, 0.08)',
+        bgcolor: 'rgba(239, 68, 68, 0.08)'
       }}
     >
       <AlertTitle>Error</AlertTitle>
@@ -26,4 +32,3 @@ export function ErrorAlert({ message, onClose }) {
     </Alert>
   );
 }
-

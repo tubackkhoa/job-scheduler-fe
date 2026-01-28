@@ -20,8 +20,7 @@ export interface GlobalProps {
 
 export type DynamicFieldProps = FieldProps & GlobalProps;
 export type MarkdownFieldProps = GlobalProps & {
-  root: HTMLElement;
-  createPortal: typeof createPortal;
+  source: string;
 };
 export type ModuleProps = DynamicFieldProps | MarkdownFieldProps;
 
