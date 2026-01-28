@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import DOMPurify from 'dompurify';
 import { Box, useTheme } from '@mui/material';
 import {
@@ -153,7 +154,7 @@ export const MarkdownPreview = ({ text = '', maxHeight, code, url }) => {
         <Box sx={{ mt: 2 }}>
           <ModComponent
             root={contentRef.current}
-            theme={theme}
+            createPortal={createPortal}
             {...window.globalProps}
           />
         </Box>

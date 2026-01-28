@@ -5,6 +5,7 @@ import * as Mui from '@mui/material';
 import * as Utils from '@/utils';
 import _ from 'lodash';
 import * as MuiIcon from '@mui/icons-material';
+import { createPortal } from 'react-dom';
 
 export interface GlobalProps {
   React: typeof React;
@@ -18,7 +19,10 @@ export interface GlobalProps {
 }
 
 export type DynamicFieldProps = FieldProps & GlobalProps;
-export type MarkdownFieldProps = GlobalProps & { root: HTMLElement };
+export type MarkdownFieldProps = GlobalProps & {
+  root: HTMLElement;
+  createPortal: typeof createPortal;
+};
 export type ModuleProps = DynamicFieldProps | MarkdownFieldProps;
 
 declare global {
