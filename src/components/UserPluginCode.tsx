@@ -1,9 +1,5 @@
 import api from '@/api';
-import {
-  JinjaCompletionBuilder,
-  jinjaLinter,
-  yamlWithEmbeddedJS
-} from '@/utils';
+import { JinjaCompletionBuilder, jinjaLinter, yamlLangWithJs } from '@/utils';
 import { jinja } from '@codemirror/lang-jinja';
 import { Paper, Stack, Typography } from '@mui/material';
 import ReactCodeMirror from '@uiw/react-codemirror';
@@ -52,7 +48,7 @@ export default ({
           theme="dark"
           minHeight="200px"
           value={code.form}
-          extensions={[yamlWithEmbeddedJS()]}
+          extensions={[yamlLangWithJs]}
           onChange={(value) => {
             setIsDirty(true);
             setCode((prev) => {

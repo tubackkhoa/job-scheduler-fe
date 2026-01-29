@@ -12,14 +12,14 @@ import {
   Box
 } from '@mui/material';
 import { sql, PostgreSQL } from '@codemirror/lang-sql';
-import { json } from '@codemirror/lang-json';
-import { yaml } from '@codemirror/lang-yaml';
 import { jinja } from '@codemirror/lang-jinja';
-import { javascript } from '@codemirror/lang-javascript';
-import { markdown } from '@codemirror/lang-markdown';
-import { LanguageDescription } from '@codemirror/language';
 import { TemplatePreview } from './TemplatePreview';
-import { JinjaCompletionBuilder, jinjaLinter, jinjaEvaluate } from '@/utils';
+import {
+  JinjaCompletionBuilder,
+  jinjaLinter,
+  jinjaEvaluate,
+  languageByType
+} from '@/utils';
 import _ from 'lodash';
 import {
   Check,
@@ -28,32 +28,17 @@ import {
   FullscreenExit
 } from '@mui/icons-material';
 
-import { FieldProps } from '@rjsf/utils';
+import { FieldProps, RJSFSchema } from '@rjsf/utils';
 import { getCodeMirrorStyle, getContainerStyle } from '@/theme';
 
-const resolveLanguageExtension = (schema) => {
-  switch (schema.type) {
-    case 'json':
-      return json();
-    case 'yaml':
-    case 'yml':
-      return yaml();
-    case 'markdown':
-      return markdown({
-        codeLanguages: [
-          LanguageDescription.of({
-            name: 'chart',
-            support: json()
-          })
-        ]
-      });
-    case 'sql':
-      return sql({ dialect: PostgreSQL, schema: schema.meta });
-    case 'js':
-      return javascript({ jsx: true, typescript: true });
-    default:
-      return undefined;
+const resolveLanguageExtension = (schema: RJSFSchema) => {
+  const type = schema.type as string;
+  // sql with custom meta
+  if (type === 'sql') {
+    return sql({ dialect: PostgreSQL, schema: schema.meta });
   }
+
+  return languageByType[type];
 };
 
 export function TemplateField({
@@ -179,7 +164,12 @@ export function TemplateField({
         </Tabs>
         <Tooltip title={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>
           <IconButton
-            onClick={() => setFullscreen((f) => !f)}
+            onClick={() => {
+              setFullscreen((f) => !f);
+              setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+              }, 100);
+            }}
             size="small"
             aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
             sx={{ ml: 1 }}

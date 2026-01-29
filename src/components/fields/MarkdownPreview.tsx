@@ -1,106 +1,111 @@
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import DOMPurify from 'dompurify';
-import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { MarkdownChart } from '../MarkdownChart';
-import ReactCodeMirror, { Extension } from '@uiw/react-codemirror';
-import { json } from '@codemirror/lang-json';
-import { yaml } from '@codemirror/lang-yaml';
-import { sql } from '@codemirror/lang-sql';
-import { jinja } from '@codemirror/lang-jinja';
-import { markdown } from '@codemirror/lang-markdown';
-import { javascript } from '@codemirror/lang-javascript';
-import { useMemo } from 'react';
-import { SortableTable } from '../SortableTable';
-import { FieldPathId, FieldProps, RJSFSchema } from '@rjsf/utils';
-import DynamicField from './DynamicField';
-
-const resolveLanguageExtensions = (lang: string): Extension[] => {
-  switch (lang) {
-    case 'json':
-      return [json()];
-    case 'yaml':
-    case 'yml':
-      return [yaml()];
-    case 'markdown':
-      return [markdown()];
-    case 'sql':
-      return [sql()];
-    case 'js':
-      return [javascript()];
-    default:
-      return [jinja()];
-  }
-};
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import DOMPurify from "dompurify";
+import { Box, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
+import { MarkdownChart } from "../MarkdownChart";
+import ReactCodeMirror from "@uiw/react-codemirror";
+import { useMemo } from "react";
+import { SortableTable } from "../SortableTable";
+import { FieldPathId, FieldProps, RJSFSchema } from "@rjsf/utils";
+import DynamicField from "./DynamicField";
+import { mdCodeLanguages } from "@/utils";
 
 interface Props {
   text: string;
   maxHeight: string | number;
   schema: RJSFSchema;
   fieldPathId: FieldPathId;
-  registry: FieldProps['registry'];
+  registry: FieldProps["registry"];
 }
+
+const sanitizeSchema = {
+  ...defaultSchema,
+  // pandas df.to_html thường dùng table/thead/tbody/tr/th/td
+  tagNames: [
+    ...(defaultSchema.tagNames || []),
+    "table",
+    "thead",
+    "tbody",
+    "tr",
+    "th",
+    "td",
+    "span",
+    "div",
+  ],
+  attributes: {
+    ...defaultSchema.attributes,
+    table: ["className", "style"],
+    th: ["className", "style", "colspan", "rowspan"],
+    td: ["className", "style", "colspan", "rowspan"],
+    div: ["className", "style"],
+    span: ["className", "style"],
+  },
+};
+
 export const MarkdownPreview = ({
-  text = '',
+  text = "",
   fieldPathId,
   maxHeight,
   schema,
-  registry
+  registry,
 }: Props) => {
   const styles = useMemo(
     () => ({
-      height: '100%',
-      maxWidth: '100%',
+      height: "100%",
+      maxWidth: "100%",
       maxHeight,
-      '& .cm-editor': {
-        backgroundColor: 'transparent'
+      "& .cm-editor": {
+        backgroundColor: "transparent",
       },
-      '& .cm-scroller': {
-        backgroundColor: 'transparent'
+      "& .cm-scroller": {
+        backgroundColor: "transparent",
       },
-      typography: 'body2',
-      '& h1': { typography: 'h4', mb: 2 },
-      '& h2': { typography: 'h5', mt: 3 },
-      '& h3': { typography: 'h6', mt: 2 },
-      '& table': {
-        width: '100%',
-        borderCollapse: 'collapse',
-        my: 2
+      typography: "body2",
+      "& h1": { typography: "h4", mb: 2 },
+      "& h2": { typography: "h5", mt: 3 },
+      "& h3": { typography: "h6", mt: 2 },
+      "& table": {
+        width: "100%",
+        borderCollapse: "collapse",
+        my: 2,
       },
-      '& th, & td': {
+      "& th, & td": {
         p: 1,
-        border: '1px solid',
-        borderColor: 'divider',
-        whiteSpace: 'nowrap',
-        font: 'inherit'
+        border: "1px solid",
+        borderColor: "divider",
+        whiteSpace: "nowrap",
+        font: "inherit",
       },
-      '& th': {
-        bgcolor: 'action.hover',
-        fontWeight: 'medium'
-      }
+      "& th": {
+        bgcolor: "action.hover",
+        fontWeight: "medium",
+      },
     }),
-    [maxHeight]
+    [maxHeight],
   );
   return (
     <Box sx={styles}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}
         components={{
           code({ className, children, node }) {
-            const lang = className?.replace('language-', '');
+            const lang = className?.replace("language-", "");
 
             switch (lang) {
-              case 'html':
+              case "html":
                 return (
                   <div
                     dangerouslySetInnerHTML={{
-                      __html: DOMPurify.sanitize(children as string)
+                      __html: DOMPurify.sanitize(children as string),
                     }}
                   />
                 );
-              case 'chart':
+              case "chart":
                 return <MarkdownChart source={children as string} />;
-              case 'module':
+              case "module":
                 // get name of the node as name
                 return (
                   <DynamicField
@@ -114,23 +119,23 @@ export const MarkdownPreview = ({
                     formData={children as string}
                   />
                 );
-              case 'json':
-              case 'yml':
-              case 'yaml':
-              case 'markdown':
-              case 'sql':
-              case 'jinja':
-              case 'js':
+              case "json":
+              case "yml":
+              case "yaml":
+              case "markdown":
+              case "sql":
+              case "jinja":
+              case "js":
                 return (
                   <ReactCodeMirror
                     theme="dark"
                     basicSetup={{
                       lineNumbers: false,
-                      foldGutter: false
+                      foldGutter: false,
                     }}
                     editable={false}
                     value={children as string}
-                    extensions={resolveLanguageExtensions(lang)}
+                    extensions={[mdCodeLanguages[lang]]}
                   />
                 );
 
@@ -155,14 +160,14 @@ export const MarkdownPreview = ({
           },
           th({ children }) {
             return (
-              <TableCell sx={{ fontWeight: 'bold', cursor: 'pointer' }}>
+              <TableCell sx={{ fontWeight: "bold", cursor: "pointer" }}>
                 {children}
               </TableCell>
             );
           },
           td({ children }) {
             return <TableCell>{children}</TableCell>;
-          }
+          },
         }}
       >
         {text}

@@ -17,10 +17,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import { LanguageDescription } from '@codemirror/language';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
-import { jinja } from '@codemirror/lang-jinja';
-import { json } from '@codemirror/lang-json';
 import api from '@/api';
-import { yamlWithEmbeddedJS } from '@/utils';
+import { jinjaLang, yamlLangWithJs } from '@/utils';
 
 const GENERATE_SAMPLES = [
   {
@@ -258,11 +256,11 @@ export default function ChatBot() {
                     codeLanguages: [
                       LanguageDescription.of({
                         name: 'yaml',
-                        support: yamlWithEmbeddedJS()
+                        support: yamlLangWithJs
                       }),
                       LanguageDescription.of({
                         name: 'jinja2',
-                        support: jinja({ base: json() })
+                        support: jinjaLang
                       })
                     ]
                   })
