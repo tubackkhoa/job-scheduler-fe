@@ -14,7 +14,7 @@ import { useParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 
 const PANEL_OPEN_KEY = 'panel_open';
-const panelOpen = Boolean(localStorage.getItem(PANEL_OPEN_KEY) ?? 'true');
+const panelOpen = JSON.parse(localStorage.getItem(PANEL_OPEN_KEY) ?? 'true');
 
 export default function PluginManager({ setLoading, setError }) {
   const { plugin_id, session_id, job_id } = useParams<{
@@ -298,7 +298,7 @@ export default function PluginManager({ setLoading, setError }) {
         onClick={() =>
           setIsPanelOpen((v) => {
             const panelOpen = !v;
-            localStorage.setItem(PANEL_OPEN_KEY, String(panelOpen));
+            localStorage.setItem(PANEL_OPEN_KEY, JSON.stringify(panelOpen));
             return panelOpen;
           })
         }
