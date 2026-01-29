@@ -618,14 +618,15 @@ export const jinjaLang = jinja({ base: jsonLang });
 export const yamlLangWithJs = yamlWithEmbeddedJS();
 
 export const mdCodeLanguages: { [key: string]: LanguageSupport } = {
-  chart: javascriptLang,
   json: jsonLang,
-  js: javascriptLang,
   yml: yamlLang,
   yaml: yamlLang,
   sql: sqlLang,
   markdown: markdownLang,
-  jinja: jinjaLang
+  jinja: jinjaLang,
+  chart: javascriptLang,
+  module: javascriptLang,
+  js: javascriptLang
 };
 
 export const languageByType = {
