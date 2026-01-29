@@ -17,31 +17,17 @@ export default {
 /* ----------------------------------
  * Simplified props for normal React
  * ---------------------------------- */
-export type FieldComponentProps = Pick<
+export type FieldComponentProps = Omit<
   FieldProps,
-  'schema' | 'uiSchema' | 'formData' | 'onChange'
+  'onBlur' | 'onFocus' | 'fieldPathId' | 'registry' | 'name'
 >;
-
-/* ----------------------------------
- * Adapter: RJSF field -> normal component
- * ---------------------------------- */
-export function adaptField<T extends FC<FieldProps>>(Field: T) {
-  return (props: FieldComponentProps) =>
-    Field({
-      onBlur: undefined,
-      onFocus: undefined,
-      fieldPathId: undefined,
-      name: '',
-      registry: undefined,
-      ...props
-    } as FieldProps);
-}
 
 /* ----------------------------------
  * Normal React exports (adapted)
  * ---------------------------------- */
-export const Select = adaptField(SelectField);
-export const Template = adaptField(TemplateField);
-export const Version = adaptField(VersionField);
-export const MLThresholdsTable = adaptField(MLThresholdsTableField);
-export const Dynamic = adaptField(DynamicField);
+export const Select: FC<FieldComponentProps> = SelectField;
+export const Template: FC<FieldComponentProps> = TemplateField;
+export const Version: FC<FieldComponentProps> = VersionField;
+export const MLThresholdsTable: FC<FieldComponentProps> =
+  MLThresholdsTableField;
+export const Dynamic: FC<FieldComponentProps> = DynamicField;

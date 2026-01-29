@@ -1,211 +1,172 @@
-import { useLayoutEffect, useMemo, useRef } from 'react';
-import json5 from 'json5';
-import MarkdownIt from 'markdown-it';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import DOMPurify from 'dompurify';
-import { Box, useTheme } from '@mui/material';
-import { Chart } from 'chart.js/auto';
+import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import { MarkdownChart } from '../MarkdownChart';
+import ReactCodeMirror, { Extension } from '@uiw/react-codemirror';
+import { json } from '@codemirror/lang-json';
+import { yaml } from '@codemirror/lang-yaml';
+import { sql } from '@codemirror/lang-sql';
+import { jinja } from '@codemirror/lang-jinja';
+import { markdown } from '@codemirror/lang-markdown';
+import { javascript } from '@codemirror/lang-javascript';
+import { useMemo } from 'react';
+import { SortableTable } from '../SortableTable';
+import { FieldPathId, FieldProps, RJSFSchema } from '@rjsf/utils';
+import DynamicField from './DynamicField';
 
-import {
-  CandlestickController,
-  CandlestickElement
-} from 'chartjs-chart-financial';
-
-import 'chartjs-adapter-luxon';
-
-Chart.register(CandlestickController, CandlestickElement);
-
-/* ---------- Markdown instance (singleton) ---------- */
-
-const md = new MarkdownIt({
-  html: true,
-  linkify: true,
-  breaks: true
-});
-
-const md_renderer_rules_fence = md.renderer.rules.fence.bind(md.renderer.rules);
-
-md.renderer.rules.fence = (tokens, idx, options, env, slf) => {
-  const token = tokens[idx];
-  const info = token.info.trim();
-
-  switch (info) {
-    case 'chart':
-      return `<canvas class="chartjs">${md.utils.escapeHtml(
-        token.content
-      )}</canvas>`;
-
+const resolveLanguageExtensions = (lang: string): Extension[] => {
+  switch (lang) {
+    case 'json':
+      return [json()];
+    case 'yaml':
+    case 'yml':
+      return [yaml()];
+    case 'markdown':
+      return [markdown()];
+    case 'sql':
+      return [sql()];
+    case 'js':
+      return [javascript()];
     default:
-      return md_renderer_rules_fence(tokens, idx, options, env, slf);
+      return [jinja()];
   }
 };
 
-/* ---------- Component ---------- */
-
-const renderAlertHTML = (message) => `
-  <div
-    role="alert"
-    class="MuiAlert-root MuiAlert-standardError MuiAlert-standard"
-    style="
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 12px 16px;
-      margin: 8px 0;
-      border-radius: 4px;
-      background-color: var(--alert-bg);
-      color: var(--alert-text);
-      font-family: Roboto, Helvetica, Arial, sans-serif;
-      font-size: 0.875rem;
-      line-height: 1.43;
-    "
-  >
-    <div
-      class="MuiAlert-icon"
-      style="
-        margin-top: 2px;
-        color: var(--alert-icon);
-        font-size: 22px;
-        display: flex;
-      "
-    >
-      &#9888;
-    </div>
-
-    <div class="MuiAlert-message">
-      <strong style="font-weight: 500;">Chart error</strong><br />
-      ${DOMPurify.sanitize(message)}
-    </div>
-  </div>
-`;
-
-export const MarkdownPreview = ({ text = '', maxHeight }) => {
-  const ref = useRef(null);
-  const theme = useTheme();
-  // ✅ Memoize markdown → HTML → sanitize
-  const htmlContent = useMemo(() => {
-    return DOMPurify.sanitize(md.render(text), {
-      ADD_TAGS: ['canvas'],
-      ADD_ATTR: ['class']
-    });
-  }, [text]);
-
-  // ✅ Chart.js needs layout-ready DOM
-  useLayoutEffect(() => {
-    const root = ref.current;
-    if (!root) return;
-
-    const charts = [];
-    const canvases = root.querySelectorAll('canvas.chartjs');
-
-    canvases.forEach((canvas, index) => {
-      try {
-        const raw = canvas.textContent?.trim();
-        if (!raw) return;
-        // this is for human typing, not serialization
-        const config = json5.parse(raw);
-        canvas.textContent = '';
-
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        charts.push(new Chart(ctx, config));
-      } catch (err) {
-        console.error('Invalid chart JSON:', err);
-        const alertHTML = renderAlertHTML(
-          err instanceof Error ? err.message : 'Invalid chart configuration'
-        );
-
-        canvas.replaceWith(
-          document.createRange().createContextualFragment(alertHTML)
-        );
+interface Props {
+  text: string;
+  maxHeight: string | number;
+  schema: RJSFSchema;
+  fieldPathId: FieldPathId;
+  registry: FieldProps['registry'];
+}
+export const MarkdownPreview = ({
+  text = '',
+  fieldPathId,
+  maxHeight,
+  schema,
+  registry
+}: Props) => {
+  const styles = useMemo(
+    () => ({
+      height: '100%',
+      maxWidth: '100%',
+      maxHeight,
+      '& .cm-editor': {
+        backgroundColor: 'transparent'
+      },
+      '& .cm-scroller': {
+        backgroundColor: 'transparent'
+      },
+      typography: 'body2',
+      '& h1': { typography: 'h4', mb: 2 },
+      '& h2': { typography: 'h5', mt: 3 },
+      '& h3': { typography: 'h6', mt: 2 },
+      '& table': {
+        width: '100%',
+        borderCollapse: 'collapse',
+        my: 2
+      },
+      '& th, & td': {
+        p: 1,
+        border: '1px solid',
+        borderColor: 'divider',
+        whiteSpace: 'nowrap',
+        font: 'inherit'
+      },
+      '& th': {
+        bgcolor: 'action.hover',
+        fontWeight: 'medium'
       }
-    });
-
-    // ✅ Cleanup on unmount OR text change
-    return () => {
-      charts.forEach((chart) => chart.destroy());
-    };
-  });
-
+    }),
+    [maxHeight]
+  );
   return (
-    <Box
-      ref={ref}
-      sx={{
-        height: '100%',
-        maxHeight,
-        typography: 'body1',
-        overflowX: 'auto',
-        '--alert-bg':
-          theme.palette.mode === 'dark'
-            ? theme.palette.error.main + '29' // ~16% alpha
-            : theme.palette.error.light,
-        '--alert-text': theme.palette.error.contrastText,
-        '--alert-icon': theme.palette.error.main,
-        maxWidth: '100%',
-        '&::-webkit-scrollbar': {
-          height: '8px'
-        },
-        '&::-webkit-scrollbar-track': {
-          bgcolor: 'rgba(0, 0, 0, 0.2)'
-        },
-        '&::-webkit-scrollbar-thumb': {
-          bgcolor: 'rgba(255, 255, 255, 0.2)',
-          borderRadius: '4px',
-          '&:hover': {
-            bgcolor: 'rgba(255, 255, 255, 0.3)'
+    <Box sx={styles}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          code({ className, children, node }) {
+            const lang = className?.replace('language-', '');
+
+            switch (lang) {
+              case 'html':
+                return (
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(children as string)
+                    }}
+                  />
+                );
+              case 'chart':
+                return <MarkdownChart source={children as string} />;
+              case 'module':
+                // get name of the node as name
+                return (
+                  <DynamicField
+                    fieldPathId={fieldPathId}
+                    name={String(node.properties.name)}
+                    onChange={undefined}
+                    onBlur={undefined}
+                    onFocus={undefined}
+                    registry={registry}
+                    schema={schema}
+                    formData={children as string}
+                  />
+                );
+              case 'json':
+              case 'yml':
+              case 'yaml':
+              case 'markdown':
+              case 'sql':
+              case 'jinja':
+              case 'js':
+                return (
+                  <ReactCodeMirror
+                    theme="dark"
+                    basicSetup={{
+                      lineNumbers: false,
+                      foldGutter: false
+                    }}
+                    editable={false}
+                    value={children as string}
+                    extensions={resolveLanguageExtensions(lang)}
+                  />
+                );
+
+              default:
+                return <code className={className}>{children}</code>;
+            }
+          },
+
+          table({ children, className }) {
+            return (
+              <SortableTable className={className}>{children}</SortableTable>
+            );
+          },
+          thead({ children }) {
+            return <TableHead>{children}</TableHead>;
+          },
+          tbody({ children }) {
+            return <TableBody>{children}</TableBody>;
+          },
+          tr({ children }) {
+            return <TableRow>{children}</TableRow>;
+          },
+          th({ children }) {
+            return (
+              <TableCell sx={{ fontWeight: 'bold', cursor: 'pointer' }}>
+                {children}
+              </TableCell>
+            );
+          },
+          td({ children }) {
+            return <TableCell>{children}</TableCell>;
           }
-        },
-
-        '& h1': { typography: 'h4', mb: 2 },
-        '& h2': { typography: 'h5', mt: 3 },
-        '& h3': { typography: 'h6', mt: 2 },
-
-        '& p': { mb: 1.5 },
-
-        '& ul': { pl: 3 },
-        '& li': { mb: 0.5 },
-
-        '& table': {
-          width: '100%',
-          borderCollapse: 'collapse',
-          my: 2,
-          minWidth: 'max-content'
-        },
-        '& th, & td': {
-          border: '1px solid',
-          borderColor: 'divider',
-          p: 1,
-          whiteSpace: 'nowrap'
-        },
-        '& th': {
-          bgcolor: 'action.hover',
-          fontWeight: 'bold'
-        },
-
-        '& pre': {
-          bgcolor: 'grey.900',
-          color: 'grey.100',
-          p: 2,
-          borderRadius: 1,
-          overflowX: 'auto'
-        },
-
-        '& code': {
-          bgcolor: 'action.hover',
-          px: 0.5,
-          borderRadius: 0.5,
-          fontFamily: 'monospace'
-        },
-
-        '& blockquote': {
-          borderLeft: '4px solid',
-          borderColor: 'primary.main',
-          pl: 2,
-          color: 'text.secondary',
-          my: 2
-        }
-      }}
-      dangerouslySetInnerHTML={{ __html: htmlContent }}
-    />
+        }}
+      >
+        {text}
+      </ReactMarkdown>
+    </Box>
   );
 };

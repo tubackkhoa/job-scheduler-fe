@@ -7,6 +7,7 @@ import { CreatePluginModal } from "../components/CreatePluginModal";
 import { SESSIONS } from "../constants/session";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getDefaultFormState } from "@rjsf/utils";
+import validator from "@rjsf/validator-ajv8";
 import api from "@/api";
 import { getEnvDoc } from "@/utils";
 import { useParams } from "react-router-dom";
@@ -182,7 +183,7 @@ export default function PluginManager({ setLoading, setError }) {
       } else {
         await api.updateConfig(
           saveNew || !jobId ? 0 : jobId,
-          saveNew ? { ...payload, pluginId, sessionId } : payload,
+          saveNew || !jobId ? { ...payload, pluginId, sessionId } : payload,
         );
       }
 
@@ -274,7 +275,7 @@ export default function PluginManager({ setLoading, setError }) {
     () =>
       currentJob?.config ??
       (isNewJobMode && schema
-        ? getDefaultFormState(schema, undefined, schema)
+        ? getDefaultFormState(validator, schema, undefined, schema)
         : undefined),
     [currentJob, isNewJobMode, schema],
   );
