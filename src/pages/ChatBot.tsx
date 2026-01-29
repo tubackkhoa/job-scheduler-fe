@@ -3,6 +3,7 @@ import {
   Button,
   Container,
   Paper,
+  Box,
   Stack,
   TextField,
   Typography,
@@ -71,7 +72,7 @@ type Props = {
 
 function PromptSamples({ title, samples, onSelect }: Props) {
   return (
-    <Paper sx={{ p: 2, mb: 2 }}>
+    <Box sx={{ p: 2, mb: 2 }}>
       <Typography fontWeight={600} gutterBottom>
         {title}
       </Typography>
@@ -97,7 +98,7 @@ function PromptSamples({ title, samples, onSelect }: Props) {
           />
         ))}
       </Stack>
-    </Paper>
+    </Box>
   );
 }
 
