@@ -31,7 +31,7 @@ export const TemplatePreview: React.FC<Props> = ({
           registry={registry}
           schema={schema}
           text={text}
-          maxHeight={fullscreen ? '100%' : 600}
+          maxHeight={fullscreen ? '100%' : 'auto'}
         />
       );
     case 'js':
