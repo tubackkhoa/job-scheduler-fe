@@ -20,7 +20,6 @@ pnpm-debug.log*
 vite.log
 
 # Editor / IDE
-.vscode/
 .idea/
 *.swp
 *.swo
