@@ -5,7 +5,7 @@ import { JobDetails } from '../components/JobDetails';
 import { ResponseCard } from '../components/ResponseCard';
 import { CreatePluginModal } from '../components/CreatePluginModal';
 import { SESSIONS } from '../constants/session';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getDefaultFormState } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import api from '@/api';
