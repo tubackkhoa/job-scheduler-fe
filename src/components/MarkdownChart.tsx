@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { Chart, ChartConfiguration } from 'chart.js/auto';
-import json5 from 'json5';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Chart } from 'chart.js/auto';
 import { Alert } from '@mui/material';
 import {
   CandlestickController,
@@ -28,26 +27,30 @@ export const MarkdownChart = ({ source }: MarkdownChartProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const config = useMemo(() => {
+    try {
+      // now support JS, so please do not hurt your self
+      return new Function(`return (${source})`)();
+    } catch {}
+  }, [source]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !config) return;
 
-    let config: ChartConfiguration;
+    let chart: Chart;
 
     // 1️⃣ Parse config
     try {
-      config = json5.parse(source);
       setError(null);
+      // 🔥 Destroy ANY chart bound to this canvas (registry-safe)
+      Chart.getChart(canvas)?.destroy();
+      // 2️⃣ Create fresh chart
+      chart = new Chart(canvas, config);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Invalid chart config');
       return;
     }
-
-    // 🔥 Destroy ANY chart bound to this canvas (registry-safe)
-    Chart.getChart(canvas)?.destroy();
-
-    // 2️⃣ Create fresh chart
-    const chart = new Chart(canvas, config);
 
     let rafId: number | null = null;
 
@@ -68,7 +71,7 @@ export const MarkdownChart = ({ source }: MarkdownChartProps) => {
       if (rafId !== null) cancelAnimationFrame(rafId);
       chart.destroy();
     };
-  }, [source]);
+  }, [config]);
 
   if (error) {
     return <Alert severity="error">{error}</Alert>;
