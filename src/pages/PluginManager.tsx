@@ -14,7 +14,6 @@ import { useParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 
 const PANEL_OPEN_KEY = 'panel_open';
-const panelOpen = JSON.parse(localStorage.getItem(PANEL_OPEN_KEY) ?? 'true');
 
 export default function PluginManager({ setLoading, setError }) {
   const { plugin_id, session_id, job_id } = useParams<{
@@ -39,7 +38,9 @@ export default function PluginManager({ setLoading, setError }) {
   const [result, setResult] = useState<any>(null);
   const [createPluginModalOpen, setCreatePluginModalOpen] = useState(false);
 
-  const [isPanelOpen, setIsPanelOpen] = useState(panelOpen);
+  const [isPanelOpen, setIsPanelOpen] = useState(() =>
+    JSON.parse(localStorage.getItem(PANEL_OPEN_KEY) ?? 'true')
+  );
 
   /* ----------------------------------------
    * Initial load (plugins list)
