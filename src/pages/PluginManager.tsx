@@ -13,6 +13,9 @@ import { getEnvDoc } from '@/utils';
 import { useParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 
+const PANEL_OPEN_KEY = 'panel_open';
+const panelOpen = Boolean(localStorage.getItem(PANEL_OPEN_KEY) ?? 'true');
+
 export default function PluginManager({ setLoading, setError }) {
   const { plugin_id, session_id, job_id } = useParams<{
     plugin_id?: string;
@@ -36,7 +39,7 @@ export default function PluginManager({ setLoading, setError }) {
   const [result, setResult] = useState<any>(null);
   const [createPluginModalOpen, setCreatePluginModalOpen] = useState(false);
 
-  const [isPanelOpen, setIsPanelOpen] = useState(true);
+  const [isPanelOpen, setIsPanelOpen] = useState(panelOpen);
 
   /* ----------------------------------------
    * Initial load (plugins list)
@@ -292,7 +295,13 @@ export default function PluginManager({ setLoading, setError }) {
     <>
       <IconButton
         size="small"
-        onClick={() => setIsPanelOpen((v) => !v)}
+        onClick={() =>
+          setIsPanelOpen((v) => {
+            const panelOpen = !v;
+            localStorage.setItem(PANEL_OPEN_KEY, String(panelOpen));
+            return panelOpen;
+          })
+        }
         sx={{
           position: 'fixed',
           bottom: 10,
