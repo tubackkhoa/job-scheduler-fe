@@ -86,7 +86,7 @@ export const MarkdownPreview = ({
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          code({ className, children, key }) {
+          code({ className, children, node }) {
             const lang = className?.replace('language-', '');
 
             switch (lang) {
@@ -101,10 +101,11 @@ export const MarkdownPreview = ({
               case 'chart':
                 return <MarkdownChart source={children as string} />;
               case 'module':
+                // get name of the node as name
                 return (
                   <DynamicField
                     fieldPathId={fieldPathId}
-                    name={String(key)}
+                    name={String(node.properties.name)}
                     onChange={undefined}
                     onBlur={undefined}
                     onFocus={undefined}
