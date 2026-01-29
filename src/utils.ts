@@ -1,17 +1,21 @@
 import json5 from 'json5';
 import { PyodideAPI } from 'pyodide';
 import { linter, Diagnostic } from '@codemirror/lint';
-import { syntaxTree } from '@codemirror/language';
+import { LanguageDescription, syntaxTree } from '@codemirror/language';
 import _ from 'lodash';
 import api from './api';
 import { LanguageSupport, LRLanguage } from '@codemirror/language';
 import { parseMixed } from '@lezer/common';
 import { javascript } from '@codemirror/lang-javascript';
 import { yamlLanguage } from '@codemirror/lang-yaml';
-import jinja from './jinja.py?raw';
-import { JinjaCompletionConfig } from '@codemirror/lang-jinja';
+import { json } from '@codemirror/lang-json';
+import { yaml } from '@codemirror/lang-yaml';
+import { sql } from '@codemirror/lang-sql';
+import { markdown } from '@codemirror/lang-markdown';
+import { jinja, JinjaCompletionConfig } from '@codemirror/lang-jinja';
 import * as esbuild from 'esbuild-wasm';
 import wasmUrl from 'esbuild-wasm/esbuild.wasm?url';
+import jinjaPython from './jinja.py?raw';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 
@@ -232,7 +236,7 @@ const applyFunction = (name: string) => {
 };
 
 export const yamlWithEmbeddedJS = (keyNames: string[] = ['code']) => {
-  const jsParser = javascript({ jsx: true, typescript: true }).language.parser;
+  const jsParser = javascriptLang.language.parser;
 
   // 1. Reconfigure the base YAML parser with the mixed-language logic
   const mixedYamlParser = yamlLanguage.parser.configure({
@@ -473,7 +477,7 @@ const initPyodide: Promise<PyodideAPI> = (async () => {
   const pyodide: PyodideAPI = await loadPyodide();
   // Ensure Jinja2 is available
   await pyodide.loadPackage('jinja2');
-  await pyodide.runPythonAsync(jinja);
+  await pyodide.runPythonAsync(jinjaPython);
   console.log('Pyodide initialized');
   return pyodide;
 })();
@@ -602,4 +606,36 @@ export const createUrlFromString = (code: string) => {
   blobCache.set(hash, url);
 
   return url;
+};
+
+// export language to re-use
+export const jsonLang = json();
+export const yamlLang = yaml();
+export const markdownLang = markdown();
+export const sqlLang = sql();
+export const javascriptLang = javascript({ jsx: true, typescript: true });
+export const jinjaLang = jinja({ base: jsonLang });
+export const yamlLangWithJs = yamlWithEmbeddedJS();
+
+export const mdCodeLanguages: { [key: string]: LanguageSupport } = {
+  chart: javascriptLang,
+  json: jsonLang,
+  js: javascriptLang,
+  yml: yamlLang,
+  yaml: yamlLang,
+  sql: sqlLang,
+  markdown: markdownLang,
+  jinja: jinjaLang
+};
+
+export const languageByType = {
+  json: jsonLang,
+  yaml: yamlLang,
+  yml: yamlLang,
+  js: javascriptLang,
+  markdown: markdown({
+    codeLanguages: Object.entries(mdCodeLanguages).map(([name, support]) =>
+      LanguageDescription.of({ name, support })
+    )
+  })
 };

@@ -3,35 +3,12 @@ import remarkGfm from 'remark-gfm';
 import DOMPurify from 'dompurify';
 import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { MarkdownChart } from '../MarkdownChart';
-import ReactCodeMirror, { Extension } from '@uiw/react-codemirror';
-import { json } from '@codemirror/lang-json';
-import { yaml } from '@codemirror/lang-yaml';
-import { sql } from '@codemirror/lang-sql';
-import { jinja } from '@codemirror/lang-jinja';
-import { markdown } from '@codemirror/lang-markdown';
-import { javascript } from '@codemirror/lang-javascript';
+import ReactCodeMirror from '@uiw/react-codemirror';
 import { useMemo } from 'react';
 import { SortableTable } from '../SortableTable';
 import { FieldPathId, FieldProps, RJSFSchema } from '@rjsf/utils';
 import DynamicField from './DynamicField';
-
-const resolveLanguageExtensions = (lang: string): Extension[] => {
-  switch (lang) {
-    case 'json':
-      return [json()];
-    case 'yaml':
-    case 'yml':
-      return [yaml()];
-    case 'markdown':
-      return [markdown()];
-    case 'sql':
-      return [sql()];
-    case 'js':
-      return [javascript()];
-    default:
-      return [jinja()];
-  }
-};
+import { mdCodeLanguages } from '@/utils';
 
 interface Props {
   text: string;
@@ -130,7 +107,7 @@ export const MarkdownPreview = ({
                     }}
                     editable={false}
                     value={children as string}
-                    extensions={resolveLanguageExtensions(lang)}
+                    extensions={[mdCodeLanguages[lang]]}
                   />
                 );
 

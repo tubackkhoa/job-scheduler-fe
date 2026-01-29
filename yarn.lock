@@ -1421,6 +1421,11 @@ chartjs-chart-financial@^0.2.1:
   resolved "https://registry.yarnpkg.com/chartjs-chart-financial/-/chartjs-chart-financial-0.2.1.tgz#c488fec6f7528838bf7d5813c615ae4f60941082"
   integrity sha512-RI3zrszyf2YdW7ME8I5XDsicy6YaU+uA1XZmGddR3rdcQlGf4pSgGFK8O0PWPO5Szdc8wZ8qpns++yib6pWBaw==
 
+chartjs-plugin-datalabels@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/chartjs-plugin-datalabels/-/chartjs-plugin-datalabels-2.2.0.tgz#369578e131d743c2e34b5fbe2d3f9335f6639b8f"
+  integrity sha512-14ZU30lH7n89oq+A4bWaJPnAG8a7ZTk7dKf48YAzMvJjQtjrgg5Dpk9f+LbjCF6bpx3RAGTeL13IXpKQYyRvlw==
+
 ci-info@^3.7.0:
   version "3.9.0"
   resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-3.9.0.tgz#4279a62028a7b1f262f3473fc9605f5e218c59b4"

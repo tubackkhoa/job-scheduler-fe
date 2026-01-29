@@ -9,13 +9,15 @@ import {
   OhlcElement
 } from 'chartjs-chart-financial';
 import 'chartjs-adapter-luxon';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 // 🔥 Register financial charts
 Chart.register(
   CandlestickController,
   OhlcController,
   CandlestickElement,
-  OhlcElement
+  OhlcElement,
+  ChartDataLabels
 );
 
 type MarkdownChartProps = {
@@ -47,8 +49,23 @@ export const MarkdownChart = ({ source }: MarkdownChartProps) => {
     // 2️⃣ Create fresh chart
     const chart = new Chart(canvas, config);
 
+    let rafId: number | null = null;
+
+    const handleResize = () => {
+      // Debounce via requestAnimationFrame
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        chart.resize();
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+
     // 3️⃣ Cleanup on unmount / HMR
     return () => {
+      window.removeEventListener('resize', handleResize);
+      if (rafId !== null) cancelAnimationFrame(rafId);
       chart.destroy();
     };
   }, [source]);
