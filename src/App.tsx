@@ -13,6 +13,7 @@ import Login from './pages/Login';
 import RequireAuth from './auth/RequireAuth';
 import Dashboard from './pages/Dashboard';
 import ChatBot from './pages/ChatBot';
+import PageNotFound from './pages/PageNotFound';
 
 export default function App() {
   // to show loading and error global
@@ -59,7 +60,7 @@ export default function App() {
                   {import.meta.env.VITE_CHATBOT_ENABLED && (
                     <Route path="/chatbot" element={<ChatBot />} />
                   )}
-                  <Route path="*" element={<div>404 Not Found</div>} />
+                  <Route path="*" element={<PageNotFound />} />
                 </Route>
               </Routes>
             </DialogsProvider>
