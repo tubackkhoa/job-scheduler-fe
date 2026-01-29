@@ -4,28 +4,32 @@ import { MarkdownPreview } from './MarkdownPreview'; // Adjust import path as ne
 import ReactCodeMirror, { Extension } from '@uiw/react-codemirror'; // Or your CodeMirror React wrapper
 import { JavascriptPreview } from './JavascriptPreview';
 import { getCodeMirrorStyle } from '@/theme';
+import { FieldPathId, FieldProps, RJSFSchema } from '@rjsf/utils';
 
 type Props = {
-  lang: string;
+  schema: RJSFSchema;
+  fieldPathId: FieldPathId;
+  registry: FieldProps['registry'];
   text: string;
   fullscreen: boolean;
   extensions: Extension[]; // You can be more specific based on your extensions type
 } & CodeSchema;
 
 export const TemplatePreview: React.FC<Props> = ({
-  lang,
+  schema,
   text,
   fullscreen,
-  extensions,
-  code,
-  url
+  fieldPathId,
+  registry,
+  extensions
 }) => {
-  switch (lang) {
+  switch (schema.type as string) {
     case 'markdown':
       return (
         <MarkdownPreview
-          code={code}
-          url={url}
+          fieldPathId={fieldPathId}
+          registry={registry}
+          schema={schema}
           text={text}
           maxHeight={fullscreen ? '100%' : 600}
         />

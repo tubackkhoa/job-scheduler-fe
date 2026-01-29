@@ -3,7 +3,6 @@ import remarkGfm from 'remark-gfm';
 import DOMPurify from 'dompurify';
 import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { MarkdownChart } from '../MarkdownChart';
-import { Dynamic } from './index';
 import ReactCodeMirror, { Extension } from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import { yaml } from '@codemirror/lang-yaml';
@@ -13,6 +12,8 @@ import { markdown } from '@codemirror/lang-markdown';
 import { javascript } from '@codemirror/lang-javascript';
 import { useMemo } from 'react';
 import { SortableTable } from '../SortableTable';
+import { FieldPathId, FieldProps, RJSFSchema } from '@rjsf/utils';
+import DynamicField from './DynamicField';
 
 const resolveLanguageExtensions = (lang: string): Extension[] => {
   switch (lang) {
@@ -32,7 +33,20 @@ const resolveLanguageExtensions = (lang: string): Extension[] => {
   }
 };
 
-export const MarkdownPreview = ({ text = '', maxHeight, code, url }) => {
+interface Props {
+  text: string;
+  maxHeight: string | number;
+  schema: RJSFSchema;
+  fieldPathId: FieldPathId;
+  registry: FieldProps['registry'];
+}
+export const MarkdownPreview = ({
+  text = '',
+  fieldPathId,
+  maxHeight,
+  schema,
+  registry
+}: Props) => {
   const styles = useMemo(
     () => ({
       height: '100%',
@@ -72,7 +86,7 @@ export const MarkdownPreview = ({ text = '', maxHeight, code, url }) => {
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          code({ className, children }) {
+          code({ className, children, key }) {
             const lang = className?.replace('language-', '');
 
             switch (lang) {
@@ -88,8 +102,14 @@ export const MarkdownPreview = ({ text = '', maxHeight, code, url }) => {
                 return <MarkdownChart source={children as string} />;
               case 'module':
                 return (
-                  <Dynamic
-                    schema={{ url, code }}
+                  <DynamicField
+                    fieldPathId={fieldPathId}
+                    name={String(key)}
+                    onChange={undefined}
+                    onBlur={undefined}
+                    onFocus={undefined}
+                    registry={registry}
+                    schema={schema}
                     formData={children as string}
                   />
                 );

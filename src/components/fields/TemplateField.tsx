@@ -263,11 +263,11 @@ export function TemplateField({
             </IconButton>
           </Tooltip>
           <TemplatePreview
-            lang={schema.type as string}
             fullscreen={fullscreen}
+            fieldPathId={fieldPathId}
+            registry={registry}
             text={previewCode}
-            code={schema.code}
-            url={schema.url}
+            schema={schema}
             extensions={extensions}
           />
         </Box>
