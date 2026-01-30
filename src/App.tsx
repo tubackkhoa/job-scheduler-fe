@@ -50,7 +50,8 @@ export default function App() {
                       <Dashboard setLoading={setLoading} setError={setError} />
                     }
                   />
-                  <Route path="plugins/:plugin_id" element={pluginElement} />
+
+                  <Route path="plugins/:plugin_id?" element={pluginElement} />
                   <Route
                     path="plugins/:plugin_id/sessions/:session_id"
                     element={pluginElement}
