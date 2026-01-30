@@ -38,7 +38,7 @@ export const MarkdownChart = ({ source }: MarkdownChartProps) => {
     const resizeObserver = new ResizeObserver(() => {
       chart?.resize();
     });
-    resizeObserver.observe(document.getElementById('plugin-right-panel'));
+    resizeObserver.observe(canvas);
 
     // 3️⃣ Cleanup on unmount / HMR
     return () => {
@@ -51,5 +51,5 @@ export const MarkdownChart = ({ source }: MarkdownChartProps) => {
     return <Alert severity="error">{error}</Alert>;
   }
 
-  return <canvas ref={canvasRef} />;
+  return <canvas ref={canvasRef} style={{ width: '100%' }} />;
 };

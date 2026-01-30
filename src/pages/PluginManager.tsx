@@ -357,10 +357,7 @@ export default function PluginManager({ setLoading, setError }) {
           </Box>
         </Grid>
 
-        <Grid
-          id="plugin-right-panel"
-          size={{ xs: 12, md: isPanelOpen ? 9 : 12 }}
-        >
+        <Grid size={{ xs: 12, md: isPanelOpen ? 9 : 12 }}>
           <JobDetails
             jobId={jobId}
             jobDesc={jobDesc}
