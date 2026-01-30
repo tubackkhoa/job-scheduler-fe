@@ -1,13 +1,17 @@
 import { FieldProps, RJSFSchema } from '@rjsf/utils';
 import React from 'react';
-import { ConfirmationDialog } from '@/components/ConfirmationDialog';
+import { ConfirmationDialog } from './components/ConfirmationDialog';
 import * as Mui from '@mui/material';
-import * as Utils from '@/utils';
+import * as Utils from './utils';
 import _ from 'lodash';
 import * as MuiIcon from '@mui/icons-material';
+import * as LightweightChart from 'lightweight-charts';
+import { Chart } from 'chart.js/auto';
 
 export interface GlobalProps {
   React: typeof React;
+  Chart: typeof Chart;
+  LightweightChart: typeof LightweightChart;
   MuiIcon: typeof MuiIcon;
   Mui: typeof Mui & {
     ConfirmationDialog: typeof ConfirmationDialog;

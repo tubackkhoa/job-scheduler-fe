@@ -34,6 +34,7 @@
     "dompurify": "^3.3.1",
     "esbuild-wasm": "^0.27.2",
     "json5": "^2.2.3",
+    "lightweight-charts": "^5.1.0",
     "lodash": "^4.17.21",
     "luxon": "^3.7.2",
     "react": "^19.2.0",
