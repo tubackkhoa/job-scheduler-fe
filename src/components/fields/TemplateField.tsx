@@ -155,9 +155,6 @@ export function TemplateField({
           <IconButton
             onClick={() => {
               setFullscreen((f) => !f);
-              setTimeout(() => {
-                window.dispatchEvent(new Event('resize'));
-              }, 100);
             }}
             size="small"
             aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}

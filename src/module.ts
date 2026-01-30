@@ -4,6 +4,25 @@ import * as Utils from '@/utils';
 import * as MuiIcon from '@mui/icons-material';
 import _ from 'lodash';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
+import { Chart } from 'chart.js/auto';
+import {
+  CandlestickController,
+  OhlcController,
+  CandlestickElement,
+  OhlcElement
+} from 'chartjs-chart-financial';
+import 'chartjs-adapter-luxon';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+import * as LightweightChart from 'lightweight-charts';
+
+// 🔥 Register financial charts
+Chart.register(
+  CandlestickController,
+  OhlcController,
+  CandlestickElement,
+  OhlcElement,
+  ChartDataLabels
+);
 
 // polyfill global props
 window.React = React;
@@ -13,6 +32,8 @@ window.globalProps = {
   React,
   MuiIcon,
   Mui: ExtendedMui,
+  Chart,
+  LightweightChart,
   Utils: ExtendedUtils
 };
 

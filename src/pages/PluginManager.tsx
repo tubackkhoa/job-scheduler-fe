@@ -300,9 +300,6 @@ export default function PluginManager({ setLoading, setError }) {
           setIsPanelOpen((v) => {
             const panelOpen = !v;
             localStorage.setItem(PANEL_OPEN_KEY, JSON.stringify(panelOpen));
-            setTimeout(() => {
-              window.dispatchEvent(new Event('resize'));
-            }, 100);
             return panelOpen;
           })
         }
@@ -360,7 +357,10 @@ export default function PluginManager({ setLoading, setError }) {
           </Box>
         </Grid>
 
-        <Grid size={{ xs: 12, md: isPanelOpen ? 9 : 12 }}>
+        <Grid
+          id="plugin-right-panel"
+          size={{ xs: 12, md: isPanelOpen ? 9 : 12 }}
+        >
           <JobDetails
             jobId={jobId}
             jobDesc={jobDesc}

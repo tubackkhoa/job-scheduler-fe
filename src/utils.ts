@@ -45,8 +45,18 @@ const resolveRef = (schema: any, ref: string) => {
   return schema.$defs[defKey] ?? null;
 };
 
-export const convertByType = (value: string, field: any) => {
-  switch (typeof field) {
+export type TypeofResult =
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'bigint'
+  | 'symbol'
+  | 'undefined'
+  | 'object'
+  | 'function';
+
+export const convertByType = (value: string, type: TypeofResult) => {
+  switch (type) {
     case 'number':
       return Number(value);
 
@@ -98,7 +108,7 @@ export const buildUiSchemaWithExpr = async (
             );
 
             if (subKey) {
-              node[subKey] = convertByType(extraOptions, node[subKey]);
+              node[subKey] = convertByType(extraOptions, typeof node[subKey]);
             } else {
               _.merge(node, extraOptions);
             }

@@ -1,23 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Chart } from 'chart.js/auto';
 import { Alert } from '@mui/material';
-import {
-  CandlestickController,
-  OhlcController,
-  CandlestickElement,
-  OhlcElement
-} from 'chartjs-chart-financial';
-import 'chartjs-adapter-luxon';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
-
-// 🔥 Register financial charts
-Chart.register(
-  CandlestickController,
-  OhlcController,
-  CandlestickElement,
-  OhlcElement,
-  ChartDataLabels
-);
 
 type MarkdownChartProps = {
   source: string;
@@ -51,24 +34,15 @@ export const MarkdownChart = ({ source }: MarkdownChartProps) => {
       setError(e instanceof Error ? e.message : 'Invalid chart config');
       return;
     }
-
-    let rafId: number | null = null;
-
-    const handleResize = () => {
-      // Debounce via requestAnimationFrame
-      if (rafId !== null) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        chart.resize();
-      });
-    };
-
-    window.addEventListener('resize', handleResize);
+    // watch the whole body
+    const resizeObserver = new ResizeObserver(() => {
+      chart?.resize();
+    });
+    resizeObserver.observe(document.getElementById('plugin-right-panel'));
 
     // 3️⃣ Cleanup on unmount / HMR
     return () => {
-      window.removeEventListener('resize', handleResize);
-      if (rafId !== null) cancelAnimationFrame(rafId);
+      resizeObserver.disconnect();
       chart.destroy();
     };
   }, [config]);
