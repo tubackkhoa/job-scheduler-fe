@@ -122,6 +122,10 @@ export default {
     return data;
   },
 
+  fetchRoutes(pluginId: number): Promise<[string, CodeSchema][]> {
+    return request(`/api/plugins/routes/${pluginId}`);
+  },
+
   fetchSchema(
     sessionId: number,
     pluginId: number

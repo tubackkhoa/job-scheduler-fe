@@ -51,7 +51,9 @@ table.sortable th {
 
 }
 
-
+a#tv-attr-logo{
+  display: none;
+}
 
 /* Smaller font on mobile */
 @media (max-width: 600px) {

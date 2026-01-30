@@ -14,6 +14,7 @@ import RequireAuth from './auth/RequireAuth';
 import Dashboard from './pages/Dashboard';
 import ChatBot from './pages/ChatBot';
 import PageNotFound from './pages/PageNotFound';
+import CustomPluginPage from './pages/CustomPluginPage';
 
 export default function App() {
   // to show loading and error global
@@ -57,6 +58,10 @@ export default function App() {
                   <Route
                     path="plugins/:plugin_id/sessions/:session_id/jobs/:job_id"
                     element={pluginElement}
+                  />
+                  <Route
+                    path="plugins/:plugin_id/*"
+                    element={<CustomPluginPage />}
                   />
                   {import.meta.env.VITE_CHATBOT_ENABLED && (
                     <Route path="chatbot" element={<ChatBot />} />
