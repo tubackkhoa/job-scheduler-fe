@@ -17,8 +17,12 @@ import PageNotFound from './pages/PageNotFound';
 
 export default function App() {
   // to show loading and error global
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const pluginElement = (
+    <PluginManager setLoading={setLoading} setError={setError} />
+  );
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -45,20 +49,17 @@ export default function App() {
                       <Dashboard setLoading={setLoading} setError={setError} />
                     }
                   />
+                  <Route path="plugins/:plugin_id" element={pluginElement} />
                   <Route
-                    path="/plugins/:plugin_id?"
-                    element={
-                      <PluginManager
-                        setLoading={setLoading}
-                        setError={setError}
-                      />
-                    }
-                  >
-                    <Route path="sessions/:session_id" />
-                    <Route path="sessions/:session_id/jobs/:job_id" />
-                  </Route>
+                    path="plugins/:plugin_id/sessions/:session_id"
+                    element={pluginElement}
+                  />
+                  <Route
+                    path="plugins/:plugin_id/sessions/:session_id/jobs/:job_id"
+                    element={pluginElement}
+                  />
                   {import.meta.env.VITE_CHATBOT_ENABLED && (
-                    <Route path="/chatbot" element={<ChatBot />} />
+                    <Route path="chatbot" element={<ChatBot />} />
                   )}
                   <Route path="*" element={<PageNotFound />} />
                 </Route>
