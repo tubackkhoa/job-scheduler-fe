@@ -10,7 +10,7 @@ import { javascript } from '@codemirror/lang-javascript';
 import { yamlLanguage } from '@codemirror/lang-yaml';
 import { json } from '@codemirror/lang-json';
 import { yaml } from '@codemirror/lang-yaml';
-import { sql } from '@codemirror/lang-sql';
+import { PostgreSQL, sql } from '@codemirror/lang-sql';
 import { markdown } from '@codemirror/lang-markdown';
 import { jinja, JinjaCompletionConfig } from '@codemirror/lang-jinja';
 import * as esbuild from 'esbuild-wasm';
@@ -18,6 +18,7 @@ import wasmUrl from 'esbuild-wasm/esbuild.wasm?url';
 import jinjaPython from './jinja.py?raw';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import { RJSFSchema } from '@rjsf/utils';
 
 dayjs.extend(utc);
 
@@ -612,12 +613,12 @@ export const createUrlFromString = (code: string) => {
 export const jsonLang = json();
 export const yamlLang = yaml();
 export const markdownLang = markdown();
-export const sqlLang = sql();
+export const sqlLang = sql({ dialect: PostgreSQL });
 export const javascriptLang = javascript({ jsx: true, typescript: true });
 export const jinjaLang = jinja({ base: jsonLang });
 export const yamlLangWithJs = yamlWithEmbeddedJS();
 
-export const mdCodeLanguages: { [key: string]: LanguageSupport } = {
+export const mdCodeLanguages = {
   json: jsonLang,
   yml: yamlLang,
   yaml: yamlLang,
@@ -629,6 +630,8 @@ export const mdCodeLanguages: { [key: string]: LanguageSupport } = {
   js: javascriptLang
 };
 
+export type MdCodeLanguage = keyof typeof mdCodeLanguages;
+
 export const languageByType = {
   json: jsonLang,
   yaml: yamlLang,
@@ -639,4 +642,18 @@ export const languageByType = {
       LanguageDescription.of({ name, support })
     )
   })
+};
+
+export const resolveLanguageExtension = (
+  schema: RJSFSchema
+): LanguageSupport => {
+  const type = schema.type as string;
+  // sql with custom meta
+  if (type === 'sql') {
+    return schema.meta
+      ? sql({ dialect: PostgreSQL, schema: schema.meta })
+      : sqlLang;
+  }
+
+  return languageByType[type];
 };
