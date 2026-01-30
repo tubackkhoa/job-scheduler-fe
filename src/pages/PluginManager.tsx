@@ -300,6 +300,9 @@ export default function PluginManager({ setLoading, setError }) {
           setIsPanelOpen((v) => {
             const panelOpen = !v;
             localStorage.setItem(PANEL_OPEN_KEY, JSON.stringify(panelOpen));
+            setTimeout(() => {
+              window.dispatchEvent(new Event('resize'));
+            }, 100);
             return panelOpen;
           })
         }
