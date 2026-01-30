@@ -14,7 +14,6 @@ const result = await build({
   legalComments: 'none',
   format: 'esm',
   target: 'es2020',
-  external: ['react-dom', '@rjsf/*', '@mui/*'],
   loader: {
     '.tsx': 'tsx',
     '.py': 'text'
