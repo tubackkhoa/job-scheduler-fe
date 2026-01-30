@@ -25,7 +25,7 @@ dayjs.extend(utc);
 export const scrollToTop = () => {
   window.scrollTo({
     top: 0,
-    behavior: 'smooth'
+    behavior: 'smooth',
   });
 };
 
@@ -78,7 +78,7 @@ export const buildUiSchemaWithExpr = async (
   packageName: string,
   context: Record<string, any>,
   schema: any,
-  changedFieldId: string
+  changedFieldId: string,
 ): Promise<[any, string[]]> => {
   if (!schema) return schema;
 
@@ -104,7 +104,7 @@ export const buildUiSchemaWithExpr = async (
               packageName,
               expr,
               context,
-              !!subKey
+              !!subKey,
             );
 
             if (subKey) {
@@ -139,7 +139,7 @@ export const extractUiSchema = (schema: any): Record<string, any> => {
   if (!schema?.properties) return {};
 
   const uiSchema: Record<string, any> = {
-    'ui:submitButtonOptions': { norender: true }
+    'ui:submitButtonOptions': { norender: true },
   };
 
   const stack: Array<{
@@ -212,13 +212,30 @@ export const formatMessage = (message: any): any => {
           hour: '2-digit',
           minute: '2-digit',
           second: '2-digit',
-          hour12: true
+          hour12: true,
         });
       } catch {
         return match;
       }
-    }
+    },
   );
+};
+
+export const formatUtcTime = (isoString: any): string => {
+  if (isoString === null || isoString === undefined) return '-';
+  if (typeof isoString !== 'string') return String(isoString);
+
+  try {
+    // Check if it looks like an ISO date (basic check)
+    // 2026-01-30T14:26:20+07:00 or 2026-01-30T14:26:20Z
+    if (!/^\d{4}-\d{2}-\d{2}T/.test(isoString)) return isoString;
+
+    const dt = dayjs.utc(isoString);
+    if (!dt.isValid()) return isoString;
+    return dt.format('YYYY-MM-DD HH:mm UTC');
+  } catch {
+    return isoString;
+  }
 };
 
 /* ================================
@@ -231,7 +248,7 @@ const LEVEL_COLOR_MAP: Record<string, string> = {
   WARNING: 'warning.main',
   INFO: 'info.main',
   DEBUG: 'success.main',
-  NOTSET: 'primary.main'
+  NOTSET: 'primary.main',
 };
 
 export const getLevelColor = (level: string): string =>
@@ -241,7 +258,7 @@ const applyFunction = (name: string) => {
   return (view: any, completion: any, from: number, to: number) => {
     view.dispatch({
       changes: { from, to, insert: `${name}()` },
-      selection: { anchor: from + name.length + 1 }
+      selection: { anchor: from + name.length + 1 },
     });
   };
 };
@@ -269,14 +286,14 @@ export const yamlWithEmbeddedJS = (keyNames: string[] = ['code']) => {
         }
       }
       return null;
-    })
+    }),
   });
 
   // 2. Use the STATIC LRLanguage.define method to create the new language
   const mixedYamlLanguage = LRLanguage.define({
     name: 'yaml-mixed',
     parser: mixedYamlParser,
-    languageData: yamlLanguage.data // Inherit YAML metadata (comments, etc.)
+    languageData: yamlLanguage.data, // Inherit YAML metadata (comments, etc.)
   });
 
   return new LanguageSupport(mixedYamlLanguage);
@@ -294,7 +311,7 @@ export class JinjaCompletionBuilder {
       detail: 'global',
       section: 'Globals',
       info: `${meta.signature}\n\n${meta.doc ?? ''}`,
-      apply: meta.type === 'function' ? applyFunction(label) : label
+      apply: meta.type === 'function' ? applyFunction(label) : label,
     }));
   }
 
@@ -304,7 +321,7 @@ export class JinjaCompletionBuilder {
       type: 'function',
       detail: 'filter',
       section: 'Filters',
-      info: `${meta.signature}\n\n${meta.doc ?? ''}`
+      info: `${meta.signature}\n\n${meta.doc ?? ''}`,
     }));
   }
 
@@ -313,7 +330,7 @@ export class JinjaCompletionBuilder {
       label: name,
       type: 'keyword',
       detail: 'test',
-      section: 'Tests'
+      section: 'Tests',
     }));
   }
 
@@ -322,7 +339,7 @@ export class JinjaCompletionBuilder {
       label: name,
       type: 'keyword',
       detail: 'tag',
-      section: 'Tags'
+      section: 'Tags',
     }));
   }
 
@@ -331,7 +348,7 @@ export class JinjaCompletionBuilder {
       label: key,
       type: 'variable',
       detail: 'param',
-      section: 'Variables'
+      section: 'Variables',
     }));
   }
 
@@ -344,25 +361,25 @@ export class JinjaCompletionBuilder {
         label: key,
         type: 'property',
         detail: 'param',
-        section: 'Properties'
+        section: 'Properties',
       }));
     };
   }
 
   static build(
     params: Record<string, any> = {},
-    envDoc: EnvDoc
+    envDoc: EnvDoc,
   ): JinjaCompletionConfig {
     return {
       variables: [
         ...this.buildTopLevelVariables(params),
         ...this.buildGlobals(envDoc.globals),
-        ...this.buildTests(envDoc.tests)
+        ...this.buildTests(envDoc.tests),
       ],
       // @ts-ignore : this is custom patched
       filters: this.buildFilters(envDoc.filters),
       tags: this.buildTags(envDoc.tags),
-      properties: this.buildProperties(params)
+      properties: this.buildProperties(params),
     };
   }
 }
@@ -374,7 +391,7 @@ type JinjaSymbols = {
 
 export const jinjaLinter = (
   params: Record<string, any>,
-  symbols: JinjaSymbols
+  symbols: JinjaSymbols,
 ) => {
   return linter((view) => {
     const diagnostics: Diagnostic[] = [];
@@ -412,7 +429,7 @@ export const jinjaLinter = (
               from: node.from,
               to: node.to,
               severity: 'warning',
-              message: `${node.name} "${text}" is not defined`
+              message: `${node.name} "${text}" is not defined`,
             });
           }
           break;
@@ -423,7 +440,7 @@ export const jinjaLinter = (
               from: node.from,
               to: node.to,
               severity: 'warning',
-              message: `${node.name} "${text}" is not defined`
+              message: `${node.name} "${text}" is not defined`,
             });
           }
           break;
@@ -437,7 +454,7 @@ export const jinjaLinter = (
 const initEsBuild: Promise<typeof esbuild> = (async () => {
   await esbuild.initialize({
     wasmURL: wasmUrl,
-    worker: true
+    worker: true,
   });
   console.log('ESBuild initialized');
   return esbuild;
@@ -472,12 +489,12 @@ export async function transpile(code: string): Promise<string> {
       globalThis: 'undefined',
       fetch: 'undefined',
       WebSocket: 'undefined',
-      XMLHttpRequest: 'undefined'
+      XMLHttpRequest: 'undefined',
     },
 
     // Make output deterministic
     keepNames: false,
-    sourcemap: false
+    sourcemap: false,
   });
 
   return result.code;
@@ -517,14 +534,14 @@ const extractUndeclaredVariables = async (
   tpl: string,
   data: {
     [key: string]: any;
-  }
+  },
 ): Promise<string[] | string> => {
   const pyodide = await initPyodide;
   const renderFn = pyodide.globals.get('render');
   const params = renderFn(
     tpl,
     pyodide.toPy(data),
-    pyodide.toPy(window.ctx ?? {})
+    pyodide.toPy(window.ctx ?? {}),
   );
   return typeof params === 'string' ? params : Array.from(params.toJs());
 };
@@ -534,13 +551,13 @@ export const buildJinjaContext = (
   params: {
     [key: string]: any;
   },
-  raw: boolean = false
+  raw: boolean = false,
 ) => {
   return (
     tmpl: string,
     context: {
       [key: string]: any;
-    }
+    },
   ) => jinjaEvaluate(packageName, tmpl, { ...params, ...context }, raw);
 };
 
@@ -550,7 +567,7 @@ export const jinjaEvaluate = async (
   params: {
     [key: string]: any;
   },
-  raw = false
+  raw = false,
 ) => {
   // extract includeKeys to pass to server
   const includeKeys = await extractUndeclaredVariables(tmpl, params);
@@ -560,7 +577,7 @@ export const jinjaEvaluate = async (
       : await api.renderTemplate(
           packageName,
           tmpl,
-          includeKeys.includes('this') ? params : _.pick(params, includeKeys)
+          includeKeys.includes('this') ? params : _.pick(params, includeKeys),
         );
 
   if (!raw) {
@@ -579,9 +596,9 @@ export const transformSignals = (signals: Signal[]) => {
       id: signal.id,
       timestamp: new Date(signal.created_at).toLocaleString(),
       level: 'INFO',
-      message: signal.message || ''
+      message: signal.message || '',
     },
-    following_entries: []
+    following_entries: [],
   }));
 };
 
@@ -597,7 +614,7 @@ export async function decodeGzip(base64: string) {
   // gunzip
   const stream = new Blob([compressed]).stream();
   const decompressedStream = stream.pipeThrough(
-    new DecompressionStream('gzip')
+    new DecompressionStream('gzip'),
   );
 
   return await new Response(decompressedStream).text();
@@ -610,7 +627,7 @@ export const createUrlFromString = (code: string) => {
   if (url) return url;
 
   const blob = new Blob([code], {
-    type: 'application/javascript'
+    type: 'application/javascript',
   });
 
   url = URL.createObjectURL(blob);
@@ -637,7 +654,7 @@ export const mdCodeLanguages = {
   jinja: jinjaLang,
   chart: javascriptLang,
   module: javascriptLang,
-  js: javascriptLang
+  js: javascriptLang,
 };
 
 export type MdCodeLanguage = keyof typeof mdCodeLanguages;
@@ -649,13 +666,13 @@ export const languageByType = {
   js: javascriptLang,
   markdown: markdown({
     codeLanguages: Object.entries(mdCodeLanguages).map(([name, support]) =>
-      LanguageDescription.of({ name, support })
-    )
-  })
+      LanguageDescription.of({ name, support }),
+    ),
+  }),
 };
 
 export const resolveLanguageExtension = (
-  schema: RJSFSchema
+  schema: RJSFSchema,
 ): LanguageSupport => {
   const type = schema.type as string;
   // sql with custom meta
