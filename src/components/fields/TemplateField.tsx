@@ -11,14 +11,13 @@ import {
   IconButton,
   Box
 } from '@mui/material';
-import { sql, PostgreSQL } from '@codemirror/lang-sql';
 import { jinja } from '@codemirror/lang-jinja';
 import { TemplatePreview } from './TemplatePreview';
 import {
   JinjaCompletionBuilder,
   jinjaLinter,
   jinjaEvaluate,
-  languageByType
+  resolveLanguageExtension
 } from '@/utils';
 import _ from 'lodash';
 import {
@@ -28,18 +27,8 @@ import {
   FullscreenExit
 } from '@mui/icons-material';
 
-import { FieldProps, RJSFSchema } from '@rjsf/utils';
+import { FieldProps } from '@rjsf/utils';
 import { getCodeMirrorStyle, getContainerStyle } from '@/theme';
-
-const resolveLanguageExtension = (schema: RJSFSchema) => {
-  const type = schema.type as string;
-  // sql with custom meta
-  if (type === 'sql') {
-    return sql({ dialect: PostgreSQL, schema: schema.meta });
-  }
-
-  return languageByType[type];
-};
 
 export function TemplateField({
   formData,

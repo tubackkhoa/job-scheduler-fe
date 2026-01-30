@@ -3,6 +3,7 @@ import {
   Button,
   Container,
   Paper,
+  Box,
   Stack,
   TextField,
   Typography,
@@ -71,7 +72,7 @@ type Props = {
 
 function PromptSamples({ title, samples, onSelect }: Props) {
   return (
-    <Paper sx={{ p: 2, mb: 2 }}>
+    <Box sx={{ p: 2, mb: 2 }}>
       <Typography fontWeight={600} gutterBottom>
         {title}
       </Typography>
@@ -97,7 +98,7 @@ function PromptSamples({ title, samples, onSelect }: Props) {
           />
         ))}
       </Stack>
-    </Paper>
+    </Box>
   );
 }
 
@@ -174,7 +175,7 @@ export default function ChatBot() {
       <Grid container spacing={2}>
         {/* Left: Input */}
         <Grid size={{ xs: 12, md: 4 }}>
-          <Paper sx={{ p: 2, flex: 1 }}>
+          <Paper sx={{ p: 2, flex: 1, position: 'sticky', top: 125 }}>
             <Typography fontWeight={600} gutterBottom>
               {mode === 'generate' ? 'Prompt' : 'Edit Instruction'}
             </Typography>
@@ -231,13 +232,7 @@ export default function ChatBot() {
           <Paper
             sx={{
               p: 2,
-              flex: 1,
-              width: '100%',
-              bgcolor: '#0f172a',
-              color: '#e5e7eb',
-              fontFamily: 'monospace',
-              whiteSpace: 'pre-wrap',
-              overflow: 'auto'
+              flex: 1
             }}
           >
             <Typography fontWeight={600} gutterBottom color="inherit">
@@ -248,7 +243,6 @@ export default function ChatBot() {
               <ReactCodeMirror
                 theme="dark"
                 minHeight="200px"
-                maxHeight="100vh"
                 width="100%"
                 value={output}
                 extensions={[
