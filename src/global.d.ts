@@ -57,7 +57,7 @@ declare global {
     plugin_id: number;
     session_id: number;
     description: string;
-    config?: unknown;
+    config?: { [key: string]: any };
     active?: number; // usually 0 | 1
   }
 
@@ -142,7 +142,7 @@ declare global {
     job_id: number;
   }
 
-  interface SqlVersion {
+  interface ValueVersion {
     id: number;
     name: string;
     description?: string;
@@ -159,12 +159,6 @@ declare global {
     captured_at: string;
   }
 
-  interface JobStatsItem extends Job {
-    sql_version?: SqlVersion;
-    last_signal?: string; // ISO timestamp
-    signals?: Signal[];
-  }
-
   interface JobStatsParams {
     limit?: number;
     offset?: number;
@@ -173,21 +167,34 @@ declare global {
     active?: boolean;
     plugin_id?: number[];
     model_key?: string[];
-    sql_id?: number[];
+    config?: Record<string, number[]>;
+    version_id?: string[];
     order_by?: string;
     sort?: 'asc' | 'desc';
     session_id?: number[];
   }
 
+  type VersionsById = Record<number, ValueVersion>;
+
   interface JobStatsResponse {
-    items: JobStatsItem[];
+    jobs: Job[];
+    signals_map: Record<number, Signal[]>;
+    versions: Record<string, VersionsById>;
     total: number;
     limit: number;
     offset: number;
   }
 
-  interface SqlVersionsResponse {
-    versions: SqlVersion[];
+  interface ValueVersionParams {
+    field_id: string;
+    plugin_id?: number;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }
+
+  interface ValueVersionsResponse {
+    versions: ValueVersion[];
     count: number;
     total: number;
     search: string | null;
@@ -197,7 +204,6 @@ declare global {
 
   interface Window {
     ctx: { user: User };
-    globalProps: GlobalProps;
     // or: ctx?: YourType
   }
 }

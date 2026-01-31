@@ -1,7 +1,7 @@
 import React, { Suspense, useMemo, useState } from 'react';
 import { Alert, Typography } from '@mui/material';
 import { FieldProps } from '@rjsf/utils';
-import { getModule } from '@/module';
+import { getModule, globalProps } from '@/module';
 import _ from 'lodash';
 import { ErrorBoundary } from '../ErrorBound';
 
@@ -21,10 +21,10 @@ export default function DynamicField(props: FieldProps) {
           default: (componentProps: any) =>
             React.createElement(mod.default, {
               ...componentProps,
-              ...window.globalProps
-            })
+              ...globalProps,
+            }),
         };
-      })()
+      })(),
     );
   }, [url, code]);
 

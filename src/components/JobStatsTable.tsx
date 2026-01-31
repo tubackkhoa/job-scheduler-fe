@@ -25,7 +25,7 @@ import {
   Button,
   TableSortLabel,
   Card,
-  Autocomplete
+  Autocomplete,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import {
@@ -42,7 +42,7 @@ import {
   FilterList,
   Clear,
   SignalCellularAlt,
-  Edit
+  Edit,
 } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import api from '@/api';
@@ -66,11 +66,15 @@ function useDebounce<T>(value: T, delay: number): T {
 
 function JobRowComponent({
   job,
+  valueVersion,
+  signals,
   onToggle,
   pluginName,
-  env
+  env,
 }: {
-  job: JobStatsItem;
+  job: Job;
+  signals: Signal[];
+  valueVersion: ValueVersion;
   onToggle: (active: boolean) => void;
   pluginName?: string;
   env?: string;
@@ -89,7 +93,7 @@ function JobRowComponent({
           cursor: 'pointer',
           '& > *': { borderBottom: 'unset' },
           bgcolor: open ? 'rgba(99, 102, 241, 0.05)' : 'transparent',
-          transition: 'background-color 0.2s'
+          transition: 'background-color 0.2s',
         }}
         onClick={() => setOpen(!open)}
       >
@@ -121,8 +125,8 @@ function JobRowComponent({
                     animation: 'pulse 2s infinite',
                     '@keyframes pulse': {
                       '0%, 100%': { opacity: 1 },
-                      '50%': { opacity: 0.5 }
-                    }
+                      '50%': { opacity: 0.5 },
+                    },
                   }}
                 />
               ) : (
@@ -131,7 +135,7 @@ function JobRowComponent({
                     width: 8,
                     height: 8,
                     borderRadius: '50%',
-                    bgcolor: 'text.disabled'
+                    bgcolor: 'text.disabled',
                   }}
                 />
               )
@@ -153,9 +157,9 @@ function JobRowComponent({
         <TableCell>
           <Stack direction="row" spacing={1} alignItems="center">
             <Storage sx={{ fontSize: 16, color: 'text.secondary' }} />
-            <Tooltip title={job.sql_version?.name || ''}>
+            <Tooltip title={valueVersion?.name || ''}>
               <Typography variant="body2">
-                {job.sql_version?.name || '-'}
+                {valueVersion?.name || '-'}
               </Typography>
             </Tooltip>
           </Stack>
@@ -175,7 +179,7 @@ function JobRowComponent({
                 sx={{
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
                 }}
               >
                 {pluginName || '-'}
@@ -198,8 +202,8 @@ function JobRowComponent({
             <Stack direction="row" spacing={1} alignItems="center">
               <AccessTime sx={{ fontSize: 16, color: 'text.secondary' }} />
               <Typography variant="body2">
-                {job.last_signal
-                  ? dayjs(job.last_signal).format('DD:MM:YYYY HH:mm:ss')
+                {signals.length
+                  ? dayjs(signals[0].captured_at).format('DD:MM:YYYY HH:mm:ss')
                   : '-'}
               </Typography>
             </Stack>
@@ -254,19 +258,19 @@ function JobRowComponent({
                       maxHeight: 400,
                       overflow: 'hidden',
                       display: 'flex',
-                      flexDirection: 'column'
+                      flexDirection: 'column',
                     }}
                   >
                     <SignalsLogsViewer
                       jobId={job.id}
-                      signals={job.signals}
+                      signals={signals}
                       limit={1}
                       hideHeader
                       sx={{
                         height: 'auto',
                         maxHeight: '100%',
                         bgcolor: 'transparent',
-                        boxShadow: 'none'
+                        boxShadow: 'none',
                       }}
                     />
                   </Paper>
@@ -282,11 +286,18 @@ function JobRowComponent({
 
 const ROWS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
 
-export default function JobStatsTable() {
+export default function JobStatsTable({
+  fieldId = 'sql_id',
+  fieldName = 'Sql version',
+}) {
   // State
   const [loading, setLoading] = useState(false);
-  const [rows, setRows] = useState<JobStatsItem[]>([]);
+  const [rows, setRows] = useState<Job[]>([]);
   const [total, setTotal] = useState(0);
+  const [signalsMap, setSignalsMap] = useState<JobStatsResponse['signals_map']>(
+    {},
+  );
+  const [versions, setVersions] = useState<JobStatsResponse['versions']>({});
 
   // Pagination State
   const [page, setPage] = useState(0); // 0-indexed
@@ -298,15 +309,15 @@ export default function JobStatsTable() {
 
   const [activeFilter, setActiveFilter] = useState<boolean | 'all'>('all');
   const [selectedPluginId, setSelectedPluginId] = useState<number | 'all'>(
-    'all'
+    'all',
   );
-  const [selectedSqlVersion, setSelectedSqlVersion] = useState<number | 'all'>(
-    'all'
-  );
+  const [selectedValueVersion, setSelectedValueVersion] = useState<
+    number | 'all'
+  >('all');
   const [selectedSession, setSelectedSession] = useState<number | 'all'>('all');
 
   // Metadata State
-  const [sqlVersions, setSqlVersions] = useState<SqlVersion[]>([]);
+  const [valueVersions, setValueVersions] = useState<ValueVersion[]>([]);
   const [plugins, setPlugins] = useState<PluginData[]>([]);
 
   const [order, setOrder] = useState<Order>('desc');
@@ -314,8 +325,8 @@ export default function JobStatsTable() {
   // --- Fetch Metadata ---
   useEffect(() => {
     api
-      .getSqlVersions({ limit: 100 })
-      .then((res) => setSqlVersions(res.versions))
+      .getValueVersions({ field_id: fieldId })
+      .then((res) => setValueVersions(res.versions))
       .catch(console.error);
     api.fetchPlugins().then(setPlugins).catch(console.error);
   }, []);
@@ -330,15 +341,23 @@ export default function JobStatsTable() {
         search_text: debouncedSearchText || undefined,
         active: activeFilter === 'all' ? undefined : activeFilter,
         plugin_id: selectedPluginId === 'all' ? undefined : [selectedPluginId],
-        sql_id: selectedSqlVersion === 'all' ? undefined : [selectedSqlVersion],
         session_id:
           selectedSession === 'all' ? undefined : [selectedSession as number],
+        config:
+          selectedValueVersion === 'all'
+            ? undefined
+            : {
+                [fieldId]: [selectedValueVersion],
+              },
+        version_id: [fieldId],
         include_signals: true, // Always fetch signals to populate the expanded view
         sort: order,
-        order_by: 'id'
+        order_by: 'id',
       });
-      setRows(res.items);
+      setRows(res.jobs);
       setTotal(res.total);
+      setSignalsMap(res.signals_map);
+      setVersions(res.versions);
     } catch (err) {
       console.error(err);
     } finally {
@@ -350,9 +369,9 @@ export default function JobStatsTable() {
     debouncedSearchText,
     activeFilter,
     selectedPluginId,
-    selectedSqlVersion,
+    selectedValueVersion,
     selectedSession,
-    order
+    order,
   ]);
 
   useEffect(() => {
@@ -365,8 +384,8 @@ export default function JobStatsTable() {
       // Optimistic update
       setRows((prev) =>
         prev.map((job) =>
-          job.id === id ? { ...job, active: active ? 1 : 0 } : job
-        )
+          job.id === id ? { ...job, active: active ? 1 : 0 } : job,
+        ),
       );
     } catch (err) {
       console.error('Failed to toggle job', err);
@@ -404,8 +423,8 @@ export default function JobStatsTable() {
             slotProps={{
               input: {
                 startAdornment: <Search color="action" sx={{ mr: 1 }} />,
-                sx: { borderRadius: 2, bgcolor: 'background.default' }
-              }
+                sx: { borderRadius: 2, bgcolor: 'background.default' },
+              },
             }}
             size="medium"
           />
@@ -473,16 +492,16 @@ export default function JobStatsTable() {
             </FormControl>
 
             <Autocomplete
-              options={sqlVersions}
+              options={valueVersions}
               getOptionLabel={(option) => option.name}
               value={
-                sqlVersions.find((v) => v.id === selectedSqlVersion) || null
+                valueVersions.find((v) => v.id === selectedValueVersion) || null
               }
-              onChange={(_, v) => setSelectedSqlVersion(v ? v.id : 'all')}
+              onChange={(_, v) => setSelectedValueVersion(v ? v.id : 'all')}
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="SQL Version"
+                  label={fieldName}
                   size="small"
                   fullWidth
                 />
@@ -503,7 +522,7 @@ export default function JobStatsTable() {
                 setSearchText('');
                 setActiveFilter('all');
                 setSelectedPluginId('all');
-                setSelectedSqlVersion('all');
+                setSelectedValueVersion('all');
               }}
             >
               Clear
@@ -529,7 +548,7 @@ export default function JobStatsTable() {
               </TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Model</TableCell>
-              <TableCell>SQL Version</TableCell>
+              <TableCell>{fieldName}</TableCell>
               <TableCell>Plugin</TableCell>
               <TableCell>Environment</TableCell>
               <TableCell>Last Signal</TableCell>
@@ -547,23 +566,32 @@ export default function JobStatsTable() {
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((job) => (
-                <JobRowComponent
-                  key={job.id}
-                  job={job}
-                  pluginName={
-                    plugins.find(
-                      (item) => Number(item.id) === Number(job.plugin_id)
-                    )?.package
-                  }
-                  env={
-                    SESSIONS.find(
-                      (item) => Number(item.id) === Number(job.session_id)
-                    )?.name
-                  }
-                  onToggle={(active) => handleToggleJob(job.id, active)}
-                />
-              ))
+              rows.map((job) => {
+                const signals = signalsMap[job.id] ?? [];
+                const valueId = job.config?.[fieldId];
+                const valueVersion = valueId
+                  ? versions[fieldId][valueId]
+                  : null;
+                return (
+                  <JobRowComponent
+                    key={job.id}
+                    valueVersion={valueVersion}
+                    signals={signals}
+                    job={job}
+                    pluginName={
+                      plugins.find(
+                        (item) => Number(item.id) === Number(job.plugin_id),
+                      )?.package
+                    }
+                    env={
+                      SESSIONS.find(
+                        (item) => Number(item.id) === Number(job.session_id),
+                      )?.name
+                    }
+                    onToggle={(active) => handleToggleJob(job.id, active)}
+                  />
+                );
+              })
             )}
 
             {!loading && rows.length === 0 && (
@@ -593,7 +621,7 @@ export default function JobStatsTable() {
           py: 1.5,
           borderTop: 1,
           borderColor: 'divider',
-          bgcolor: 'rgba(255,255,255,0.02)'
+          bgcolor: 'rgba(255,255,255,0.02)',
         }}
       >
         <Stack direction="row" spacing={2} alignItems="center">
@@ -657,7 +685,7 @@ export default function JobStatsTable() {
             sx={{
               fontWeight: 500,
               borderColor: 'divider',
-              bgcolor: 'rgba(255,255,255,0.05)'
+              bgcolor: 'rgba(255,255,255,0.05)',
             }}
           />
 

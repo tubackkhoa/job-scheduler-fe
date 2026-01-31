@@ -9,7 +9,7 @@ import {
   CandlestickController,
   OhlcController,
   CandlestickElement,
-  OhlcElement
+  OhlcElement,
 } from 'chartjs-chart-financial';
 import 'chartjs-adapter-luxon';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -21,20 +21,21 @@ Chart.register(
   OhlcController,
   CandlestickElement,
   OhlcElement,
-  ChartDataLabels
+  ChartDataLabels,
 );
 
 // polyfill global props
 window.React = React;
 const ExtendedMui = { ...Mui, ConfirmationDialog };
 const ExtendedUtils = { ...Utils, _ };
-window.globalProps = {
+
+export const globalProps = {
   React,
   MuiIcon,
   Mui: ExtendedMui,
   Chart,
   LightweightChart,
-  Utils: ExtendedUtils
+  Utils: ExtendedUtils,
 };
 
 // known at build time
@@ -47,7 +48,7 @@ export const loadModule = (modUrl: string) => import(/* @vite-ignore */ modUrl);
 
 export const getModule = async ({
   url,
-  code
+  code,
 }: CodeSchema): Promise<ModuleCode> => {
   let loader: Promise<any>;
   if (code) {
@@ -55,8 +56,8 @@ export const getModule = async ({
   } else if (url.startsWith(Utils.gzipPrefix)) {
     loader = loadModule(
       Utils.createUrlFromString(
-        await Utils.decodeGzip(url.slice(Utils.gzipPrefix.length))
-      )
+        await Utils.decodeGzip(url.slice(Utils.gzipPrefix.length)),
+      ),
     );
   } else {
     loader = libModules[`../libs/${url}`]?.() ?? loadModule(url);
