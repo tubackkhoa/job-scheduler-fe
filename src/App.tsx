@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { Box, Container, CssBaseline } from '@mui/material';
 import { Header } from './components/Header';
-import { LoadingBar } from './components/LoadingBar';
+import { LoadingBar } from './components/Loading';
 import { ErrorAlert } from './components/ErrorAlert';
 import { darkTheme } from './theme';
 import { Routes, Route } from 'react-router-dom';

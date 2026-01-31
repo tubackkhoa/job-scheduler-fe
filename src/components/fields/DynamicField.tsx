@@ -1,9 +1,10 @@
 import React, { Suspense, useMemo, useState } from 'react';
-import { Alert, Typography } from '@mui/material';
+import { Alert } from '@mui/material';
 import { FieldProps } from '@rjsf/utils';
 import { getModule, globalProps } from '@/module';
 import _ from 'lodash';
 import { ErrorBoundary } from '../ErrorBound';
+import { LoadingSkeleton } from '../Loading';
 
 export default function DynamicField(props: FieldProps) {
   const { url, code } = props.schema;
@@ -40,7 +41,7 @@ export default function DynamicField(props: FieldProps) {
 
   return (
     <ErrorBoundary resetKey={`${url}:${code}`} onError={setError}>
-      <Suspense fallback={<Typography color="primary">Loading...</Typography>}>
+      <Suspense fallback={<LoadingSkeleton />}>
         <LazyComponent {...props} />
       </Suspense>
     </ErrorBoundary>

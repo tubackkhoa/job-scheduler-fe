@@ -1,4 +1,11 @@
-import { Box, LinearProgress } from "@mui/material";
+import {
+  Box,
+  Card,
+  CardContent,
+  CardHeader,
+  Skeleton,
+  LinearProgress,
+} from '@mui/material';
 
 export function LoadingBar({ isLoading }) {
   if (!isLoading) return null;
@@ -17,7 +24,8 @@ export function LoadingBar({ isLoading }) {
         sx={{
           height: 3,
           '& .MuiLinearProgress-bar': {
-            background: 'linear-gradient(90deg, #6366f1 0%, #ec4899 50%, #6366f1 100%)',
+            background:
+              'linear-gradient(90deg, #6366f1 0%, #ec4899 50%, #6366f1 100%)',
             backgroundSize: '200% 100%',
             animation: 'gradient 1.5s ease infinite',
           },
@@ -31,3 +39,19 @@ export function LoadingBar({ isLoading }) {
   );
 }
 
+export function LoadingSkeleton() {
+  return (
+    <Card sx={{ my: 4 }}>
+      <CardHeader
+        avatar={<Skeleton variant="circular" width={40} height={40} />}
+        title={<Skeleton width="40%" />}
+        subheader={<Skeleton width="25%" />}
+      />
+      <CardContent>
+        <Skeleton />
+        <Skeleton width="90%" />
+        <Skeleton width="60%" />
+      </CardContent>
+    </Card>
+  );
+}
