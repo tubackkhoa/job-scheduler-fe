@@ -10,13 +10,7 @@ import {
   Collapse,
   Tooltip,
 } from '@mui/material';
-import {
-  Edit,
-  ExpandLess,
-  ExpandMore,
-  Extension,
-  Route,
-} from '@mui/icons-material';
+import { ChevronRight, Edit, Extension, Route } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useCallback } from 'react';
 import api from '@/api';
@@ -105,10 +99,8 @@ export function PluginSitemap() {
 
               {isLoading ? (
                 <CircularProgress size={16} />
-              ) : isOpen ? (
-                <ExpandLess />
-              ) : (
-                <ExpandMore />
+              ) : isOpen ? null : (
+                <ChevronRight />
               )}
             </ListItemButton>
 
