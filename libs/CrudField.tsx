@@ -1,6 +1,5 @@
 // @ts-nocheck
-import { RJSFSchema } from '@rjsf/utils';
-import { DynamicFieldProps } from '@/components/fields/DynamicField';
+import { DynamicFieldProps } from '../src/global';
 
 export default function ({
   formData,
@@ -23,10 +22,10 @@ export default function ({
     DialogTitle,
     DialogContent,
     DialogActions,
-    ConfirmationDialog
   },
   MuiIcon: { Save, Delete, Add, Refresh },
-  Utils: { _, buildJinjaContext }
+  Components: { ConfirmationDialog },
+  Utils: { _, buildJinjaContext },
 }: DynamicFieldProps) {
   const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -48,32 +47,32 @@ export default function ({
   const render = useCallback(
     buildJinjaContext(registry.formContext.pluginPackage, {
       ...registry.formContext.env.filters,
-      ...registry.formContext.formData
+      ...registry.formContext.formData,
     }),
-    [registry.formContext]
+    [registry.formContext],
   );
 
   // Generic evaluate wrapper
   const evaluateExpr = useCallback(
     (exprKey, data) => render(schema['model:expr'][exprKey], data),
-    [schema, render]
+    [schema, render],
   );
 
   // CRUD operations
   const listItems = useCallback(
     (field_id, searchTerm = '', limit = 20, offset = 0) =>
       evaluateExpr('list', { field_id, search: searchTerm, limit, offset }),
-    [evaluateExpr]
+    [evaluateExpr],
   );
 
   const createItem = useCallback(
     (payload) => evaluateExpr('create', { payload }),
-    [evaluateExpr]
+    [evaluateExpr],
   );
 
   const deleteItem = useCallback(
     (key) => evaluateExpr('delete', { key }),
-    [evaluateExpr]
+    [evaluateExpr],
   );
 
   // Debounced search
@@ -90,7 +89,7 @@ export default function ({
       // If formData exists, select corresponding item
       if (formData) {
         const matched = list.find(
-          (v) => v.id === formData || v.key === formData
+          (v) => v.id === formData || v.key === formData,
         );
         if (matched) {
           setSelectedItem(matched);
@@ -243,7 +242,7 @@ export default function ({
         bgcolor: 'rgba(99, 102, 241, 0.08)',
         borderRadius: 1,
         border: '1px solid',
-        borderColor: 'divider'
+        borderColor: 'divider',
       }}
     >
       <Stack spacing={1.5}>

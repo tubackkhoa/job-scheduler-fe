@@ -122,8 +122,15 @@ export default {
     return data;
   },
 
-  fetchRoutes(pluginId: number): Promise<[string, CodeSchema][]> {
+  fetchRoutes(pluginId: number): Promise<string[]> {
     return request(`/api/plugins/routes/${pluginId}`);
+  },
+
+  fetchRouteSchema(pluginId: number, route: string): Promise<CodeSchema> {
+    const query = buildQuery({
+      route,
+    });
+    return request(`/api/plugins/routes/${pluginId}/schema?${query}`);
   },
 
   fetchSchema(
