@@ -9,8 +9,9 @@ import {
   ListItemIcon,
   Collapse,
   Tooltip,
+  ListItem,
 } from '@mui/material';
-import { Edit, Extension, Route } from '@mui/icons-material';
+import { ChevronRight, Edit, Extension, Route } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useCallback } from 'react';
 import api from '@/api';
@@ -85,7 +86,7 @@ export function PluginSitemap() {
                     }}
                     fontWeight={500}
                   >
-                    {plugin.package}
+                    {plugin.package} {isOpen ? '▾' : '▸'}
                   </Typography>
                 }
                 secondary={plugin.description}

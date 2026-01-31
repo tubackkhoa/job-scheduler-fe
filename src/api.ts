@@ -25,7 +25,10 @@ function buildQuery(
         // Add array values as multiple query params with the same key
         value.forEach((v) => searchParams.append(key, String(v)));
       } else {
-        searchParams.append(key, String(value));
+        searchParams.append(
+          key,
+          typeof value === 'object' ? JSON.stringify(value) : String(value),
+        );
       }
     }
   });

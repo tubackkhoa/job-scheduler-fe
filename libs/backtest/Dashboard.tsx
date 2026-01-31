@@ -450,7 +450,7 @@ export default function JobStatsTable({
   const endRow = Math.min((page + 1) * rowsPerPage, total);
 
   return (
-    <Card sx={{ bgcolor: 'background.paper', borderRadius: 2 }}>
+    <Card sx={{ bgcolor: 'background.paper', borderRadius: 2, my: 4 }}>
       {/* Search & Filter Bar */}
       <Box
         sx={{ p: { xs: 1.5, sm: 2 }, borderBottom: 1, borderColor: 'divider' }}
