@@ -37,4 +37,17 @@ coverage/
 .eslintcache
 
 docs/
-libs/
+
+# libs folder
+# Ignore everything inside libs
+libs/*
+
+# Allow traversal
+!libs/
+
+# Allow this single file
+!libs/CrudField.tsx
+
+# Allow backtest folder AND its contents
+!libs/backtest/
+!libs/backtest/**
