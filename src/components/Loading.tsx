@@ -39,19 +39,23 @@ export function LoadingBar({ isLoading }) {
   );
 }
 
-export function LoadingSkeleton() {
+export function LoadingSkeleton({ size = 1 }: { size?: number }) {
   return (
-    <Card sx={{ my: 4 }}>
-      <CardHeader
-        avatar={<Skeleton variant="circular" width={40} height={40} />}
-        title={<Skeleton width="40%" />}
-        subheader={<Skeleton width="25%" />}
-      />
-      <CardContent>
-        <Skeleton />
-        <Skeleton width="90%" />
-        <Skeleton width="60%" />
-      </CardContent>
-    </Card>
+    <>
+      {Array.from({ length: size }).map((_, ind) => (
+        <Card sx={{ my: 4 }} key={ind}>
+          <CardHeader
+            avatar={<Skeleton variant="circular" width={40} height={40} />}
+            title={<Skeleton width="40%" />}
+            subheader={<Skeleton width="25%" />}
+          />
+          <CardContent>
+            <Skeleton />
+            <Skeleton width="90%" />
+            <Skeleton width="60%" />
+          </CardContent>
+        </Card>
+      ))}
+    </>
   );
 }

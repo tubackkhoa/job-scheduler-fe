@@ -9,9 +9,8 @@ import {
   ListItemIcon,
   Collapse,
   Tooltip,
-  ListItem,
 } from '@mui/material';
-import { ChevronRight, Edit, Extension, Route } from '@mui/icons-material';
+import { Edit, Extension, Route } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useCallback } from 'react';
 import api from '@/api';

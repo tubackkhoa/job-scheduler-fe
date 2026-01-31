@@ -41,7 +41,7 @@ export default function DynamicField(props: FieldProps) {
 
   return (
     <ErrorBoundary resetKey={`${url}:${code}`} onError={setError}>
-      <Suspense fallback={<LoadingSkeleton />}>
+      <Suspense fallback={<LoadingSkeleton size={3} />}>
         <LazyComponent {...props} />
       </Suspense>
     </ErrorBoundary>
