@@ -174,12 +174,10 @@ declare global {
     session_id?: number[];
   }
 
-  type VersionsById = Record<number, ValueVersion>;
-
   interface JobStatsResponse {
     jobs: Job[];
     signals_map: Record<number, Signal[]>;
-    versions: Record<string, VersionsById>;
+    versions: Record<string, ValueVersion[]>;
     total: number;
     limit: number;
     offset: number;

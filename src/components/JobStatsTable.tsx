@@ -570,7 +570,7 @@ export default function JobStatsTable({
                 const signals = signalsMap[job.id] ?? [];
                 const valueId = job.config?.[fieldId];
                 const valueVersion = valueId
-                  ? versions[fieldId][valueId]
+                  ? versions[fieldId].find((v) => v.id === valueId)
                   : null;
                 return (
                   <JobRowComponent
