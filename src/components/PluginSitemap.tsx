@@ -70,24 +70,29 @@ export function PluginSitemap() {
 
         return (
           <Box key={plugin.id}>
-            <ListItemButton
-              onClick={() => loadRoutes(plugin.id)}
-              sx={{ px: 2 }}
-            >
+            <ListItemButton onClick={() => loadRoutes(plugin.id)}>
               <ListItemIcon sx={{ minWidth: 36 }}>
                 <Extension fontSize="small" />
               </ListItemIcon>
 
               <ListItemText
                 primary={
-                  <Typography fontWeight={500}>{plugin.package}</Typography>
+                  <Typography
+                    sx={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                    fontWeight={500}
+                  >
+                    {plugin.package}
+                  </Typography>
                 }
                 secondary={plugin.description}
               />
 
               <Tooltip title="Edit Plugin">
                 <IconButton
-                  sx={{ mr: 2 }}
                   size="small"
                   component={RouterLink}
                   to={`/plugins/${plugin.id}`}
@@ -97,11 +102,7 @@ export function PluginSitemap() {
                 </IconButton>
               </Tooltip>
 
-              {isLoading ? (
-                <CircularProgress size={16} />
-              ) : isOpen ? null : (
-                <ChevronRight />
-              )}
+              {isLoading ? <CircularProgress size={16} /> : null}
             </ListItemButton>
 
             <Collapse in={isOpen} timeout="auto" unmountOnExit>
