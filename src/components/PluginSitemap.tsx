@@ -85,7 +85,7 @@ export function PluginSitemap() {
                     }}
                     fontWeight={500}
                   >
-                    {plugin.package} {isOpen ? '▾' : '▸'}
+                    {isOpen ? '▾' : '▸'} {plugin.package}
                   </Typography>
                 }
                 secondary={plugin.description}
