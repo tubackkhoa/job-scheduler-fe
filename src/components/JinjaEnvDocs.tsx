@@ -9,7 +9,7 @@ import {
   Divider,
   TextField,
   InputAdornment,
-  Button
+  Button,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SearchIcon from '@mui/icons-material/Search';
@@ -48,7 +48,7 @@ type RenderResult = {
 const TryInput = memo(function TryInput({
   name,
   signature,
-  onTry
+  onTry,
 }: {
   name: string;
   signature?: string | null;
@@ -63,7 +63,7 @@ const TryInput = memo(function TryInput({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setInput(e.target.value);
     },
-    []
+    [],
   );
 
   const handleClick = useCallback(() => {
@@ -95,7 +95,7 @@ const DocItemAccordion = memo(function DocItemAccordion({
   name,
   item,
   onTry,
-  renderResult
+  renderResult,
 }: {
   name: string;
   item: DocItem;
@@ -115,11 +115,11 @@ const DocItemAccordion = memo(function DocItemAccordion({
         '& .MuiAccordionSummary-root': {
           minHeight: 44,
           transition: 'background-color 120ms ease',
-          '&:hover': { backgroundColor: theme.palette.action.hover }
+          '&:hover': { backgroundColor: theme.palette.action.hover },
         },
         '&.Mui-expanded': {
-          backgroundColor: theme.palette.background.default
-        }
+          backgroundColor: theme.palette.background.default,
+        },
       })}
     >
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -142,7 +142,7 @@ const DocItemAccordion = memo(function DocItemAccordion({
               fontSize: 11,
               borderRadius: 1,
               borderColor: theme.palette.divider,
-              color: theme.palette.text.secondary
+              color: theme.palette.text.secondary,
             })}
             variant="outlined"
           />
@@ -156,7 +156,7 @@ const DocItemAccordion = memo(function DocItemAccordion({
                 fontSize: 11,
                 borderRadius: 1,
                 borderColor: theme.palette.divider,
-                color: theme.palette.text.secondary
+                color: theme.palette.text.secondary,
               })}
               variant="outlined"
             />
@@ -180,7 +180,7 @@ const DocItemAccordion = memo(function DocItemAccordion({
                 border: `1px solid ${theme.palette.divider}`,
                 borderRadius: 1,
                 color: theme.palette.text.secondary,
-                overflowX: 'auto'
+                overflowX: 'auto',
               })}
             >
               {item.signature}
@@ -201,7 +201,7 @@ const DocItemAccordion = memo(function DocItemAccordion({
               backgroundColor: theme.palette.background.default,
               border: `1px solid ${theme.palette.divider}`,
               borderRadius: 1,
-              color: theme.palette.text.primary
+              color: theme.palette.text.primary,
             })}
           >
             {item.doc}
@@ -253,7 +253,7 @@ function DocSection({
   title,
   items,
   pluginPackage,
-  isFilter = false
+  isFilter = false,
 }: {
   title: string;
   items: Record<string, DocItem>;
@@ -266,31 +266,28 @@ function DocSection({
 
   const handleTryRender = useCallback(
     async (name: string, inputStr: string) => {
-      // Template changes depending on globals vs filters
       const tpl = isFilter
         ? `{{ ${inputStr} | ${name} }}`
         : `{{ ${name}(${inputStr}) }}`;
 
-      setRenderResults((prev) => ({
-        ...prev,
-        [name]: { loading: true }
-      }));
-
       try {
-        // render raw output
         const output = await jinjaEvaluate(pluginPackage, tpl, {}, true);
+
         setRenderResults((prev) => ({
           ...prev,
-          [name]: { loading: false, output }
+          [name]: { loading: false, output },
         }));
       } catch (error: any) {
         setRenderResults((prev) => ({
           ...prev,
-          [name]: { loading: false, error: error.message || 'Render error' }
+          [name]: {
+            loading: false,
+            error: error?.message || 'Render error',
+          },
         }));
       }
     },
-    [pluginPackage, isFilter]
+    [pluginPackage, isFilter],
   );
 
   if (Object.keys(items).length === 0) {
@@ -351,8 +348,8 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
     if (!normalizedQuery) return data.globals;
     return Object.fromEntries(
       Object.entries(data.globals).filter(([name]) =>
-        name.toLowerCase().includes(normalizedQuery)
-      )
+        name.toLowerCase().includes(normalizedQuery),
+      ),
     );
   }, [data.globals, normalizedQuery]);
 
@@ -360,8 +357,8 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
     if (!normalizedQuery) return data.filters;
     return Object.fromEntries(
       Object.entries(data.filters).filter(([name]) =>
-        name.toLowerCase().includes(normalizedQuery)
-      )
+        name.toLowerCase().includes(normalizedQuery),
+      ),
     );
   }, [data.filters, normalizedQuery]);
 
@@ -369,7 +366,7 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
     let rawParams = params ? Object.entries(params) : [];
     if (normalizedQuery)
       rawParams = rawParams.filter(([name]) =>
-        name.toLowerCase().includes(normalizedQuery)
+        name.toLowerCase().includes(normalizedQuery),
       );
     return Object.fromEntries(
       rawParams.map(([name, value]) => [
@@ -377,9 +374,9 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
         {
           type: 'variable',
           doc:
-            typeof value === 'string' ? value : JSON.stringify(value, null, 2)
-        } as DocItem
-      ])
+            typeof value === 'string' ? value : JSON.stringify(value, null, 2),
+        } as DocItem,
+      ]),
     );
   }, [params, normalizedQuery]);
 
@@ -396,8 +393,8 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
           mb: 3,
           '& .MuiOutlinedInput-root': {
             fontFamily: 'monospace',
-            backgroundColor: theme.palette.background.paper
-          }
+            backgroundColor: theme.palette.background.paper,
+          },
         })}
         slotProps={{
           input: {
@@ -405,8 +402,8 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
               <InputAdornment position="start">
                 <SearchIcon fontSize="small" />
               </InputAdornment>
-            )
-          }
+            ),
+          },
         }}
       />
 
