@@ -9,6 +9,7 @@ import {
   ListItemIcon,
   Collapse,
   Tooltip,
+  Alert,
 } from '@mui/material';
 import { Edit, Extension, Route } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
@@ -22,12 +23,33 @@ type RouteState = {
 
 export function PluginSitemap() {
   const navigate = useNavigate();
-
+  const [error, setError] = useState<string>();
   const [plugins, setPlugins] = useState<PluginData[]>([]);
   const [routeState, setRouteState] = useState<Record<number, RouteState>>({});
 
   useEffect(() => {
-    api.fetchPlugins().then(setPlugins).catch(console.error);
+    const load = async () => {
+      try {
+        const plugins = await api.fetchPlugins();
+        setPlugins(plugins);
+
+        const routesMap = await api.fetchAllRoutes();
+        setRouteState(
+          Object.fromEntries(
+            plugins
+              .filter((p) => routesMap[p.package])
+              .map((p) => [
+                p.id,
+                { loading: false, routes: routesMap[p.package] },
+              ]),
+          ),
+        );
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    load();
   }, []);
 
   const loadRoutes = useCallback(
@@ -59,6 +81,14 @@ export function PluginSitemap() {
     },
     [routeState],
   );
+
+  if (error) {
+    return (
+      <Alert variant="outlined" severity="error" sx={{ mb: 4 }}>
+        {error}
+      </Alert>
+    );
+  }
 
   return (
     <List component="nav" disablePadding>

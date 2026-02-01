@@ -9,7 +9,7 @@ import { LoadingSkeleton } from '../Loading';
 export default function DynamicField(props: FieldProps) {
   const { url, code } = props.schema;
 
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const LazyComponent = useMemo(() => {
     if (!code && !url) return null;
@@ -32,7 +32,7 @@ export default function DynamicField(props: FieldProps) {
   if (error) {
     return (
       <Alert variant="outlined" severity="error" sx={{ mb: 4 }}>
-        {error.message}
+        {error}
       </Alert>
     );
   }

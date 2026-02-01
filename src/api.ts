@@ -129,6 +129,10 @@ export default {
     return request(`/api/plugins/routes/${pluginId}`);
   },
 
+  fetchAllRoutes(): Promise<{ [key: string]: string[] }> {
+    return request(`/api/plugins/routes`);
+  },
+
   fetchRouteSchema(pluginId: number, route: string): Promise<CodeSchema> {
     const query = buildQuery({
       route,
