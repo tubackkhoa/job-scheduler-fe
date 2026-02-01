@@ -2,12 +2,10 @@ import {
   List,
   ListItemButton,
   ListItemText,
-  CircularProgress,
   Box,
   IconButton,
   Typography,
   ListItemIcon,
-  Collapse,
   Tooltip,
   Alert,
 } from '@mui/material';
@@ -15,6 +13,7 @@ import { Edit, Extension, Route } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useCallback } from 'react';
 import api from '@/api';
+import { LoadingSkeleton } from './Loading';
 
 type RouteState = {
   loading: boolean;
@@ -61,21 +60,20 @@ export function PluginSitemap() {
         ...prev,
         [pluginId]: { loading: true },
       }));
-
+      let routes: string[];
       try {
         const data = await api.fetchRoutes(pluginId);
+        routes = data.filter((r) => !r.includes(':'));
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        // in case return
         setRouteState((prev) => ({
           ...prev,
           [pluginId]: {
             loading: false,
-            routes: data.filter((r) => !r.includes(':')),
+            routes,
           },
-        }));
-      } catch (err) {
-        console.error(err);
-        setRouteState((prev) => ({
-          ...prev,
-          [pluginId]: { loading: false },
         }));
       }
     },
@@ -94,9 +92,6 @@ export function PluginSitemap() {
     <List component="nav" disablePadding>
       {plugins.map((plugin) => {
         const state = routeState[plugin.id];
-        const isLoading = state?.loading;
-        const routes = state?.routes ?? [];
-        const isOpen = Boolean(state?.routes);
 
         return (
           <Box key={plugin.id}>
@@ -115,7 +110,7 @@ export function PluginSitemap() {
                     }}
                     fontWeight={500}
                   >
-                    {isOpen ? '▾' : '▸'} {plugin.package}
+                    {state?.routes ? '▾' : '▸'} {plugin.package}
                   </Typography>
                 }
                 secondary={plugin.description}
@@ -131,34 +126,36 @@ export function PluginSitemap() {
                   <Edit fontSize="small" />
                 </IconButton>
               </Tooltip>
-
-              {isLoading ? <CircularProgress size={16} /> : null}
             </ListItemButton>
 
-            <Collapse in={isOpen} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding>
-                {routes.map((route) => (
-                  <ListItemButton
-                    key={route}
-                    sx={{ pl: 6 }}
-                    onClick={() => navigate(`/plugins/${plugin.id}/${route}`)}
-                  >
-                    <ListItemIcon sx={{ minWidth: 32 }}>
-                      <Route fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={route}
-                      slotProps={{
-                        primary: {
-                          variant: 'body2',
-                          color: 'text.secondary',
-                        },
-                      }}
-                    />
-                  </ListItemButton>
-                ))}
-              </List>
-            </Collapse>
+            {state?.loading ? (
+              <LoadingSkeleton />
+            ) : (
+              state?.routes && (
+                <List component="div" disablePadding>
+                  {state.routes.map((route) => (
+                    <ListItemButton
+                      key={route}
+                      sx={{ pl: 6 }}
+                      onClick={() => navigate(`/plugins/${plugin.id}/${route}`)}
+                    >
+                      <ListItemIcon sx={{ minWidth: 32 }}>
+                        <Route fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={route}
+                        slotProps={{
+                          primary: {
+                            variant: 'body2',
+                            color: 'text.secondary',
+                          },
+                        }}
+                      />
+                    </ListItemButton>
+                  ))}
+                </List>
+              )
+            )}
           </Box>
         );
       })}
