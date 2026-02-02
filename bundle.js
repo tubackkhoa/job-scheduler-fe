@@ -1,5 +1,4 @@
 import { build } from 'esbuild';
-import { gzipSync } from 'zlib';
 import fs from 'fs';
 
 const [input, output] = process.argv
@@ -23,15 +22,9 @@ const result = await build({
   write: output !== undefined,
 });
 
-let jsCode = output ? fs.readFileSync(output) : result.outputFiles[0].contents;
-
-if (process.argv.includes('--base64')) {
-  // gzip → base64
-  const gzipped = gzipSync(jsCode);
-  const base64 = gzipped.toString('base64');
-  // write final data URL
-  jsCode = `data:application/gzip;base64,${base64}`;
-}
+const jsCode = output
+  ? fs.readFileSync(output)
+  : result.outputFiles[0].contents;
 
 if (output) {
   fs.writeFileSync(output, jsCode);

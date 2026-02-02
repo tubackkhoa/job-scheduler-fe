@@ -8,6 +8,7 @@ import * as RouterDom from 'react-router-dom';
 import api from './api';
 import * as LightweightChart from 'lightweight-charts';
 import Components from './components';
+import { FieldProps } from '@rjsf/utils';
 
 // polyfill global props
 const ExtendedUtils = { ...Utils, _, dayjs };
@@ -21,6 +22,7 @@ Object.assign(globalThis, {
   api,
   LightweightChart,
   Utils: ExtendedUtils,
+  __lazyModuleCache: new Map(),
 });
 
 // known at build time
@@ -35,23 +37,33 @@ export const getModule = async ({
   url,
   code,
 }: CodeSchema): Promise<ModuleCode> => {
-  let loader: Promise<any>;
-  if (code) {
-    loader = loadModule(Utils.createUrlFromString(await Utils.transpile(code)));
-  } else if (url.startsWith(Utils.gzipPrefix)) {
-    loader = loadModule(
-      Utils.createUrlFromString(
-        await Utils.decodeGzip(url.slice(Utils.gzipPrefix.length)),
-      ),
-    );
-  } else {
-    loader = libModules[`../libs/${url}`]?.() ?? loadModule(url);
-  }
+  const loader = code
+    ? loadModule(Utils.createUrlFromString(await Utils.transpile(code)))
+    : (libModules[`../libs/${url}`]?.() ?? loadModule(url));
 
   if (!loader) {
     throw new Error('Module loader is undefined');
   }
 
-  const mod = await loader;
-  return mod;
+  return loader;
+};
+
+// this help hot-reloading
+const lazyCache = new Map<
+  string,
+  React.LazyExoticComponent<React.FC<FieldProps>>
+>();
+
+export const getLazyModule = (url?: string, code?: string) => {
+  if (!url && !code) return null;
+  const key = url ?? Utils.getCodeHash(code);
+
+  if (!lazyCache.has(key)) {
+    lazyCache.set(
+      key,
+      React.lazy(() => getModule({ url, code })),
+    );
+  }
+
+  return { key, Component: lazyCache.get(key) };
 };

@@ -6,7 +6,6 @@ import {
   IconButton,
   Paper,
   Tooltip,
-  CircularProgress,
   List,
   ListItem,
   Chip,
@@ -21,6 +20,7 @@ import {
 import { SignalCellularAlt, Delete, Refresh } from '@mui/icons-material';
 import api from '@/api';
 import { formatMessage, getLevelColor, transformSignals } from '@/utils';
+import { LoadingSkeleton } from './Loading';
 
 /* -------------------------------- Utilities -------------------------------- */
 
@@ -478,7 +478,7 @@ export default function SignalsLogsViewer({
               justifyContent: 'center',
             }}
           >
-            <CircularProgress size={24} />
+            <LoadingSkeleton />
           </Box>
         ) : groups.length === 0 ? (
           <Box

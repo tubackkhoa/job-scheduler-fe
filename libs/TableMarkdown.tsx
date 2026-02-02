@@ -162,7 +162,7 @@ export default ({ formData }: FieldProps<string>) => {
         <TextField
           size="small"
           fullWidth
-          placeholder="Filter by model,   identity, status, symbol…"
+          placeholder="Filter by model, identity, status, symbol…"
           value={filter}
           onChange={(e) => {
             setFilter(e.target.value);

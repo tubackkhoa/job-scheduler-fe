@@ -615,21 +615,6 @@ export const transformSignals = (signals: Signal[]) => {
 /* ---------------- blob cache ---------------- */
 
 const blobCache = new Map<string, string>();
-export const gzipPrefix = 'data:application/gzip;base64,';
-
-export async function decodeGzip(base64: string) {
-  // base64 → bytes
-  const compressed = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-
-  // gunzip
-  const stream = new Blob([compressed]).stream();
-  const decompressedStream = stream.pipeThrough(
-    new DecompressionStream('gzip'),
-  );
-
-  return await new Response(decompressedStream).text();
-}
-
 export const createUrlFromString = (code: string) => {
   const hash = getCodeHash(code);
 
