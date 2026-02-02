@@ -136,6 +136,7 @@ export function TemplateField({
 
   // Fullscreen style object
   const fullscreenStyles = getContainerStyle(fullscreen);
+  const codeStyle = getCodeMirrorStyle(theme.palette.mode, fullscreen);
 
   return (
     <Stack spacing={1} sx={fullscreenStyles}>
@@ -204,7 +205,7 @@ export function TemplateField({
           }}
         >
           <ReactCodeMirror
-            {...getCodeMirrorStyle(theme.palette.mode, fullscreen)}
+            {...codeStyle}
             value={localValue}
             extensions={extensions}
             onChange={handleEditorChange}
@@ -241,6 +242,7 @@ export function TemplateField({
           </Tooltip>
           <TemplatePreview
             fullscreen={fullscreen}
+            codeStyle={codeStyle}
             fieldPathId={fieldPathId}
             registry={registry}
             text={previewCode}
