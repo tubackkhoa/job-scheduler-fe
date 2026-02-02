@@ -5,7 +5,6 @@ import * as UtilsNS from './utils';
 import _ from 'lodash';
 import * as MuiIconNS from '@mui/icons-material';
 import * as LightweightChartNS from 'lightweight-charts';
-import type { Chart as ChartType } from 'chart.js/auto';
 import ComponentsNS from './components';
 import * as RouterDomNS from 'react-router-dom';
 import ApiNS from './api';
@@ -14,7 +13,6 @@ import ReactNS from 'react';
 declare global {
   // @ts-ignore : allow duplicate to help libs notify it
   const React: typeof ReactNS;
-  const Chart: ChartType;
   const LightweightChart: typeof LightweightChartNS;
   const MuiIcon: typeof MuiIconNS;
   const RouterDom: typeof RouterDomNS;

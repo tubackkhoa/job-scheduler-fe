@@ -652,7 +652,6 @@ export const mdCodeLanguages = {
   sql: sqlLang,
   markdown: markdownLang,
   jinja: jinjaLang,
-  chart: javascriptLang,
   module: javascriptLang,
   js: javascriptLang,
 };
