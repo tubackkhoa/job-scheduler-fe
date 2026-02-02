@@ -1,4 +1,4 @@
-import { FieldProps } from '@rjsf/utils';
+import { FieldProps, RJSFSchema } from '@rjsf/utils';
 
 const { useState, useEffect, useRef, useCallback } = React;
 const {
@@ -38,10 +38,13 @@ export default function ({
 
   // Create dialog state
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [createFormData, setCreateFormData] = useState({});
+  const [createFormData, setCreateFormData] = useState<{
+    key?: string;
+    name?: string;
+  }>({});
   const [creating, setCreating] = useState(false);
 
-  const createSchema = schema['ui:options']?.createSchema;
+  const createSchema: RJSFSchema = schema['ui:options']?.createSchema;
 
   // Build context with dependencies
   const render = useCallback(
@@ -148,7 +151,7 @@ export default function ({
     setMessage('');
 
     try {
-      const payload = { ...createFormData, status: 'active' };
+      const payload: any = { ...createFormData, status: 'active' };
 
       // Parse detail field as JSON if it's a string
       if (payload.detail && typeof payload.detail === 'string') {
@@ -218,21 +221,23 @@ export default function ({
   const renderCreateFormFields = () => {
     if (!createSchema?.properties) return null;
 
-    return Object.entries(createSchema.properties).map(([key, fieldSchema]) => (
-      <TextField
-        key={key}
-        fullWidth
-        size="small"
-        label={fieldSchema.title || key}
-        value={createFormData[key] || ''}
-        onChange={(e) => handleCreateFormChange(key, e.target.value)}
-        required={createSchema.required?.includes(key)}
-        multiline={key === 'description' || key === 'detail'}
-        rows={key === 'detail' ? 4 : key === 'description' ? 2 : 1}
-        placeholder={key === 'detail' ? '{"key": "value"}' : ''}
-        sx={{ mb: 1.5 }}
-      />
-    ));
+    return Object.entries(createSchema.properties).map(
+      ([key, fieldSchema]: [string, RJSFSchema]) => (
+        <TextField
+          key={key}
+          fullWidth
+          size="small"
+          label={fieldSchema.title || key}
+          value={createFormData[key] || ''}
+          onChange={(e) => handleCreateFormChange(key, e.target.value)}
+          required={createSchema.required?.includes(key)}
+          multiline={key === 'description' || key === 'detail'}
+          rows={key === 'detail' ? 4 : key === 'description' ? 2 : 1}
+          placeholder={key === 'detail' ? '{"key": "value"}' : ''}
+          sx={{ mb: 1.5 }}
+        />
+      ),
+    );
   };
 
   return (
