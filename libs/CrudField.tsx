@@ -1,5 +1,23 @@
-// @ts-nocheck
-import { DynamicFieldProps } from '../src/global';
+import { FieldProps } from '@rjsf/utils';
+
+const { useState, useEffect, useRef, useCallback } = React;
+const {
+  Stack,
+  Typography,
+  Box,
+  Autocomplete,
+  TextField,
+  Button,
+  Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} = Mui;
+const { Save, Delete, Add, Refresh } = MuiIcon;
+const { ConfirmationDialog } = Components;
+const { _, buildJinjaContext } = Utils;
 
 export default function ({
   formData,
@@ -8,25 +26,7 @@ export default function ({
   uiSchema,
   fieldPathId,
   registry,
-  React: { useState, useEffect, useRef, useCallback },
-  Mui: {
-    Stack,
-    Typography,
-    Box,
-    Autocomplete,
-    TextField,
-    Button,
-    Chip,
-    IconButton,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-  },
-  MuiIcon: { Save, Delete, Add, Refresh },
-  Components: { ConfirmationDialog },
-  Utils: { _, buildJinjaContext },
-}: DynamicFieldProps) {
+}: FieldProps) {
   const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchInput, setSearchInput] = useState('');

@@ -1,4 +1,57 @@
-import { DynamicFieldProps } from '../../src/global';
+import { FieldProps } from '@rjsf/utils';
+
+const { useState, Fragment, useEffect, useCallback } = React;
+const { Link: RouterLink } = RouterDom;
+const { dayjs } = Utils;
+const { SignalsLogsViewer } = Components;
+const {
+  Box,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  TableContainer,
+  Collapse,
+  IconButton,
+  Typography,
+  Chip,
+  Stack,
+  Switch,
+  Tooltip,
+  Paper,
+  Divider,
+  LinearProgress,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  TextField,
+  Button,
+  TableSortLabel,
+  Card,
+  Autocomplete,
+} = Mui;
+
+const {
+  KeyboardArrowDown,
+  KeyboardArrowUp,
+  Memory,
+  Storage,
+  AccessTime,
+  SignalCellularAlt,
+  Edit,
+} = MuiIcon;
+
+const {
+  FirstPage,
+  LastPage,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  FilterList,
+  Clear,
+} = MuiIcon;
 
 const SESSIONS = [
   {
@@ -18,25 +71,14 @@ const SESSIONS = [
 // --- Utils ---
 
 function JobRowComponent({
-  Mui,
-  MuiIcon,
-  RouterDom: { Link: RouterLink },
-  Utils: { dayjs },
-  React: { useState, Fragment },
   job,
   valueVersion,
-  Components: { SignalsLogsViewer },
+
   signals,
   onToggle,
   pluginName,
   env,
 }: {
-  Mui: DynamicFieldProps['Mui'];
-  React: DynamicFieldProps['React'];
-  MuiIcon: DynamicFieldProps['MuiIcon'];
-  Components: DynamicFieldProps['Components'];
-  RouterDom: DynamicFieldProps['RouterDom'];
-  Utils: DynamicFieldProps['Utils'];
   job: Job;
   signals: Signal[];
   valueVersion?: ValueVersion;
@@ -44,29 +86,6 @@ function JobRowComponent({
   pluginName?: string;
   env?: string;
 }) {
-  const {
-    Box,
-    TableRow,
-    TableCell,
-    Collapse,
-    IconButton,
-    Typography,
-    Chip,
-    Stack,
-    Switch,
-    Tooltip,
-    Paper,
-  } = Mui;
-
-  const {
-    KeyboardArrowDown,
-    KeyboardArrowUp,
-    Memory,
-    Storage,
-    AccessTime,
-    SignalCellularAlt,
-    Edit,
-  } = MuiIcon;
   const [open, setOpen] = useState(false);
 
   // Parse config if it is a string, otherwise use as is
@@ -274,52 +293,7 @@ function JobRowComponent({
 
 const ROWS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
 
-export default function JobStatsTable({
-  formData,
-  React,
-  RouterDom,
-  Utils,
-  Components,
-  Api: api,
-  Mui,
-  MuiIcon,
-}: DynamicFieldProps) {
-  const { useState, useEffect, useCallback } = React;
-  const {
-    Box,
-    Table,
-    TableHead,
-    TableRow,
-    TableCell,
-    TableBody,
-    TableContainer,
-    IconButton,
-    Typography,
-    Chip,
-    Stack,
-    Tooltip,
-    Divider,
-    LinearProgress,
-    Select,
-    MenuItem,
-    FormControl,
-    InputLabel,
-    TextField,
-    Button,
-    TableSortLabel,
-    Card,
-    Autocomplete,
-  } = Mui;
-
-  const {
-    FirstPage,
-    LastPage,
-    ChevronLeft,
-    ChevronRight,
-    Search,
-    FilterList,
-    Clear,
-  } = MuiIcon;
+export default function JobStatsTable({ formData }: FieldProps) {
   const { fieldId = 'sql_id', fieldName = 'Sql version' } = formData;
   // State
   const [loading, setLoading] = useState(false);
@@ -617,12 +591,6 @@ export default function JobStatsTable({
                   : undefined;
                 return (
                   <JobRowComponent
-                    React={React}
-                    MuiIcon={MuiIcon}
-                    Components={Components}
-                    RouterDom={RouterDom}
-                    Utils={Utils}
-                    Mui={Mui}
                     key={job.id}
                     valueVersion={valueVersion}
                     signals={signals}

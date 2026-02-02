@@ -1,34 +1,31 @@
 import { FieldProps, RJSFSchema } from '@rjsf/utils';
-import React from 'react';
 import dayjs from 'dayjs';
-import * as Mui from '@mui/material';
-import * as Utils from './utils';
+import * as MuiNS from '@mui/material';
+import * as UtilsNS from './utils';
 import _ from 'lodash';
-import * as MuiIcon from '@mui/icons-material';
-import * as LightweightChart from 'lightweight-charts';
-import { Chart } from 'chart.js/auto';
+import * as MuiIconNS from '@mui/icons-material';
+import * as LightweightChartNS from 'lightweight-charts';
+import type { Chart as ChartType } from 'chart.js/auto';
 import { Components } from './components';
-import * as RouterDom from 'react-router-dom';
-import Api from './api';
+import * as RouterDomNS from 'react-router-dom';
+import ApiNS from './api';
+import ReactNS from 'react';
 
-export interface GlobalProps {
-  React: typeof React;
-  Chart: typeof Chart;
-  LightweightChart: typeof LightweightChart;
-  MuiIcon: typeof MuiIcon;
-  RouterDom: typeof RouterDom;
-  Mui: typeof Mui;
-  Components: Components;
-  Api: typeof Api;
-  Utils: typeof Utils & {
+declare global {
+  // @ts-ignore : allow duplicate to help libs notify it
+  const React: typeof ReactNS;
+  const Chart: ChartType;
+  const LightweightChart: typeof LightweightChartNS;
+  const MuiIcon: typeof MuiIconNS;
+  const RouterDom: typeof RouterDomNS;
+  const Mui: typeof MuiNS;
+  const Components: Components;
+  const api: typeof ApiNS;
+  const Utils: typeof UtilsNS & {
     _: typeof _;
     dayjs: typeof dayjs;
   };
-}
 
-export type DynamicFieldProps = FieldProps & GlobalProps;
-
-declare global {
   type Order = 'asc' | 'desc';
   interface PluginData {
     id: number;
@@ -43,7 +40,7 @@ declare global {
   }
 
   interface ModuleCode {
-    default: React.FC<DynamicFieldProps>;
+    default: ReactNS.FC<FieldProps>;
   }
 
   interface User {

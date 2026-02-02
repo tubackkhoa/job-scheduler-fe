@@ -6,7 +6,7 @@ import _ from 'lodash';
 import dayjs from 'dayjs';
 import { Chart } from 'chart.js/auto';
 import * as RouterDom from 'react-router-dom';
-import Api from './api';
+import api from './api';
 import {
   CandlestickController,
   OhlcController,
@@ -28,20 +28,19 @@ Chart.register(
 );
 
 // polyfill global props
-window.React = React;
 const ExtendedUtils = { ...Utils, _, dayjs };
 
-export const globalProps = {
+Object.assign(globalThis, {
   React,
   MuiIcon,
   Mui,
   RouterDom,
   Chart,
   Components,
-  Api,
+  api,
   LightweightChart,
   Utils: ExtendedUtils,
-};
+});
 
 // known at build time
 // Define the shape of your expected module

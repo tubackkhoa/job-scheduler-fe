@@ -16,11 +16,11 @@ const result = await build({
   target: 'es2020',
   loader: {
     '.tsx': 'tsx',
-    '.py': 'text'
+    '.py': 'text',
   },
   jsx: 'transform',
   jsxFactory: 'React.createElement',
-  write: output !== undefined
+  write: output !== undefined,
 });
 
 let jsCode = output ? fs.readFileSync(output) : result.outputFiles[0].contents;
