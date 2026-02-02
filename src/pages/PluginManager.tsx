@@ -39,7 +39,7 @@ export default function PluginManager({ setLoading, setError }) {
   const [createPluginModalOpen, setCreatePluginModalOpen] = useState(false);
 
   const [isPanelOpen, setIsPanelOpen] = useState(() =>
-    JSON.parse(localStorage.getItem(PANEL_OPEN_KEY) ?? 'true')
+    JSON.parse(localStorage.getItem(PANEL_OPEN_KEY) ?? 'true'),
   );
 
   /* ----------------------------------------
@@ -98,7 +98,7 @@ export default function PluginManager({ setLoading, setError }) {
   const loadSchema = async (
     targetPluginId: string | number,
     targetSessionId?: number,
-    targetJobId?: number
+    targetJobId?: number,
   ) => {
     if (!targetPluginId) return;
 
@@ -143,7 +143,7 @@ export default function PluginManager({ setLoading, setError }) {
       const found = list.find((j) => j.id === newJobId);
       setJobDesc(found?.description ?? '');
     },
-    [jobs]
+    [jobs],
   );
 
   const handleNewJob = useCallback(() => {
@@ -161,8 +161,8 @@ export default function PluginManager({ setLoading, setError }) {
         if (response.success) {
           setJobs((prev) =>
             prev.map((j) =>
-              j.id === targetJobId ? { ...j, active: active ? 1 : 0 } : j
-            )
+              j.id === targetJobId ? { ...j, active: active ? 1 : 0 } : j,
+            ),
           );
         }
         setResult(response);
@@ -170,7 +170,7 @@ export default function PluginManager({ setLoading, setError }) {
         setError(err.message);
       }
     },
-    [jobId]
+    [jobId],
   );
 
   /* ----------------------------------------
@@ -190,7 +190,7 @@ export default function PluginManager({ setLoading, setError }) {
       } else {
         await api.updateConfig(
           saveNew || !jobId ? 0 : jobId,
-          saveNew || !jobId ? { ...payload, pluginId, sessionId } : payload
+          saveNew || !jobId ? { ...payload, pluginId, sessionId } : payload,
         );
       }
 
@@ -242,17 +242,17 @@ export default function PluginManager({ setLoading, setError }) {
       const { id } = await api.createPlugin(
         data.package,
         data.interval,
-        data.description
+        data.description,
       );
       // new plugin data
       const newPlugin: PluginData = {
         ...data,
-        id
+        id,
       };
       setPlugins((prev) => [...prev, newPlugin]);
       setResult({
         success: true,
-        message: 'Plugin created successfully'
+        message: 'Plugin created successfully',
       });
       setCreatePluginModalOpen(false);
     } catch (err) {
@@ -270,12 +270,12 @@ export default function PluginManager({ setLoading, setError }) {
       typeof pluginId === 'number'
         ? plugins.find((p) => p.id === pluginId)
         : { package: pluginId, interval: 0 },
-    [pluginId, plugins]
+    [pluginId, plugins],
   );
 
   const currentJob = useMemo(
     () => jobs.find((j) => j.id === jobId),
-    [jobs, jobId]
+    [jobs, jobId],
   );
 
   const formData = useMemo(
@@ -284,7 +284,7 @@ export default function PluginManager({ setLoading, setError }) {
       (isNewJobMode && schema
         ? getDefaultFormState(validator, schema, undefined, schema)
         : undefined),
-    [currentJob, isNewJobMode, schema]
+    [currentJob, isNewJobMode, schema],
   );
 
   const isActive = !!currentJob?.active;
@@ -309,25 +309,22 @@ export default function PluginManager({ setLoading, setError }) {
           left: 10,
           bgcolor: 'action.hover',
           '&:hover': {
-            bgcolor: 'action.focus'
+            bgcolor: 'action.focus',
           },
-          zIndex: 9999
+          zIndex: 9999,
         }}
       >
         {isPanelOpen ? <ChevronLeft /> : <ChevronRight />}
       </IconButton>
       <Grid container spacing={3} sx={{ mt: 1 }}>
-        <Grid
-          size={{ xs: 12, md: isPanelOpen ? 3 : 0 }}
-          sx={{ display: isPanelOpen ? '' : 'none' }}
-        >
+        <Grid size={{ xs: 12, md: isPanelOpen ? 3 : 12 }}>
           <Box
             sx={{
               display: 'flex',
-              flexDirection: 'column',
+              flexDirection: isPanelOpen ? 'column' : 'row',
               gap: 3,
               position: { xs: 'static', md: 'sticky' },
-              top: 125
+              top: 125,
             }}
           >
             <ContextPanel
