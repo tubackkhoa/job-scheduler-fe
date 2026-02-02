@@ -48,6 +48,7 @@ libs/*
 # Allow this single file
 !libs/CrudField.tsx
 !libs/TableMarkdown.tsx
+!libs/LightweighChart.tsx
 
 # Allow backtest folder AND its contents
 !libs/backtest/
