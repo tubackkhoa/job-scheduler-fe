@@ -56,7 +56,6 @@ export const lightPalette = {
 
 export const getTheme = (mode: PaletteMode) =>
   createTheme({
-    cssVariables: true,
     palette: {
       mode,
       ...(mode === 'light' ? lightPalette : darkPalette),

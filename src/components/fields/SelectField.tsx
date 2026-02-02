@@ -132,7 +132,7 @@ export function SelectField({
               variant="subtitle2"
               key={id}
               sx={{
-                backgroundColor: 'var(--mui-palette-primary-main)',
+                bgcolor: 'primary.main',
                 px: 1,
                 borderRadius: 0.5,
                 maxWidth: 120,
