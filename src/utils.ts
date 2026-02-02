@@ -19,6 +19,7 @@ import jinjaPython from './jinja.py?raw';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { RJSFSchema } from '@rjsf/utils';
+import { PaletteMode } from '@mui/material';
 
 dayjs.extend(utc);
 
@@ -186,7 +187,7 @@ export const extractUiSchema = (schema: any): Record<string, any> => {
  * Theme
  * ================================ */
 
-export const getSystemTheme = (): 'dark' | 'light' =>
+export const getSystemTheme = (): PaletteMode =>
   window.matchMedia?.('(prefers-color-scheme: dark)').matches
     ? 'dark'
     : 'light';

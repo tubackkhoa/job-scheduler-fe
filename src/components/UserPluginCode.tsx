@@ -1,7 +1,7 @@
 import api from '@/api';
 import { JinjaCompletionBuilder, jinjaLinter, yamlLangWithJs } from '@/utils';
 import { jinja } from '@codemirror/lang-jinja';
-import { Paper, Stack, Typography } from '@mui/material';
+import { Paper, Stack, Typography, useTheme } from '@mui/material';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { useEffect, useState } from 'react';
 
@@ -11,12 +11,13 @@ export default ({
   env,
   setResult,
   setError,
-  onRefresh
+  onRefresh,
 }) => {
+  const theme = useTheme();
   const [isDirty, setIsDirty] = useState(false);
   const [code, setCode] = useState<PluginUserCodeResponse>({
     form: '',
-    script: ''
+    script: '',
   });
   useEffect(() => {
     (async () => {
@@ -45,7 +46,7 @@ export default ({
         </Typography>
 
         <ReactCodeMirror
-          theme="dark"
+          theme={theme.palette.mode}
           minHeight="200px"
           value={code.form}
           extensions={[yamlLangWithJs]}
@@ -64,12 +65,12 @@ export default ({
         </Typography>
 
         <ReactCodeMirror
-          theme="dark"
+          theme={theme.palette.mode}
           minHeight="200px"
           value={code.script}
           extensions={[
             jinja(JinjaCompletionBuilder.build(formData, env)),
-            jinjaLinter(formData, env)
+            jinjaLinter(formData, env),
           ]}
           onChange={(value) => {
             setIsDirty(true);

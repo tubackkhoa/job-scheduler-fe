@@ -5,9 +5,12 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  ListItemIcon
+  ListItemIcon,
+  PaletteMode,
 } from '@mui/material';
 
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ExtensionIcon from '@mui/icons-material/Extension';
@@ -18,7 +21,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { scrollToTop } from '@/utils';
 
-export function Header() {
+interface HeaderProps {
+  mode: PaletteMode;
+  onToggleTheme: () => void;
+}
+
+export function Header({ mode, onToggleTheme }: HeaderProps) {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
@@ -51,7 +59,7 @@ export function Header() {
         zIndex: 1000,
         borderColor: 'divider',
         position: { xs: 'static', md: 'sticky' },
-        top: 0
+        top: 0,
       })}
     >
       {/* Left: Title */}
@@ -59,17 +67,20 @@ export function Header() {
         onClick={scrollToTop}
         sx={{
           cursor: 'pointer',
-          userSelect: 'none'
+          userSelect: 'none',
         }}
       >
         <Typography
           variant="h4"
           sx={{
             fontWeight: 700,
-            background: 'linear-gradient(135deg, #fff 0%, #a5b4fc 100%)',
+            background:
+              mode === 'dark'
+                ? 'linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%)'
+                : 'linear-gradient(135deg, #0a0a0f 0%, #312e81 100%)',
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
+            WebkitTextFillColor: 'transparent',
           }}
         >
           Job Scheduler Dashboard
@@ -81,7 +92,10 @@ export function Header() {
       </Box>
 
       {/* Right: Menu */}
-      <Box>
+      <Box sx={{ display: 'flex', flexDirection: { md: 'row', xs: 'column' } }}>
+        <IconButton onClick={onToggleTheme} color="inherit">
+          {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+        </IconButton>
         <IconButton
           color="inherit"
           onClick={(event) => {
@@ -98,11 +112,11 @@ export function Header() {
           onClose={handleClose}
           anchorOrigin={{
             vertical: 'bottom',
-            horizontal: 'right'
+            horizontal: 'right',
           }}
           transformOrigin={{
             vertical: 'top',
-            horizontal: 'right'
+            horizontal: 'right',
           }}
         >
           <MenuItem onClick={() => handleNavigate('/')}>

@@ -11,7 +11,8 @@ import {
   Tab,
   CircularProgress,
   Grid,
-  Chip
+  Chip,
+  useTheme,
 } from '@mui/material';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import EditIcon from '@mui/icons-material/Edit';
@@ -34,27 +35,27 @@ const GENERATE_SAMPLES = [
       '- env (enum: staging, production, uat)',
       '- model_type (dynamic UI field with model bindings)',
       'Include roles for user and admin.',
-      'Render runtime output as JSON with all config fields included.'
-    ].join('\n')
-  }
+      'Render runtime output as JSON with all config fields included.',
+    ].join('\n'),
+  },
 ];
 
 const EDIT_SAMPLES = [
   {
     id: 'add_timeout',
     title: 'Add timeout',
-    instruction: 'Add a timeout field with default 30 seconds'
+    instruction: 'Add a timeout field with default 30 seconds',
   },
   {
     id: 'make_timeout_optional',
     title: 'Make timeout optional',
-    instruction: 'Make timeout optional and default to 10'
+    instruction: 'Make timeout optional and default to 10',
   },
   {
     id: 'add_retry',
     title: 'Add retry count',
-    instruction: 'Add retry_count with default 3'
-  }
+    instruction: 'Add retry_count with default 3',
+  },
 ];
 
 type Sample = {
@@ -81,7 +82,7 @@ function PromptSamples({ title, samples, onSelect }: Props) {
         direction="row"
         flexWrap="wrap"
         sx={{
-          gap: 1
+          gap: 1,
         }}
       >
         {samples.map((s) => (
@@ -93,7 +94,7 @@ function PromptSamples({ title, samples, onSelect }: Props) {
             color="primary"
             variant="outlined"
             sx={{
-              width: { xs: '100%', sm: 'auto' }
+              width: { xs: '100%', sm: 'auto' },
             }}
           />
         ))}
@@ -103,6 +104,7 @@ function PromptSamples({ title, samples, onSelect }: Props) {
 }
 
 export default function ChatBot() {
+  const theme = useTheme();
   const [mode, setMode] = useState<'generate' | 'edit'>('generate');
   const [query, setQuery] = useState('');
   const [plugin, setPlugin] = useState('');
@@ -117,7 +119,7 @@ export default function ChatBot() {
       if (mode === 'generate') {
         const result = await api.streamChat({
           payload: { query },
-          onToken: setOutput
+          onToken: setOutput,
         });
 
         setPlugin(result);
@@ -126,9 +128,9 @@ export default function ChatBot() {
           followUp: true,
           payload: {
             plugin,
-            instruction: query
+            instruction: query,
           },
-          onToken: setOutput
+          onToken: setOutput,
         });
 
         setPlugin(result);
@@ -143,7 +145,7 @@ export default function ChatBot() {
       maxWidth={false}
       sx={{
         py: { xs: 0, sm: 4 },
-        px: { xs: 0, sm: 2 }
+        px: { xs: 0, sm: 2 },
       }}
     >
       <Typography variant="h5" fontWeight={700} gutterBottom>
@@ -232,7 +234,7 @@ export default function ChatBot() {
           <Paper
             sx={{
               p: 2,
-              flex: 1
+              flex: 1,
             }}
           >
             <Typography fontWeight={600} gutterBottom color="inherit">
@@ -241,7 +243,7 @@ export default function ChatBot() {
 
             {output ? (
               <ReactCodeMirror
-                theme="dark"
+                theme={theme.palette.mode}
                 minHeight="200px"
                 width="100%"
                 value={output}
@@ -250,14 +252,14 @@ export default function ChatBot() {
                     codeLanguages: [
                       LanguageDescription.of({
                         name: 'yaml',
-                        support: yamlLangWithJs
+                        support: yamlLangWithJs,
                       }),
                       LanguageDescription.of({
                         name: 'jinja2',
-                        support: jinjaLang
-                      })
-                    ]
-                  })
+                        support: jinjaLang,
+                      }),
+                    ],
+                  }),
                 ]}
               />
             ) : (

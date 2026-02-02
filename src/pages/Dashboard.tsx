@@ -18,10 +18,10 @@ export default function Dashboard({ setLoading, setError }) {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          mb: 4,
+          my: 4,
         }}
       >
-        <Typography variant="h4" fontWeight={600}>
+        <Typography variant="h5" fontWeight={600}>
           Dashboard
         </Typography>
       </Box>

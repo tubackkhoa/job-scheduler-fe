@@ -3,7 +3,14 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import DOMPurify from 'dompurify';
-import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import {
+  Box,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  useTheme,
+} from '@mui/material';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { useMemo } from 'react';
 import { SortableTable } from '../SortableTable';
@@ -50,6 +57,7 @@ export const MarkdownPreview = ({
   schema,
   registry,
 }: Props) => {
+  const theme = useTheme();
   const styles = useMemo(
     () => ({
       height: '100%',
@@ -125,7 +133,7 @@ export const MarkdownPreview = ({
               case 'js':
                 return (
                   <ReactCodeMirror
-                    theme="dark"
+                    theme={theme.palette.mode}
                     basicSetup={{
                       lineNumbers: false,
                       foldGutter: false,
