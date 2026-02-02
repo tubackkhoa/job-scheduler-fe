@@ -181,7 +181,6 @@ export function TemplateField({
           flexGrow: fullscreen ? 1 : 'unset',
         }}
       >
-        {loadingPreview && tabIndex === 1 && <LoadingSkeleton />}
         <Box
           sx={{
             display: tabIndex === 1 ? 'none' : 'block',
@@ -233,6 +232,8 @@ export function TemplateField({
             schema={schema}
             extensions={extensions}
           />
+
+          {loadingPreview && <LoadingSkeleton />}
         </Box>
       </Box>
     </Stack>

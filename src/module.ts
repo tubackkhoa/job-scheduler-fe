@@ -55,7 +55,7 @@ const lazyCache = new Map<
 >();
 
 export const getLazyModule = (url?: string, code?: string) => {
-  if (!url && !code) return null;
+  if (!url && !code) return {};
   const key = url ?? Utils.getCodeHash(code);
 
   if (!lazyCache.has(key)) {
