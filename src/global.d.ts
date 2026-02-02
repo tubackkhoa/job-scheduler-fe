@@ -6,7 +6,7 @@ import _ from 'lodash';
 import * as MuiIconNS from '@mui/icons-material';
 import * as LightweightChartNS from 'lightweight-charts';
 import type { Chart as ChartType } from 'chart.js/auto';
-import { Components } from './components';
+import ComponentsNS from './components';
 import * as RouterDomNS from 'react-router-dom';
 import ApiNS from './api';
 import ReactNS from 'react';
@@ -19,7 +19,7 @@ declare global {
   const MuiIcon: typeof MuiIconNS;
   const RouterDom: typeof RouterDomNS;
   const Mui: typeof MuiNS;
-  const Components: Components;
+  const Components: typeof ComponentsNS;
   const api: typeof ApiNS;
   const Utils: typeof UtilsNS & {
     _: typeof _;
