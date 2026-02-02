@@ -23,10 +23,9 @@ export default function ({
   formData,
   onChange,
   schema,
-  uiSchema,
   fieldPathId,
   registry,
-}: FieldProps) {
+}: FieldProps<string>) {
   const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchInput, setSearchInput] = useState('');

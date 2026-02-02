@@ -293,7 +293,9 @@ function JobRowComponent({
 
 const ROWS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
 
-export default function JobStatsTable({ formData }: FieldProps) {
+export default function JobStatsTable({
+  formData,
+}: FieldProps<{ fieldId: string; fieldName: string }>) {
   const { fieldId = 'sql_id', fieldName = 'Sql version' } = formData;
   // State
   const [loading, setLoading] = useState(false);

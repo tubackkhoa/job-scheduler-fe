@@ -47,6 +47,7 @@ libs/*
 
 # Allow this single file
 !libs/CrudField.tsx
+!libs/TableMarkdown.tsx
 
 # Allow backtest folder AND its contents
 !libs/backtest/
