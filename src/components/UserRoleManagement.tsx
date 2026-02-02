@@ -5,7 +5,7 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TableRow,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import { useEffect, useState } from 'react';
@@ -36,7 +36,7 @@ export default function UserRoleManagement({ setError, setLoading }) {
       try {
         const [policy, users] = await Promise.all([
           api.getPolicy(),
-          api.getUsers()
+          api.getUsers(),
         ]);
 
         if (!mounted) return;
@@ -44,7 +44,7 @@ export default function UserRoleManagement({ setError, setLoading }) {
         setRoleMap(groupPolicyByRole(policy));
         setUsers(users);
       } catch (ex) {
-        // setError(ex.message);
+        setError(ex.message);
       }
 
       setLoading(false);
@@ -60,7 +60,7 @@ export default function UserRoleManagement({ setError, setLoading }) {
       const user = await api.updateRoles(userId, roles);
       setUsers((prev) => prev.map((u) => (u.id === userId ? user : u)));
       notifications.show('Update roles for user succeeded', {
-        severity: 'success'
+        severity: 'success',
       });
     } catch (ex) {
       notifications.show(ex.message, { severity: 'error' });
@@ -70,7 +70,7 @@ export default function UserRoleManagement({ setError, setLoading }) {
 
   // collect all roles from policies and from current users
   const allRoles = [
-    ...new Set([...Object.keys(roleMap), ...users.flatMap((u) => u.roles)])
+    ...new Set([...Object.keys(roleMap), ...users.flatMap((u) => u.roles)]),
   ];
 
   return (
@@ -96,19 +96,19 @@ export default function UserRoleManagement({ setError, setLoading }) {
                   schema={{
                     type: 'array',
                     title: 'Roles',
-                    enum: allRoles
+                    enum: allRoles,
                   }}
                   uiSchema={{
                     'ui:options': {
-                      multiple: true
-                    }
+                      multiple: true,
+                    },
                   }}
                   formData={user.roles}
                   onChange={(value) =>
                     setUsers((prev) =>
                       prev.map((u) =>
-                        u.id === user.id ? { ...u, roles: value } : u
-                      )
+                        u.id === user.id ? { ...u, roles: value } : u,
+                      ),
                     )
                   }
                 />

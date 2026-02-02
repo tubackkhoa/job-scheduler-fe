@@ -62,7 +62,12 @@ export default function App() {
                   />
                   <Route
                     path="plugins/:plugin_id/*"
-                    element={<CustomPluginPage />}
+                    element={
+                      <CustomPluginPage
+                        setError={setError}
+                        setLoading={setLoading}
+                      />
+                    }
                   />
                   {import.meta.env.VITE_CHATBOT_ENABLED && (
                     <Route path="chatbot" element={<ChatBot />} />
