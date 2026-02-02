@@ -10,7 +10,7 @@ import {
   Typography,
   Stack,
   Chip,
-  Switch
+  Switch,
 } from '@mui/material';
 import { Add, NoteAdd } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -24,7 +24,7 @@ export function JobsList({
   onToggleJob,
   onNewJob,
   isNewJobMode,
-  disabled
+  disabled,
 }) {
   const filteredJobs: Job[] = jobs.filter((j) => j.id !== 0);
   const navigate = useNavigate();
@@ -43,8 +43,8 @@ export function JobsList({
             sx={{
               background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)'
-              }
+                background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+              },
             }}
           >
             New
@@ -53,18 +53,18 @@ export function JobsList({
         slotProps={{
           title: {
             variant: 'h6',
-            fontWeight: 600
+            fontWeight: 600,
           },
           subheader: {
-            variant: 'body2'
-          }
+            variant: 'body2',
+          },
         }}
       />
       <CardContent
         sx={{
           pt: 0,
           maxHeight: { xs: 'none', md: 'calc(100vh - 540px)' },
-          overflowY: 'auto'
+          overflowY: 'auto',
         }}
       >
         <List disablePadding>
@@ -78,7 +78,7 @@ export function JobsList({
                 border: 2,
                 borderColor: 'secondary.main',
                 bgcolor: 'rgba(236, 72, 153, 0.12)',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
               }}
             >
               <NoteAdd sx={{ mr: 1.5, color: 'secondary.main' }} />
@@ -116,7 +116,7 @@ export function JobsList({
               selected={selectedJobId === job.id && !isNewJobMode}
               onClick={() => {
                 navigate(
-                  `/plugins/${pluginId}/sessions/${sessionId}/jobs/${job.id}`
+                  `/plugins/${pluginId}/sessions/${sessionId}/jobs/${job.id}`,
                 );
               }}
               sx={{
@@ -133,9 +133,9 @@ export function JobsList({
                     : 'transparent',
                 '&:hover': {
                   bgcolor: 'action.hover',
-                  borderColor: 'primary.light'
+                  borderColor: 'primary.main',
                 },
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
               }}
             >
               <ListItemText
@@ -156,12 +156,12 @@ export function JobsList({
                               width: 6,
                               height: 6,
                               borderRadius: '50%',
-                              bgcolor: 'success.light',
+                              bgcolor: 'success.main',
                               animation: 'pulse 2s infinite',
                               '@keyframes pulse': {
                                 '0%, 100%': { opacity: 1 },
-                                '50%': { opacity: 0.5 }
-                              }
+                                '50%': { opacity: 0.5 },
+                              },
                             }}
                           />
                         ) : undefined
@@ -178,7 +178,7 @@ export function JobsList({
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
-                      display: 'block'
+                      display: 'block',
                     }}
                   >
                     #{job.id} • {pluginPackage || 'Plugin'}
@@ -202,7 +202,7 @@ export function JobsList({
             <Box
               sx={{
                 py: 6,
-                textAlign: 'center'
+                textAlign: 'center',
               }}
             >
               <Typography variant="body2" color="text.secondary">

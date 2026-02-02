@@ -244,7 +244,7 @@ export const formatUtcTime = (isoString: any): string => {
  * ================================ */
 
 const LEVEL_COLOR_MAP: Record<string, string> = {
-  CRITICAL: 'error.dark',
+  CRITICAL: 'error.main',
   ERROR: 'error.main',
   WARNING: 'warning.main',
   INFO: 'info.main',

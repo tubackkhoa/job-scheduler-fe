@@ -128,7 +128,7 @@ function JobRowComponent({
                     width: 8,
                     height: 8,
                     borderRadius: '50%',
-                    bgcolor: 'success.light',
+                    bgcolor: 'success.main',
                     animation: 'pulse 2s infinite',
                     '@keyframes pulse': {
                       '0%, 100%': { opacity: 1 },
