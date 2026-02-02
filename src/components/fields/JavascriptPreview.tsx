@@ -1,14 +1,8 @@
 import { Console } from 'console-feed';
 import React, { useEffect, useRef, useState } from 'react';
 
-import {
-  Box,
-  Paper,
-  Typography,
-  Stack,
-  Divider,
-  useTheme,
-} from '@mui/material';
+import { Box, Paper, Typography, Stack, Divider } from '@mui/material';
+import { useAppColorScheme } from '@/utils';
 
 interface Props {
   text: string;
@@ -81,7 +75,7 @@ export const JavascriptPreview: React.FC<Props> = ({
   fullscreen,
   providers,
 }) => {
-  const theme = useTheme();
+  const [mode] = useAppColorScheme();
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const [logs, setLogs] = useState<any[]>([]);
 
@@ -145,7 +139,7 @@ export const JavascriptPreview: React.FC<Props> = ({
           fontSize: 13,
         }}
       >
-        <Console logs={logs} variant={theme.palette.mode} />
+        <Console logs={logs} variant={mode} />
       </Box>
     </Paper>
   );

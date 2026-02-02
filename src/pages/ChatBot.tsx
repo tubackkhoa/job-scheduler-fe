@@ -12,7 +12,6 @@ import {
   CircularProgress,
   Grid,
   Chip,
-  useTheme,
 } from '@mui/material';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import EditIcon from '@mui/icons-material/Edit';
@@ -20,7 +19,7 @@ import { LanguageDescription } from '@codemirror/language';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import api from '@/api';
-import { jinjaLang, yamlLangWithJs } from '@/utils';
+import { jinjaLang, useAppColorScheme, yamlLangWithJs } from '@/utils';
 
 const GENERATE_SAMPLES = [
   {
@@ -104,8 +103,8 @@ function PromptSamples({ title, samples, onSelect }: Props) {
 }
 
 export default function ChatBot() {
-  const theme = useTheme();
-  const [mode, setMode] = useState<'generate' | 'edit'>('generate');
+  const [mode] = useAppColorScheme();
+  const [action, setAction] = useState<'generate' | 'edit'>('generate');
   const [query, setQuery] = useState('');
   const [plugin, setPlugin] = useState('');
   const [output, setOutput] = useState('');
@@ -116,7 +115,7 @@ export default function ChatBot() {
     setLoading(true);
 
     try {
-      if (mode === 'generate') {
+      if (action === 'generate') {
         const result = await api.streamChat({
           payload: { query },
           onToken: setOutput,
@@ -154,8 +153,8 @@ export default function ChatBot() {
 
       <Paper sx={{ p: 2, mb: 3 }}>
         <Tabs
-          value={mode}
-          onChange={(_, v) => setMode(v)}
+          value={action}
+          onChange={(_, v) => setAction(v)}
           textColor="primary"
           indicatorColor="primary"
         >
@@ -179,10 +178,10 @@ export default function ChatBot() {
         <Grid size={{ xs: 12, md: 4 }}>
           <Paper sx={{ p: 2, flex: 1, position: 'sticky', top: 125 }}>
             <Typography fontWeight={600} gutterBottom>
-              {mode === 'generate' ? 'Prompt' : 'Edit Instruction'}
+              {action === 'generate' ? 'Prompt' : 'Edit Instruction'}
             </Typography>
 
-            {mode === 'generate' && (
+            {action === 'generate' && (
               <PromptSamples
                 title="Generate Examples"
                 samples={GENERATE_SAMPLES}
@@ -190,7 +189,7 @@ export default function ChatBot() {
               />
             )}
 
-            {mode === 'edit' && (
+            {action === 'edit' && (
               <PromptSamples
                 title="Edit Examples"
                 samples={EDIT_SAMPLES}
@@ -203,7 +202,7 @@ export default function ChatBot() {
               minRows={6}
               fullWidth
               placeholder={
-                mode === 'generate'
+                action === 'generate'
                   ? 'Describe the plugin you want…'
                   : 'What should be changed?'
               }
@@ -221,7 +220,7 @@ export default function ChatBot() {
             >
               {loading ? (
                 <CircularProgress size={24} color="inherit" />
-              ) : mode === 'generate' ? (
+              ) : action === 'generate' ? (
                 'Generate Plugin'
               ) : (
                 'Apply Edit'
@@ -243,7 +242,7 @@ export default function ChatBot() {
 
             {output ? (
               <ReactCodeMirror
-                theme={theme.palette.mode}
+                theme={mode}
                 minHeight="200px"
                 width="100%"
                 value={output}

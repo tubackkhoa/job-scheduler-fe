@@ -1,4 +1,3 @@
-import { useTheme } from '@mui/material';
 import { FieldProps } from '@rjsf/utils';
 
 const { Box, Button, Typography } = Mui;
@@ -10,7 +9,7 @@ export default function ({
   formData,
   fieldPathId,
 }: FieldProps<string>) {
-  const theme = useTheme();
+  const [mode] = Utils.useAppColorScheme();
   const [input, setInput] = useState(formData);
   const handleRun = async () => {
     onChange(input, fieldPathId.path);
@@ -20,7 +19,7 @@ export default function ({
     <Box display="flex" flexDirection="column" gap={2}>
       <Typography variant="subtitle1">Compiled react component</Typography>
       <CodeMirror
-        theme={theme.palette.mode}
+        theme={mode}
         maxHeight="400px"
         value={input}
         onChange={(value) => setInput(value)}

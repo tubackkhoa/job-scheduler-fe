@@ -10,7 +10,6 @@ import {
   CircularProgress,
   IconButton,
   Box,
-  useTheme,
 } from '@mui/material';
 import { jinja } from '@codemirror/lang-jinja';
 import { TemplatePreview } from './TemplatePreview';
@@ -19,6 +18,7 @@ import {
   jinjaLinter,
   jinjaEvaluate,
   resolveLanguageExtension,
+  useAppColorScheme,
 } from '@/utils';
 import _ from 'lodash';
 import {
@@ -56,7 +56,7 @@ export function TemplateField({
 
   // Local state for editor content during typing
   const [localValue, setLocalValue] = useState(formData);
-  const theme = useTheme();
+  const [mode] = useAppColorScheme();
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [previewCode, setPreviewCode] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -136,7 +136,7 @@ export function TemplateField({
 
   // Fullscreen style object
   const fullscreenStyles = getContainerStyle(fullscreen);
-  const codeStyle = getCodeMirrorStyle(theme.palette.mode, fullscreen);
+  const codeStyle = getCodeMirrorStyle(mode, fullscreen);
 
   return (
     <Stack spacing={1} sx={fullscreenStyles}>

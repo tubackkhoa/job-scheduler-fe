@@ -1,11 +1,9 @@
-import { useMemo, useState } from 'react';
-import { PaletteMode, ThemeProvider } from '@mui/material/styles';
-import { Box, Container, CssBaseline } from '@mui/material';
-import { getThemeMode, saveThemeMode } from './theme';
+import { useState } from 'react';
+import { Box, Container, CssBaseline, ThemeProvider } from '@mui/material';
 import { Header } from './components/Header';
 import { LoadingBar } from './components/Loading';
 import { ErrorAlert } from './components/ErrorAlert';
-import { getTheme } from './theme';
+import { theme } from './theme';
 import { Routes, Route } from 'react-router-dom';
 import PluginManager from './pages/PluginManager';
 import NotificationsProvider from './hooks/useNotifications/NotificationsProvider';
@@ -21,17 +19,6 @@ export default function App() {
   // to show loading and error global
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  // 🌗 theme mode
-  const [mode, setMode] = useState<PaletteMode>(() => getThemeMode());
-  const theme = useMemo(() => getTheme(mode), [mode]);
-
-  const toggleTheme = () => {
-    setMode((prev) => {
-      const next = prev === 'light' ? 'dark' : 'light';
-      saveThemeMode(next);
-      return next;
-    });
-  };
 
   const pluginElement = (
     <PluginManager setLoading={setLoading} setError={setError} />
@@ -44,7 +31,7 @@ export default function App() {
         <LoadingBar isLoading={loading} />
 
         <Container maxWidth={false} sx={{ pb: 3, px: { xs: 2, sm: 3, md: 4 } }}>
-          <Header mode={mode} onToggleTheme={toggleTheme} />
+          <Header />
 
           {error && (
             <Box sx={{ my: 3 }}>

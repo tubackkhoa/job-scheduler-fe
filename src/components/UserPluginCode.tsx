@@ -1,7 +1,12 @@
 import api from '@/api';
-import { JinjaCompletionBuilder, jinjaLinter, yamlLangWithJs } from '@/utils';
+import {
+  JinjaCompletionBuilder,
+  jinjaLinter,
+  useAppColorScheme,
+  yamlLangWithJs,
+} from '@/utils';
 import { jinja } from '@codemirror/lang-jinja';
-import { Paper, Stack, Typography, useTheme } from '@mui/material';
+import { Paper, Stack, Typography } from '@mui/material';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { useEffect, useState } from 'react';
 
@@ -13,7 +18,7 @@ export default ({
   setError,
   onRefresh,
 }) => {
-  const theme = useTheme();
+  const [mode] = useAppColorScheme();
   const [isDirty, setIsDirty] = useState(false);
   const [code, setCode] = useState<PluginUserCodeResponse>({
     form: '',
@@ -46,7 +51,7 @@ export default ({
         </Typography>
 
         <ReactCodeMirror
-          theme={theme.palette.mode}
+          theme={mode}
           minHeight="200px"
           value={code.form}
           extensions={[yamlLangWithJs]}
@@ -65,7 +70,7 @@ export default ({
         </Typography>
 
         <ReactCodeMirror
-          theme={theme.palette.mode}
+          theme={mode}
           minHeight="200px"
           value={code.script}
           extensions={[

@@ -19,7 +19,7 @@ import jinjaPython from './jinja.py?raw';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { RJSFSchema } from '@rjsf/utils';
-import { PaletteMode } from '@mui/material';
+import { PaletteMode, useColorScheme } from '@mui/material';
 
 dayjs.extend(utc);
 
@@ -191,6 +191,15 @@ export const getSystemTheme = (): PaletteMode =>
   window.matchMedia?.('(prefers-color-scheme: dark)').matches
     ? 'dark'
     : 'light';
+
+export function useAppColorScheme(): [
+  PaletteMode,
+  (mode: PaletteMode) => void,
+] {
+  const { mode, setMode } = useColorScheme();
+  const paletteMode = !mode || mode === 'system' ? getSystemTheme() : mode;
+  return [paletteMode, setMode];
+}
 
 /* ================================
  * Message Formatting

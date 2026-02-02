@@ -1,14 +1,7 @@
-import { createTheme, PaletteMode } from '@mui/material/styles';
+import { createTheme, PaletteMode, PaletteOptions } from '@mui/material';
 import { ReactCodeMirrorProps } from '@uiw/react-codemirror';
-import { getSystemTheme } from './utils';
 
-export const THEME_KEY = 'theme';
-export const saveThemeMode = (mode: PaletteMode) =>
-  localStorage.setItem(THEME_KEY, mode);
-export const getThemeMode = (): PaletteMode =>
-  (localStorage.getItem(THEME_KEY) as PaletteMode) ?? getSystemTheme();
-
-export const darkPalette = {
+export const darkPalette: PaletteOptions = {
   primary: {
     main: '#4f46e5',
   },
@@ -31,7 +24,7 @@ export const darkPalette = {
   divider: 'rgba(255, 255, 255, 0.08)',
 };
 
-export const lightPalette = {
+export const lightPalette: PaletteOptions = {
   primary: {
     main: '#818cf8',
   },
@@ -54,48 +47,50 @@ export const lightPalette = {
   divider: 'rgba(0, 0, 0, 0.08)',
 };
 
-export const getTheme = (mode: PaletteMode) =>
-  createTheme({
-    palette: {
-      mode,
-      ...(mode === 'light' ? lightPalette : darkPalette),
+export const theme = createTheme({
+  colorSchemes: {
+    light: {
+      palette: lightPalette,
     },
-    typography: {
-      fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    dark: {
+      palette: darkPalette,
     },
-    shape: {
-      borderRadius: 12,
-    },
-    components: {
-      MuiCard: {
-        styleOverrides: {
-          root: {
-            backgroundImage: 'none',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-          },
-        },
-      },
-      MuiButton: {
-        styleOverrides: {
-          root: {
-            textTransform: 'none',
-            fontWeight: 500,
-          },
-        },
-      },
-      MuiTextField: {
-        defaultProps: {
-          variant: 'outlined',
-          size: 'small',
-        },
-      },
-      MuiSelect: {
-        defaultProps: {
-          size: 'small',
+  },
+  typography: {
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+  },
+  shape: {
+    borderRadius: 12,
+  },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
         },
       },
     },
-  });
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          fontWeight: 500,
+        },
+      },
+    },
+    MuiTextField: {
+      defaultProps: {
+        variant: 'outlined',
+        size: 'small',
+      },
+    },
+    MuiSelect: {
+      defaultProps: {
+        size: 'small',
+      },
+    },
+  },
+});
 
 export const getCodeMirrorStyle = (
   mode: PaletteMode,

@@ -6,7 +6,6 @@ import {
   Menu,
   MenuItem,
   ListItemIcon,
-  PaletteMode,
 } from '@mui/material';
 
 import LightModeIcon from '@mui/icons-material/LightMode';
@@ -19,14 +18,11 @@ import ChatbotIcon from '@mui/icons-material/ChatBubbleOutline';
 
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { scrollToTop } from '@/utils';
+import { scrollToTop, useAppColorScheme } from '@/utils';
 
-interface HeaderProps {
-  mode: PaletteMode;
-  onToggleTheme: () => void;
-}
-
-export function Header({ mode, onToggleTheme }: HeaderProps) {
+export function Header() {
+  // 🌗 theme mode
+  const [mode, setMode] = useAppColorScheme();
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
@@ -49,18 +45,18 @@ export function Header({ mode, onToggleTheme }: HeaderProps) {
 
   return (
     <Box
-      sx={(theme) => ({
+      sx={{
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'space-between',
         py: 3,
-        backgroundColor: theme.palette.background.default,
+        bgcolor: 'background.default',
         borderBottom: 1,
         zIndex: 1000,
         borderColor: 'divider',
         position: { xs: 'static', md: 'sticky' },
         top: 0,
-      })}
+      }}
     >
       {/* Left: Title */}
       <Box
@@ -80,7 +76,7 @@ export function Header({ mode, onToggleTheme }: HeaderProps) {
                 : 'linear-gradient(135deg, #0a0a0f 0%, #312e81 100%)',
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
+            color: 'transparent',
           }}
         >
           Job Scheduler Dashboard
@@ -93,7 +89,11 @@ export function Header({ mode, onToggleTheme }: HeaderProps) {
 
       {/* Right: Menu */}
       <Box sx={{ display: 'flex', flexDirection: { md: 'row', xs: 'column' } }}>
-        <IconButton onClick={onToggleTheme} color="inherit" disableRipple>
+        <IconButton
+          onClick={() => setMode(mode === 'light' ? 'dark' : 'light')}
+          color="inherit"
+          disableRipple
+        >
           {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
         </IconButton>
         <IconButton
