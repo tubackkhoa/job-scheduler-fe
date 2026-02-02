@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -12,8 +12,8 @@ import {
   CircularProgress,
   Tab,
   Divider,
-} from "@mui/material";
-import { ConfirmationDialog } from "./ConfirmationDialog";
+} from '@mui/material';
+import { ConfirmationDialog } from './ConfirmationDialog';
 import {
   PlayArrow,
   Pause,
@@ -25,14 +25,14 @@ import {
   SignalCellularAlt,
   SettingsApplications,
   Code,
-} from "@mui/icons-material";
+} from '@mui/icons-material';
 
-import { ConfigForm } from "./ConfigForm";
-import LogViewer from "./LogViewer";
-import SignalsLogsViewer from "./SignalsLogsViewer";
-import JinjaEnvDocs from "./JinjaEnvDocs";
-import api from "@/api";
-import UserPluginCode from "./UserPluginCode";
+import { ConfigForm } from './ConfigForm';
+import LogViewer from './LogViewer';
+import SignalsLogsViewer from './SignalsLogsViewer';
+import JinjaEnvDocs from './JinjaEnvDocs';
+import api from '@/api';
+import UserPluginCode from './UserPluginCode';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -81,13 +81,13 @@ export function JobDetails({
     setIsDirty(false);
 
     switch (confirmDialog.type) {
-      case "save":
+      case 'save':
         onSave(localFormData);
         break;
-      case "saveAsNew":
+      case 'saveAsNew':
         onSaveAsNew(localFormData);
         break;
-      case "delete":
+      case 'delete':
         onDelete();
         break;
       default:
@@ -97,33 +97,33 @@ export function JobDetails({
 
   const getConfirmDialogProps = () => {
     switch (confirmDialog.type) {
-      case "save":
+      case 'save':
         return {
-          title: "Save Job Configuration",
-          message: "Are you sure you want to save these changes?",
+          title: 'Save Job Configuration',
+          message: 'Are you sure you want to save these changes?',
           details:
-            "This will update the job configuration. If you have selected a SQL version, the SQL value from that version will be used to run the job.\n\nNote: The preview value will be replaced by the saved version value.",
-          severity: "warning",
-          confirmText: "Save Changes",
+            'This will update the job configuration. If you have selected a SQL version, the SQL value from that version will be used to run the job.\n\nNote: The preview value will be replaced by the saved version value.',
+          severity: 'warning',
+          confirmText: 'Save Changes',
         };
-      case "saveAsNew":
+      case 'saveAsNew':
         return {
-          title: "Create New Job",
+          title: 'Create New Job',
           message:
-            "Are you sure you want to create a new job with this configuration?",
+            'Are you sure you want to create a new job with this configuration?',
           details:
-            "This will create a new job entry. If you have selected a SQL version, the SQL value from that version will be used to run the new job.\n\nNote: The preview value will be replaced by the saved version value.",
-          severity: "info",
-          confirmText: "Create New Job",
+            'This will create a new job entry. If you have selected a SQL version, the SQL value from that version will be used to run the new job.\n\nNote: The preview value will be replaced by the saved version value.',
+          severity: 'info',
+          confirmText: 'Create New Job',
         };
-      case "delete":
+      case 'delete':
         return {
-          title: "Delete Job",
-          message: "Are you sure you want to delete this job?",
+          title: 'Delete Job',
+          message: 'Are you sure you want to delete this job?',
           details:
-            "This action cannot be undone. The job and all its configuration will be permanently deleted.",
-          severity: "error",
-          confirmText: "Delete Job",
+            'This action cannot be undone. The job and all its configuration will be permanently deleted.',
+          severity: 'error',
+          confirmText: 'Delete Job',
         };
       default:
         return {};
@@ -142,11 +142,11 @@ export function JobDetails({
     return (
       <Card
         sx={{
-          bgcolor: "background.paper",
+          bgcolor: 'background.paper',
           minHeight: 400,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           p: 3,
         }}
       >
@@ -161,27 +161,27 @@ export function JobDetails({
     );
   }
 
-  const isUserPlugin = typeof pluginId === "string";
+  const isUserPlugin = typeof pluginId === 'string';
 
   return (
-    <Card sx={{ bgcolor: "background.paper" }}>
+    <Card sx={{ bgcolor: 'background.paper' }}>
       <CardHeader
-        title={isUserPlugin ? "User Plugin" : "Job Details"}
+        title={isUserPlugin ? 'User Plugin' : 'Job Details'}
         subheader={
           pluginPackage
-            ? `${pluginPackage}${pluginInterval ? ` • every ${pluginInterval}s` : ""}`
-            : "Select a plugin to begin"
+            ? `${pluginPackage}${pluginInterval ? ` • every ${pluginInterval}s` : ''}`
+            : 'Select a plugin to begin'
         }
         action={
-          (typeof pluginId == "string" || jobId !== 0) && (
+          (typeof pluginId == 'string' || jobId !== 0) && (
             <Stack direction="row" spacing={1} alignItems="center">
               <Button
-                variant={isActive ? "outlined" : "contained"}
-                color={isActive ? "warning" : "success"}
+                variant={isActive ? 'outlined' : 'contained'}
+                color={isActive ? 'warning' : 'success'}
                 size="small"
                 startIcon={isActive ? <Pause /> : <PlayArrow />}
                 onClick={async () => {
-                  if (typeof pluginId === "string") {
+                  if (typeof pluginId === 'string') {
                     try {
                       const result = await api.runTemplatePlugin(
                         pluginId,
@@ -198,24 +198,24 @@ export function JobDetails({
                 }}
                 disabled={isSubmitting}
               >
-                {typeof pluginId == "string"
-                  ? "Run"
+                {typeof pluginId == 'string'
+                  ? 'Run'
                   : isActive
-                    ? "Pause"
-                    : "Start"}
+                    ? 'Pause'
+                    : 'Start'}
               </Button>
             </Stack>
           )
         }
         slotProps={{
           title: {
-            variant: "h6",
+            variant: 'h6',
             fontWeight: 600,
           },
           subheader: {
-            variant: "body2",
+            variant: 'body2',
             sx: {
-              wordBreak: "break-word",
+              wordBreak: 'break-word',
             },
           },
         }}
@@ -235,7 +235,7 @@ export function JobDetails({
           />
 
           {/* Tabs */}
-          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs
               variant="scrollable"
               scrollButtons="auto"
@@ -245,9 +245,9 @@ export function JobDetails({
                 setTabIndex(v);
               }}
               sx={{
-                "& .MuiTab-root": {
+                '& .MuiTab-root': {
                   minHeight: 48,
-                  textTransform: "none",
+                  textTransform: 'none',
                 },
               }}
             >
@@ -353,35 +353,29 @@ export function JobDetails({
             </Typography>
           )}
           <Stack
-            direction={{ xs: "column", sm: "row" }}
-            alignItems={{ xs: "stretch", sm: "center" }}
+            direction={{ xs: 'column', sm: 'row' }}
+            alignItems={{ xs: 'stretch', sm: 'center' }}
             gap={2}
           >
             <Button
               variant="contained"
               startIcon={<Save />}
               onClick={() => {
-                if (typeof pluginId === "string") {
+                if (typeof pluginId === 'string') {
                   return onSave(localFormData);
                 }
-                openConfirmDialog("save");
+                openConfirmDialog('save');
               }}
               disabled={isSubmitting}
-              sx={{
-                background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
-                "&:hover": {
-                  background:
-                    "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
-                },
-              }}
+              color="primary"
             >
-              {isSubmitting ? "Saving..." : "Save"}
+              {isSubmitting ? 'Saving...' : 'Save'}
             </Button>
             {jobId > 0 && (
               <Button
                 variant="outlined"
                 startIcon={<AddCircleOutline />}
-                onClick={() => openConfirmDialog("saveAsNew")}
+                onClick={() => openConfirmDialog('saveAsNew')}
                 disabled={isSubmitting}
               >
                 Save new
@@ -393,7 +387,7 @@ export function JobDetails({
                 variant="outlined"
                 color="error"
                 startIcon={<Delete />}
-                onClick={() => openConfirmDialog("delete")}
+                onClick={() => openConfirmDialog('delete')}
                 disabled={isSubmitting}
               >
                 Delete

@@ -93,7 +93,7 @@ export function Header({ mode, onToggleTheme }: HeaderProps) {
 
       {/* Right: Menu */}
       <Box sx={{ display: 'flex', flexDirection: { md: 'row', xs: 'column' } }}>
-        <IconButton onClick={onToggleTheme} color="inherit">
+        <IconButton onClick={onToggleTheme} color="inherit" disableRipple>
           {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
         </IconButton>
         <IconButton

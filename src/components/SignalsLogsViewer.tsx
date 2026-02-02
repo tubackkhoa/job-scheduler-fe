@@ -129,7 +129,7 @@ const TableMessage = ({ message }) => {
     <TableContainer
       component={Box}
       sx={{
-        bgcolor: 'rgba(0, 0, 0, 0.3)',
+        bgcolor: 'background.default',
         maxHeight: 500,
         maxWidth: '100%',
         overflowX: 'auto',

@@ -10,7 +10,7 @@ import {
   CircularProgress,
   Slider,
   List,
-  ListItem
+  ListItem,
 } from '@mui/material';
 import { Terminal, Delete, Search, Refresh } from '@mui/icons-material';
 import api from '@/api';
@@ -18,9 +18,9 @@ import { formatMessage, getLevelColor } from '@/utils';
 
 /* -------------------------------- Utilities -------------------------------- */
 
-const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-const highlightMessage = (text, search) => {
+const highlightMessage = (text: string, search: string) => {
   if (!search || !text) return text;
   const regex = new RegExp(`(${escapeRegExp(search)})`, 'gi');
   return text.split(regex).map((part, i) =>
@@ -30,7 +30,7 @@ const highlightMessage = (text, search) => {
       </mark>
     ) : (
       part
-    )
+    ),
   );
 };
 
@@ -43,7 +43,7 @@ const LogRow = function LogRow({ log, searchText }) {
       sx={{
         py: 0.2,
         px: 0,
-        fontFamily: '"JetBrains Mono", monospace'
+        fontFamily: '"JetBrains Mono", monospace',
       }}
     >
       <Stack direction="row" spacing={2}>
@@ -60,7 +60,7 @@ const LogRow = function LogRow({ log, searchText }) {
               fontWeight: 600,
               ml: 2,
               textTransform: 'uppercase',
-              color: getLevelColor(log.level)
+              color: getLevelColor(log.level),
             }}
           >
             [{log.level}]
@@ -73,7 +73,7 @@ const LogRow = function LogRow({ log, searchText }) {
             fontFamily: 'inherit',
             opacity: 0.9,
             whiteSpace: 'pre',
-            minWidth: 'max-content'
+            minWidth: 'max-content',
           }}
         >
           {highlightMessage(formatMessage(log.message), searchText)}
@@ -88,18 +88,18 @@ const LogRow = function LogRow({ log, searchText }) {
 export default function LogViewer({
   jobId,
   maxMessages: _maxMessages = 1500,
-  description
+  description,
 }) {
   const [logs, setLogs] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sliderOffset, setSliderOffset] = useState(0);
 
-  const _ws = useRef(null);
-  const _logIdRef = useRef(0);
+  // const _ws = useRef(null);
+  // const _logIdRef = useRef(0);
   const debounceRef = useRef(null);
   const totalLogRef = useRef(0);
-  const _reconnectTimeoutRef = useRef(null);
+  // const _reconnectTimeoutRef = useRef(null);
 
   // useEffect(() => {
   //   maxMessagesRef.current = maxMessages;
@@ -123,9 +123,9 @@ export default function LogViewer({
               offset: log.offset,
               time: log.timestamp,
               level: log.level,
-              message: log.message
+              message: log.message,
             }))
-            .sort((a, b) => a.offset - b.offset)
+            .sort((a, b) => a.offset - b.offset),
         );
       } catch (e) {
         console.error(e);
@@ -133,7 +133,7 @@ export default function LogViewer({
         setIsLoading(false);
       }
     },
-    [jobId]
+    [jobId],
   );
 
   /* ------------------------------ Load ---------------------------------- */
@@ -216,7 +216,7 @@ export default function LogViewer({
     return logs.filter(
       (l) =>
         l.message?.toLowerCase().includes(s) ||
-        l.level?.toLowerCase().includes(s)
+        l.level?.toLowerCase().includes(s),
     );
   }, [logs, searchText]);
 
@@ -243,7 +243,7 @@ export default function LogViewer({
                 debounceRef.current = setTimeout(() => {
                   fetchHistoricalLogs(
                     searchText || null,
-                    sliderOffset > 500 ? sliderOffset : 500
+                    sliderOffset > 500 ? sliderOffset : 500,
                   );
                 }, 500);
               }}
@@ -285,14 +285,14 @@ export default function LogViewer({
           debounceRef.current = setTimeout(() => {
             fetchHistoricalLogs(
               e.target.value || null,
-              sliderOffset > 500 ? sliderOffset : 500
+              sliderOffset > 500 ? sliderOffset : 500,
             );
           }, 500);
         }}
         slotProps={{
           input: {
-            startAdornment: <Search fontSize="small" sx={{ mr: 1 }} />
-          }
+            startAdornment: <Search fontSize="small" sx={{ mr: 1 }} />,
+          },
         }}
       />
 
@@ -313,10 +313,10 @@ export default function LogViewer({
         sx={{
           height: '600px',
           overflow: 'auto',
-          bgcolor: 'rgba(0,0,0,0.4)',
+          bgcolor: 'background.default',
           fontFamily: '"JetBrains Mono", monospace',
-          p: 1,
-          flex: 1
+          p: 2,
+          flex: 1,
         }}
       >
         {isLoading ? (
@@ -325,7 +325,7 @@ export default function LogViewer({
               height: '100%',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
             }}
           >
             <CircularProgress size={24} />
@@ -336,7 +336,7 @@ export default function LogViewer({
               height: '100%',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
             }}
           >
             <Typography variant="body2">No logs</Typography>
@@ -367,8 +367,8 @@ export default function LogViewer({
             sx={{
               bgcolor: 'rgba(99, 102, 241, 0.1)',
               '&:hover': {
-                bgcolor: 'rgba(99, 102, 241, 0.2)'
-              }
+                bgcolor: 'rgba(99, 102, 241, 0.2)',
+              },
             }}
           >
             <Refresh fontSize="small" />
