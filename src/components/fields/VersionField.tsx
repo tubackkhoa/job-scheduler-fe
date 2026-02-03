@@ -625,12 +625,12 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
     const fetchAllJobs = async () => {
       setLoading(true);
       const results = {};
-      const jobs = await render(
+      const jobs: Job[] = await render(
         `{{ dao.get_jobs_by_plugin_and_session(plugin_id) | list | pick("id", "description") }}`,
       );
       SESSIONS.map((session) => {
         try {
-          if (jobs?.length) {
+          if (jobs?.filter) {
             results[session.id] = {
               name: session.name,
               jobs: jobs.filter((j) => j.session_id === session.id),
