@@ -1,7 +1,7 @@
 import { FieldProps } from '@rjsf/utils';
 
-const { useState, useMemo } = React;
-const {
+import { useState, useMemo } from 'react';
+import {
   Table,
   TableBody,
   TableCell,
@@ -19,7 +19,7 @@ const {
   IconButton,
   Button,
   Switch,
-} = Mui;
+} from '@mui/material';
 
 type LatestInfo = {
   symbol: string;

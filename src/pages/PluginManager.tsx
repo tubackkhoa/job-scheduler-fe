@@ -4,7 +4,7 @@ import { JobsList } from '../components/JobsList';
 import { JobDetails } from '../components/JobDetails';
 import { ResponseCard } from '../components/ResponseCard';
 import { CreatePluginModal } from '../components/CreatePluginModal';
-import { SESSIONS } from '../constants/session';
+import { SESSIONS } from '../constants';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getDefaultFormState } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';

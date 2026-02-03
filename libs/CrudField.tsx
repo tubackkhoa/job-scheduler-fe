@@ -1,7 +1,6 @@
 import { FieldProps, RJSFSchema } from '@rjsf/utils';
-
-const { useState, useEffect, useRef, useCallback } = React;
-const {
+import { useState, useEffect, useRef, useCallback } from 'react';
+import {
   Stack,
   Typography,
   Box,
@@ -14,8 +13,9 @@ const {
   DialogTitle,
   DialogContent,
   DialogActions,
-} = Mui;
-const { Save, Delete, Add, Refresh } = MuiIcon;
+} from '@mui/material';
+import { Delete, Add, Refresh } from '@mui/icons-material';
+
 const { ConfirmationDialog } = Components;
 const { _, buildJinjaContext } = Utils;
 

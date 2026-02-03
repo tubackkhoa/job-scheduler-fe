@@ -1,22 +1,12 @@
 import { FieldProps, RJSFSchema } from '@rjsf/utils';
 import dayjs from 'dayjs';
-import * as MuiNS from '@mui/material';
 import * as UtilsNS from './utils';
 import _ from 'lodash';
-import * as MuiIconNS from '@mui/icons-material';
-import * as LightweightChartNS from 'lightweight-charts';
 import ComponentsNS from './components';
-import * as RouterDomNS from 'react-router-dom';
 import ApiNS from './api';
 import ReactNS from 'react';
 
 declare global {
-  // @ts-ignore : allow duplicate to help libs notify it
-  const React: typeof ReactNS;
-  const LightweightChart: typeof LightweightChartNS;
-  const MuiIcon: typeof MuiIconNS;
-  const RouterDom: typeof RouterDomNS;
-  const Mui: typeof MuiNS;
   const Components: typeof ComponentsNS;
   const api: typeof ApiNS;
   const Utils: typeof UtilsNS & {

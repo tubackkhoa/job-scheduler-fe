@@ -1,7 +1,7 @@
 import { FieldProps } from '@rjsf/utils';
+import { Box, Button, Typography } from '@mui/material';
+import { useState } from 'react';
 
-const { Box, Button, Typography } = Mui;
-const { useState } = React;
 const { CodeMirror } = Components;
 
 export default function ({
