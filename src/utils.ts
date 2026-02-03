@@ -486,25 +486,12 @@ export async function transpile(code: string): Promise<string> {
     jsxFactory: 'React.createElement',
     jsxFragment: 'React.Fragment',
 
-    // Reduce attack surface
-    minify: true,
-    treeShaking: true,
-
-    // Prevent sneaky globals, just avoid by mistake
-    define: {
-      eval: 'undefined',
-      Function: 'undefined',
-      window: 'undefined',
-      document: 'undefined',
-      globalThis: 'undefined',
-      fetch: 'undefined',
-      WebSocket: 'undefined',
-      XMLHttpRequest: 'undefined',
-    },
-
-    // Make output deterministic
+    minify: false,
+    treeShaking: false,
     keepNames: false,
     sourcemap: false,
+
+    legalComments: 'none',
   });
 
   return result.code;

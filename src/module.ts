@@ -22,7 +22,6 @@ Object.assign(globalThis, {
   api,
   LightweightChart,
   Utils: ExtendedUtils,
-  __lazyModuleCache: new Map(),
 });
 
 // known at build time
