@@ -1,4 +1,4 @@
-import { Box, Grid, IconButton } from '@mui/material';
+import { Box, Grid, IconButton, useMediaQuery, useTheme } from '@mui/material';
 import { ContextPanel } from '../components/ContextPanel';
 import { JobsList } from '../components/JobsList';
 import { JobDetails } from '../components/JobDetails';
@@ -37,6 +37,9 @@ export default function PluginManager({ setLoading, setError }) {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [createPluginModalOpen, setCreatePluginModalOpen] = useState(false);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const [isPanelOpen, setIsPanelOpen] = useState(() =>
     JSON.parse(localStorage.getItem(PANEL_OPEN_KEY) ?? 'true'),
@@ -288,40 +291,43 @@ export default function PluginManager({ setLoading, setError }) {
   );
 
   const isActive = !!currentJob?.active;
+  const panelOpen = isMobile || isPanelOpen;
 
   /* ----------------------------------------
    * Render
    * ------------------------------------- */
   return (
     <>
-      <IconButton
-        size="small"
-        onClick={() =>
-          setIsPanelOpen((v) => {
-            const panelOpen = !v;
-            localStorage.setItem(PANEL_OPEN_KEY, JSON.stringify(panelOpen));
-            return panelOpen;
-          })
-        }
-        sx={{
-          position: 'fixed',
-          bottom: 10,
-          left: 10,
-          bgcolor: 'action.hover',
-          '&:hover': {
-            bgcolor: 'action.focus',
-          },
-          zIndex: 9999,
-        }}
-      >
-        {isPanelOpen ? <ChevronLeft /> : <ChevronRight />}
-      </IconButton>
+      {!isMobile && (
+        <IconButton
+          size="small"
+          onClick={() =>
+            setIsPanelOpen((v) => {
+              const panelOpen = !v;
+              localStorage.setItem(PANEL_OPEN_KEY, JSON.stringify(panelOpen));
+              return panelOpen;
+            })
+          }
+          sx={{
+            position: 'fixed',
+            bottom: 10,
+            left: 10,
+            bgcolor: 'action.hover',
+            '&:hover': {
+              bgcolor: 'action.focus',
+            },
+            zIndex: 9999,
+          }}
+        >
+          {isPanelOpen ? <ChevronLeft /> : <ChevronRight />}
+        </IconButton>
+      )}
       <Grid container spacing={3} sx={{ mt: 1 }}>
-        <Grid size={{ xs: 12, md: isPanelOpen ? 3 : 12 }}>
+        <Grid size={{ xs: 12, md: panelOpen ? 3 : 12 }}>
           <Box
             sx={{
               display: 'flex',
-              flexDirection: isPanelOpen ? 'column' : 'row',
+              flexDirection: panelOpen ? 'column' : 'row',
               gap: 3,
             }}
           >
@@ -352,7 +358,7 @@ export default function PluginManager({ setLoading, setError }) {
           </Box>
         </Grid>
 
-        <Grid size={{ xs: 12, md: isPanelOpen ? 9 : 12 }}>
+        <Grid size={{ xs: 12, md: panelOpen ? 9 : 12 }}>
           <JobDetails
             jobId={jobId}
             jobDesc={jobDesc}
