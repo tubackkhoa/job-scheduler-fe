@@ -3,39 +3,26 @@ import * as Mui from '@mui/material';
 import * as Utils from '@/utils';
 import * as MuiIcon from '@mui/icons-material';
 import _ from 'lodash';
-import { ConfirmationDialog } from '@/components/ConfirmationDialog';
-import { Chart } from 'chart.js/auto';
-import {
-  CandlestickController,
-  OhlcController,
-  CandlestickElement,
-  OhlcElement
-} from 'chartjs-chart-financial';
-import 'chartjs-adapter-luxon';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
+import dayjs from 'dayjs';
+import * as RouterDom from 'react-router-dom';
+import api from './api';
 import * as LightweightChart from 'lightweight-charts';
-
-// 🔥 Register financial charts
-Chart.register(
-  CandlestickController,
-  OhlcController,
-  CandlestickElement,
-  OhlcElement,
-  ChartDataLabels
-);
+import Components from './components';
+import { FieldProps } from '@rjsf/utils';
 
 // polyfill global props
-window.React = React;
-const ExtendedMui = { ...Mui, ConfirmationDialog };
-const ExtendedUtils = { ...Utils, _ };
-window.globalProps = {
+const ExtendedUtils = { ...Utils, _, dayjs };
+
+Object.assign(globalThis, {
   React,
   MuiIcon,
-  Mui: ExtendedMui,
-  Chart,
+  Mui,
+  RouterDom,
+  Components,
+  api,
   LightweightChart,
-  Utils: ExtendedUtils
-};
+  Utils: ExtendedUtils,
+});
 
 // known at build time
 // Define the shape of your expected module
@@ -47,25 +34,35 @@ export const loadModule = (modUrl: string) => import(/* @vite-ignore */ modUrl);
 
 export const getModule = async ({
   url,
-  code
+  code,
 }: CodeSchema): Promise<ModuleCode> => {
-  let loader: Promise<any>;
-  if (code) {
-    loader = loadModule(Utils.createUrlFromString(await Utils.transpile(code)));
-  } else if (url.startsWith(Utils.gzipPrefix)) {
-    loader = loadModule(
-      Utils.createUrlFromString(
-        await Utils.decodeGzip(url.slice(Utils.gzipPrefix.length))
-      )
-    );
-  } else {
-    loader = libModules[`../libs/${url}`]?.() ?? loadModule(url);
-  }
+  const loader = code
+    ? loadModule(Utils.createUrlFromString(await Utils.transpile(code)))
+    : (libModules[`../libs/${url}`]?.() ?? loadModule(url));
 
   if (!loader) {
     throw new Error('Module loader is undefined');
   }
 
-  const mod = await loader;
-  return mod;
+  return loader;
+};
+
+// this help hot-reloading
+const lazyCache = new Map<
+  string,
+  React.LazyExoticComponent<React.FC<FieldProps>>
+>();
+
+export const getLazyModule = (url?: string, code?: string) => {
+  if (!url && !code) return {};
+  const key = url ?? Utils.getCodeHash(code);
+
+  if (!lazyCache.has(key)) {
+    lazyCache.set(
+      key,
+      React.lazy(() => getModule({ url, code })),
+    );
+  }
+
+  return { key, Component: lazyCache.get(key) };
 };

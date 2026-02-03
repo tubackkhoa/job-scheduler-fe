@@ -5,7 +5,7 @@ interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;
   resetKey?: string | number;
-  onError?: (error: Error, info: ErrorInfo) => void;
+  onError?: (error: string, info: ErrorInfo) => void;
 }
 
 interface ErrorBoundaryState {
@@ -28,7 +28,7 @@ export class ErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('Lazy component error:', error, info);
-    this.props.onError?.(error, info);
+    this.props.onError?.(error.message, info);
   }
 
   componentDidUpdate(prevProps: ErrorBoundaryProps) {

@@ -1,33 +1,31 @@
-// @ts-nocheck
-import { RJSFSchema } from '@rjsf/utils';
-import { DynamicFieldProps } from '@/components/fields/DynamicField';
+import { FieldProps, RJSFSchema } from '@rjsf/utils';
+
+const { useState, useEffect, useRef, useCallback } = React;
+const {
+  Stack,
+  Typography,
+  Box,
+  Autocomplete,
+  TextField,
+  Button,
+  Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} = Mui;
+const { Save, Delete, Add, Refresh } = MuiIcon;
+const { ConfirmationDialog } = Components;
+const { _, buildJinjaContext } = Utils;
 
 export default function ({
   formData,
   onChange,
   schema,
-  uiSchema,
   fieldPathId,
   registry,
-  React: { useState, useEffect, useRef, useCallback },
-  Mui: {
-    Stack,
-    Typography,
-    Box,
-    Autocomplete,
-    TextField,
-    Button,
-    Chip,
-    IconButton,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    ConfirmationDialog
-  },
-  MuiIcon: { Save, Delete, Add, Refresh },
-  Utils: { _, buildJinjaContext }
-}: DynamicFieldProps) {
+}: FieldProps<string>) {
   const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchInput, setSearchInput] = useState('');
@@ -39,41 +37,44 @@ export default function ({
 
   // Create dialog state
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [createFormData, setCreateFormData] = useState({});
+  const [createFormData, setCreateFormData] = useState<{
+    key?: string;
+    name?: string;
+  }>({});
   const [creating, setCreating] = useState(false);
 
-  const createSchema = schema['ui:options']?.createSchema;
+  const createSchema: RJSFSchema = schema['ui:options']?.createSchema;
 
   // Build context with dependencies
   const render = useCallback(
     buildJinjaContext(registry.formContext.pluginPackage, {
       ...registry.formContext.env.filters,
-      ...registry.formContext.formData
+      ...registry.formContext.formData,
     }),
-    [registry.formContext]
+    [registry.formContext],
   );
 
   // Generic evaluate wrapper
   const evaluateExpr = useCallback(
     (exprKey, data) => render(schema['model:expr'][exprKey], data),
-    [schema, render]
+    [schema, render],
   );
 
   // CRUD operations
   const listItems = useCallback(
     (field_id, searchTerm = '', limit = 20, offset = 0) =>
       evaluateExpr('list', { field_id, search: searchTerm, limit, offset }),
-    [evaluateExpr]
+    [evaluateExpr],
   );
 
   const createItem = useCallback(
     (payload) => evaluateExpr('create', { payload }),
-    [evaluateExpr]
+    [evaluateExpr],
   );
 
   const deleteItem = useCallback(
     (key) => evaluateExpr('delete', { key }),
-    [evaluateExpr]
+    [evaluateExpr],
   );
 
   // Debounced search
@@ -90,7 +91,7 @@ export default function ({
       // If formData exists, select corresponding item
       if (formData) {
         const matched = list.find(
-          (v) => v.id === formData || v.key === formData
+          (v) => v.id === formData || v.key === formData,
         );
         if (matched) {
           setSelectedItem(matched);
@@ -149,7 +150,7 @@ export default function ({
     setMessage('');
 
     try {
-      const payload = { ...createFormData, status: 'active' };
+      const payload: any = { ...createFormData, status: 'active' };
 
       // Parse detail field as JSON if it's a string
       if (payload.detail && typeof payload.detail === 'string') {
@@ -219,21 +220,23 @@ export default function ({
   const renderCreateFormFields = () => {
     if (!createSchema?.properties) return null;
 
-    return Object.entries(createSchema.properties).map(([key, fieldSchema]) => (
-      <TextField
-        key={key}
-        fullWidth
-        size="small"
-        label={fieldSchema.title || key}
-        value={createFormData[key] || ''}
-        onChange={(e) => handleCreateFormChange(key, e.target.value)}
-        required={createSchema.required?.includes(key)}
-        multiline={key === 'description' || key === 'detail'}
-        rows={key === 'detail' ? 4 : key === 'description' ? 2 : 1}
-        placeholder={key === 'detail' ? '{"key": "value"}' : ''}
-        sx={{ mb: 1.5 }}
-      />
-    ));
+    return Object.entries(createSchema.properties).map(
+      ([key, fieldSchema]: [string, RJSFSchema]) => (
+        <TextField
+          key={key}
+          fullWidth
+          size="small"
+          label={fieldSchema.title || key}
+          value={createFormData[key] || ''}
+          onChange={(e) => handleCreateFormChange(key, e.target.value)}
+          required={createSchema.required?.includes(key)}
+          multiline={key === 'description' || key === 'detail'}
+          rows={key === 'detail' ? 4 : key === 'description' ? 2 : 1}
+          placeholder={key === 'detail' ? '{"key": "value"}' : ''}
+          sx={{ mb: 1.5 }}
+        />
+      ),
+    );
   };
 
   return (
@@ -243,7 +246,7 @@ export default function ({
         bgcolor: 'rgba(99, 102, 241, 0.08)',
         borderRadius: 1,
         border: '1px solid',
-        borderColor: 'divider'
+        borderColor: 'divider',
       }}
     >
       <Stack spacing={1.5}>

@@ -9,16 +9,16 @@ import type { SnackbarCloseReason } from '@mui/material/Snackbar';
 import type { CloseReason } from '@mui/material/SpeedDial';
 import CloseIcon from '@mui/icons-material/Close';
 import NotificationsContext from './NotificationsContext';
-import { useTheme } from '@mui/material/styles';
 
 import type {
   CloseNotification,
   ShowNotification,
-  ShowNotificationOptions
+  ShowNotificationOptions,
 } from './useNotifications';
+import { useAppColorScheme } from '@/utils';
 
 const RootPropsContext = React.createContext<NotificationsProviderProps | null>(
-  null
+  null,
 );
 
 interface NotificationProps {
@@ -34,9 +34,9 @@ function Notification({
   open,
   message,
   options,
-  badge
+  badge,
 }: NotificationProps) {
-  const theme = useTheme();
+  const [mode] = useAppColorScheme();
   const notificationsContext = React.useContext(NotificationsContext);
   if (!notificationsContext) {
     throw new Error('Notifications context was used without a provider.');
@@ -50,7 +50,7 @@ function Notification({
       if (reason === 'clickaway') return;
       close(notificationKey);
     },
-    [notificationKey, close]
+    [notificationKey, close],
   );
 
   const action = (
@@ -84,12 +84,12 @@ function Notification({
             action={action}
             sx={{
               width: '100%',
-              bgcolor: theme.palette.background.paper,
-              color: theme.palette.text.primary,
-              boxShadow: theme.shadows[6],
+              bgcolor: 'background.paper',
+              color: 'text.primary',
+              boxShadow: 6,
               '& .MuiAlert-icon': {
-                color: theme.palette[severity]?.main
-              }
+                color: `${severity}.main`,
+              },
             }}
           >
             {message}
@@ -99,9 +99,9 @@ function Notification({
             message={message}
             action={action}
             sx={{
-              bgcolor: theme.palette.background.paper,
-              color: theme.palette.text.primary,
-              boxShadow: theme.shadows[6]
+              bgcolor: 'background.paper',
+              color: 'text.primary',
+              boxShadow: 6,
             }}
           />
         )}
@@ -152,7 +152,7 @@ const generateId = () => {
  * access the notifications API. The notifications are shown in the same order they are requested.
  */
 export default function NotificationsProvider(
-  props: NotificationsProviderProps
+  props: NotificationsProviderProps,
 ) {
   const { children } = props;
   const [state, setState] = React.useState<NotificationsState>({ queue: [] });
@@ -169,8 +169,8 @@ export default function NotificationsProvider(
         ...prev,
         queue: [
           ...prev.queue,
-          { message, options, notificationKey, open: true }
-        ]
+          { message, options, notificationKey, open: true },
+        ],
       };
     });
     return notificationKey;
@@ -179,7 +179,7 @@ export default function NotificationsProvider(
   const close = React.useCallback<CloseNotification>((key) => {
     setState((prev) => ({
       ...prev,
-      queue: prev.queue.filter((n) => n.notificationKey !== key)
+      queue: prev.queue.filter((n) => n.notificationKey !== key),
     }));
   }, []);
 

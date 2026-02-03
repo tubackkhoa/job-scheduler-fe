@@ -5,9 +5,11 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  ListItemIcon
+  ListItemIcon,
 } from '@mui/material';
 
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ExtensionIcon from '@mui/icons-material/Extension';
@@ -16,9 +18,13 @@ import ChatbotIcon from '@mui/icons-material/ChatBubbleOutline';
 
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { scrollToTop } from '@/utils';
+import { scrollToTop, useAppColorScheme } from '@/utils';
+import { useScroll } from '@/hooks/useScroll';
 
-export function Header() {
+export function Header({ height }: { height: number }) {
+  // 🌗 theme mode
+  const offset = useScroll(height);
+  const [mode, setMode] = useAppColorScheme();
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
@@ -41,47 +47,73 @@ export function Header() {
 
   return (
     <Box
-      sx={(theme) => ({
+      sx={{
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'space-between',
         py: 3,
-        backgroundColor: theme.palette.background.default,
+        height,
+        bgcolor: 'background.default',
         borderBottom: 1,
-        zIndex: 1000,
         borderColor: 'divider',
-        position: { xs: 'static', md: 'sticky' },
-        top: 0
-      })}
+        zIndex: 1000,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        px: { xs: 2, md: 4 },
+        transform: `translate3d(0, -${offset}px, 0)`,
+        transition: 'transform 0.2s ease-out',
+        willChange: 'transform',
+      }}
     >
       {/* Left: Title */}
       <Box
         onClick={scrollToTop}
         sx={{
           cursor: 'pointer',
-          userSelect: 'none'
+          userSelect: 'none',
         }}
       >
         <Typography
           variant="h4"
           sx={{
             fontWeight: 700,
-            background: 'linear-gradient(135deg, #fff 0%, #a5b4fc 100%)',
+            background:
+              mode === 'dark'
+                ? 'linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%)'
+                : 'linear-gradient(135deg, #0a0a0f 0%, #312e81 100%)',
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
+            color: 'transparent',
           }}
         >
           Job Scheduler Dashboard
         </Typography>
 
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ mt: 0.5, display: { xs: 'none', md: 'block' } }}
+        >
           Manage plugins, jobs, configurations, and live logs in one view.
         </Typography>
       </Box>
 
       {/* Right: Menu */}
-      <Box>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { md: 'row', xs: 'column' },
+        }}
+      >
+        <IconButton
+          onClick={() => setMode(mode === 'light' ? 'dark' : 'light')}
+          color="inherit"
+          disableRipple
+        >
+          {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+        </IconButton>
         <IconButton
           color="inherit"
           onClick={(event) => {
@@ -98,11 +130,11 @@ export function Header() {
           onClose={handleClose}
           anchorOrigin={{
             vertical: 'bottom',
-            horizontal: 'right'
+            horizontal: 'right',
           }}
           transformOrigin={{
             vertical: 'top',
-            horizontal: 'right'
+            horizontal: 'right',
           }}
         >
           <MenuItem onClick={() => handleNavigate('/')}>

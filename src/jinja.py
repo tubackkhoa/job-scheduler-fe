@@ -5,15 +5,28 @@ import json
 from datetime import datetime, timedelta, timezone
 
 
+def pick(items, *fields):
+    result = []
+    for item in items:
+        if isinstance(item, dict):
+            result.append({f: item.get(f) for f in fields})
+        else:
+            result.append({f: getattr(item, f, None) for f in fields})
+    return result
+
+
+def in_clause(values):
+    return "()" if not values else f"({','.join(map(repr, values))})"
+
+
 sandbox = SandboxedEnvironment(autoescape=False, trim_blocks=True, lstrip_blocks=True)
 sandbox.globals.update(
     {"datetime": datetime, "timedelta": timedelta, "timezone": timezone}
 )
 sandbox.filters.update(
     {
-        "in_clause": lambda values: (
-            "()" if not values else f"({','.join(map(repr, values))})"
-        ),
+        "in_clause": in_clause,
+        "pick": pick,
     }
 )
 

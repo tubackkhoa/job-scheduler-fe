@@ -19,6 +19,7 @@ import jinjaPython from './jinja.py?raw';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { RJSFSchema } from '@rjsf/utils';
+import { PaletteMode, useColorScheme } from '@mui/material';
 
 dayjs.extend(utc);
 
@@ -186,10 +187,19 @@ export const extractUiSchema = (schema: any): Record<string, any> => {
  * Theme
  * ================================ */
 
-export const getSystemTheme = (): 'dark' | 'light' =>
+export const getSystemTheme = (): PaletteMode =>
   window.matchMedia?.('(prefers-color-scheme: dark)').matches
     ? 'dark'
     : 'light';
+
+export function useAppColorScheme(): [
+  PaletteMode,
+  (mode: PaletteMode) => void,
+] {
+  const { mode, setMode } = useColorScheme();
+  const paletteMode = !mode || mode === 'system' ? getSystemTheme() : mode;
+  return [paletteMode, setMode];
+}
 
 /* ================================
  * Message Formatting
@@ -243,7 +253,7 @@ export const formatUtcTime = (isoString: any): string => {
  * ================================ */
 
 const LEVEL_COLOR_MAP: Record<string, string> = {
-  CRITICAL: 'error.dark',
+  CRITICAL: 'error.main',
   ERROR: 'error.main',
   WARNING: 'warning.main',
   INFO: 'info.main',
@@ -476,25 +486,12 @@ export async function transpile(code: string): Promise<string> {
     jsxFactory: 'React.createElement',
     jsxFragment: 'React.Fragment',
 
-    // Reduce attack surface
-    minify: true,
-    treeShaking: true,
-
-    // Prevent sneaky globals, just avoid by mistake
-    define: {
-      eval: 'undefined',
-      Function: 'undefined',
-      window: 'undefined',
-      document: 'undefined',
-      globalThis: 'undefined',
-      fetch: 'undefined',
-      WebSocket: 'undefined',
-      XMLHttpRequest: 'undefined',
-    },
-
-    // Make output deterministic
+    minify: false,
+    treeShaking: false,
     keepNames: false,
     sourcemap: false,
+
+    legalComments: 'none',
   });
 
   return result.code;
@@ -605,21 +602,6 @@ export const transformSignals = (signals: Signal[]) => {
 /* ---------------- blob cache ---------------- */
 
 const blobCache = new Map<string, string>();
-export const gzipPrefix = 'data:application/gzip;base64,';
-
-export async function decodeGzip(base64: string) {
-  // base64 → bytes
-  const compressed = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-
-  // gunzip
-  const stream = new Blob([compressed]).stream();
-  const decompressedStream = stream.pipeThrough(
-    new DecompressionStream('gzip'),
-  );
-
-  return await new Response(decompressedStream).text();
-}
-
 export const createUrlFromString = (code: string) => {
   const hash = getCodeHash(code);
 
@@ -652,7 +634,6 @@ export const mdCodeLanguages = {
   sql: sqlLang,
   markdown: markdownLang,
   jinja: jinjaLang,
-  chart: javascriptLang,
   module: javascriptLang,
   js: javascriptLang,
 };

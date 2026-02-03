@@ -7,9 +7,8 @@ import {
   Tab,
   Alert,
   Tooltip,
-  CircularProgress,
   IconButton,
-  Box
+  Box,
 } from '@mui/material';
 import { jinja } from '@codemirror/lang-jinja';
 import { TemplatePreview } from './TemplatePreview';
@@ -17,45 +16,47 @@ import {
   JinjaCompletionBuilder,
   jinjaLinter,
   jinjaEvaluate,
-  resolveLanguageExtension
+  resolveLanguageExtension,
+  useAppColorScheme,
 } from '@/utils';
 import _ from 'lodash';
 import {
   Check,
   ContentCopySharp,
   Fullscreen,
-  FullscreenExit
+  FullscreenExit,
 } from '@mui/icons-material';
 
 import { FieldProps } from '@rjsf/utils';
 import { getCodeMirrorStyle, getContainerStyle } from '@/theme';
+import { LoadingSkeleton } from '../Loading';
 
 export function TemplateField({
   formData,
   onChange,
   schema,
   fieldPathId,
-  registry
+  registry,
 }: FieldProps) {
   const extensions = useMemo(() => {
     const params = _.omit(registry.formContext.formData, fieldPathId?.path);
     const completions = JinjaCompletionBuilder.build(
       params,
-      registry.formContext.env
+      registry.formContext.env,
     );
 
     return [
       jinja({
         base: resolveLanguageExtension(schema),
-        ...completions
+        ...completions,
       }),
-      jinjaLinter(params, registry.formContext.env)
+      jinjaLinter(params, registry.formContext.env),
     ];
   }, [schema, registry.formContext]);
 
   // Local state for editor content during typing
   const [localValue, setLocalValue] = useState(formData);
-
+  const [mode] = useAppColorScheme();
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [previewCode, setPreviewCode] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -115,7 +116,7 @@ export function TemplateField({
         registry.formContext.pluginPackage,
         tpl,
         params,
-        true
+        true,
       );
 
       setPreviewCode(result);
@@ -135,6 +136,7 @@ export function TemplateField({
 
   // Fullscreen style object
   const fullscreenStyles = getContainerStyle(fullscreen);
+  const codeStyle = getCodeMirrorStyle(mode, fullscreen);
 
   return (
     <Stack spacing={1} sx={fullscreenStyles}>
@@ -144,7 +146,7 @@ export function TemplateField({
         sx={{
           display: 'flex',
           alignItems: 'center',
-          userSelect: 'none'
+          userSelect: 'none',
         }}
       >
         <Tabs value={tabIndex} onChange={handleTabChange} sx={{ flexGrow: 1 }}>
@@ -176,34 +178,17 @@ export function TemplateField({
           position: 'relative',
           minHeight: 200,
           overflow: 'auto',
-          flexGrow: fullscreen ? 1 : 'unset'
+          flexGrow: fullscreen ? 1 : 'unset',
         }}
       >
-        {loadingPreview && tabIndex === 1 && (
-          <Box
-            sx={{
-              position: 'absolute',
-              display: 'flex',
-              top: 100,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 2,
-              borderRadius: 1
-            }}
-          >
-            <CircularProgress />
-          </Box>
-        )}
         <Box
           sx={{
             display: tabIndex === 1 ? 'none' : 'block',
-            height: fullscreen ? '100%' : 'unset'
+            height: fullscreen ? '100%' : 'unset',
           }}
         >
           <ReactCodeMirror
-            {...getCodeMirrorStyle(fullscreen)}
+            {...codeStyle}
             value={localValue}
             extensions={extensions}
             onChange={handleEditorChange}
@@ -215,7 +200,7 @@ export function TemplateField({
           sx={{
             position: 'relative',
             display: tabIndex === 0 ? 'none' : 'block',
-            height: fullscreen ? '100%' : 'unset'
+            height: fullscreen ? '100%' : 'unset',
           }}
         >
           <Tooltip title={copied ? 'Copied!' : 'Copy Code'}>
@@ -227,7 +212,7 @@ export function TemplateField({
                 top: 8,
                 right: 8,
                 zIndex: 1,
-                bgcolor: 'action.hover'
+                bgcolor: 'action.hover',
               }}
               size="small"
             >
@@ -240,12 +225,15 @@ export function TemplateField({
           </Tooltip>
           <TemplatePreview
             fullscreen={fullscreen}
+            codeStyle={codeStyle}
             fieldPathId={fieldPathId}
             registry={registry}
             text={previewCode}
             schema={schema}
             extensions={extensions}
           />
+
+          {loadingPreview && <LoadingSkeleton />}
         </Box>
       </Box>
     </Stack>

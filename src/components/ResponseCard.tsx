@@ -10,7 +10,7 @@ export function ResponseCard({ result, onClose }) {
         mt: 3,
         bgcolor: 'background.paper',
         border: 1,
-        borderColor: isSuccess ? 'success.main' : 'error.main'
+        borderColor: isSuccess ? 'success.main' : 'error.main',
       }}
     >
       <CardHeader
@@ -26,8 +26,8 @@ export function ResponseCard({ result, onClose }) {
         slotProps={{
           title: {
             variant: 'subtitle1',
-            fontWeight: 600
-          }
+            fontWeight: 600,
+          },
         }}
         sx={{ pb: 0 }}
       />
@@ -43,7 +43,7 @@ export function ResponseCard({ result, onClose }) {
             overflow: 'auto',
             fontFamily: '"JetBrains Mono", monospace',
             fontSize: '0.85rem',
-            color: isSuccess ? 'success.light' : 'error.light'
+            color: isSuccess ? 'success.main' : 'error.main',
           }}
         >
           {typeof result === 'string'

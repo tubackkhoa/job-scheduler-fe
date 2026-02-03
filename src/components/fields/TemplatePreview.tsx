@@ -1,14 +1,16 @@
 import React from 'react';
-import { EditorView } from '@codemirror/view';
 import { MarkdownPreview } from './MarkdownPreview'; // Adjust import path as needed
-import ReactCodeMirror, { Extension } from '@uiw/react-codemirror'; // Or your CodeMirror React wrapper
+import ReactCodeMirror, {
+  Extension,
+  ReactCodeMirrorProps,
+} from '@uiw/react-codemirror'; // Or your CodeMirror React wrapper
 import { JavascriptPreview } from './JavascriptPreview';
-import { getCodeMirrorStyle } from '@/theme';
 import { FieldPathId, FieldProps, RJSFSchema } from '@rjsf/utils';
 
 type Props = {
   schema: RJSFSchema;
   fieldPathId: FieldPathId;
+  codeStyle: ReactCodeMirrorProps;
   registry: FieldProps['registry'];
   text: string;
   fullscreen: boolean;
@@ -18,10 +20,11 @@ type Props = {
 export const TemplatePreview: React.FC<Props> = ({
   schema,
   text,
+  codeStyle,
   fullscreen,
   fieldPathId,
   registry,
-  extensions
+  extensions,
 }) => {
   switch (schema.type as string) {
     case 'markdown':
@@ -45,10 +48,10 @@ export const TemplatePreview: React.FC<Props> = ({
     default:
       return (
         <ReactCodeMirror
-          {...getCodeMirrorStyle(fullscreen)}
+          {...codeStyle}
           readOnly
           value={text}
-          extensions={[...extensions, EditorView.lineWrapping]}
+          extensions={extensions}
         />
       );
   }

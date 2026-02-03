@@ -4,13 +4,12 @@ import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import DOMPurify from 'dompurify';
 import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { MarkdownChart } from '../MarkdownChart';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { useMemo } from 'react';
 import { SortableTable } from '../SortableTable';
 import { FieldPathId, FieldProps, RJSFSchema } from '@rjsf/utils';
 import DynamicField from './DynamicField';
-import { mdCodeLanguages } from '@/utils';
+import { mdCodeLanguages, useAppColorScheme } from '@/utils';
 
 interface Props {
   text: string;
@@ -32,7 +31,7 @@ const sanitizeSchema = {
     'th',
     'td',
     'span',
-    'div'
+    'div',
   ],
   attributes: {
     ...defaultSchema.attributes,
@@ -40,8 +39,8 @@ const sanitizeSchema = {
     th: ['className', 'style', 'colspan', 'rowspan'],
     td: ['className', 'style', 'colspan', 'rowspan'],
     div: ['className', 'style'],
-    span: ['className', 'style']
-  }
+    span: ['className', 'style'],
+  },
 };
 
 export const MarkdownPreview = ({
@@ -49,18 +48,19 @@ export const MarkdownPreview = ({
   fieldPathId,
   maxHeight,
   schema,
-  registry
+  registry,
 }: Props) => {
+  const [mode] = useAppColorScheme();
   const styles = useMemo(
     () => ({
       height: '100%',
       maxWidth: '100%',
       maxHeight,
       '& .cm-editor': {
-        backgroundColor: 'transparent'
+        backgroundColor: 'transparent',
       },
       '& .cm-scroller': {
-        backgroundColor: 'transparent'
+        backgroundColor: 'transparent',
       },
       typography: 'body2',
       '& h1': { typography: 'h4', mb: 2 },
@@ -69,21 +69,21 @@ export const MarkdownPreview = ({
       '& table': {
         width: '100%',
         borderCollapse: 'collapse',
-        my: 2
+        my: 2,
       },
       '& th, & td': {
         p: 1,
         border: '1px solid',
         borderColor: 'divider',
         whiteSpace: 'nowrap',
-        font: 'inherit'
+        font: 'inherit',
       },
       '& th': {
         bgcolor: 'action.hover',
-        fontWeight: 'medium'
-      }
+        fontWeight: 'medium',
+      },
     }),
-    [maxHeight]
+    [maxHeight],
   );
   return (
     <Box sx={styles}>
@@ -99,12 +99,10 @@ export const MarkdownPreview = ({
                 return (
                   <div
                     dangerouslySetInnerHTML={{
-                      __html: DOMPurify.sanitize(children as string)
+                      __html: DOMPurify.sanitize(children as string),
                     }}
                   />
                 );
-              case 'chart':
-                return <MarkdownChart source={children as string} />;
               case 'module':
                 // get name of the node as name
                 return (
@@ -128,10 +126,10 @@ export const MarkdownPreview = ({
               case 'js':
                 return (
                   <ReactCodeMirror
-                    theme="dark"
+                    theme={mode}
                     basicSetup={{
                       lineNumbers: false,
-                      foldGutter: false
+                      foldGutter: false,
                     }}
                     editable={false}
                     value={children as string}
@@ -167,7 +165,7 @@ export const MarkdownPreview = ({
           },
           td({ children }) {
             return <TableCell>{children}</TableCell>;
-          }
+          },
         }}
       >
         {text}

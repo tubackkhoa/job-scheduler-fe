@@ -9,7 +9,7 @@ import {
   Divider,
   TextField,
   InputAdornment,
-  Button
+  Button,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SearchIcon from '@mui/icons-material/Search';
@@ -48,7 +48,7 @@ type RenderResult = {
 const TryInput = memo(function TryInput({
   name,
   signature,
-  onTry
+  onTry,
 }: {
   name: string;
   signature?: string | null;
@@ -63,7 +63,7 @@ const TryInput = memo(function TryInput({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setInput(e.target.value);
     },
-    []
+    [],
   );
 
   const handleClick = useCallback(() => {
@@ -88,6 +88,21 @@ const TryInput = memo(function TryInput({
   );
 });
 
+const SmallChip = ({ label }: { label: string }) => (
+  <Chip
+    size="small"
+    label={label}
+    sx={{
+      height: 20,
+      fontSize: 11,
+      borderRadius: 1,
+      borderColor: 'divider',
+      color: 'text.secondary',
+    }}
+    variant="outlined"
+  />
+);
+
 /**
  * Individual DocItem as memoized component
  */
@@ -95,7 +110,7 @@ const DocItemAccordion = memo(function DocItemAccordion({
   name,
   item,
   onTry,
-  renderResult
+  renderResult,
 }: {
   name: string;
   item: DocItem;
@@ -107,20 +122,27 @@ const DocItemAccordion = memo(function DocItemAccordion({
       key={name}
       disableGutters
       square
-      sx={(theme) => ({
-        backgroundColor: theme.palette.background.paper,
-        border: `1px solid ${theme.palette.divider}`,
-        '&:not(:last-of-type)': { borderBottom: 'none' },
-        '&:before': { display: 'none' },
+      sx={{
+        bgcolor: 'background.paper',
+        border: '1px solid',
+        borderColor: 'divider',
+        '&:not(:last-of-type)': {
+          borderBottom: 'none',
+        },
+        '&:before': {
+          display: 'none',
+        },
         '& .MuiAccordionSummary-root': {
           minHeight: 44,
           transition: 'background-color 120ms ease',
-          '&:hover': { backgroundColor: theme.palette.action.hover }
+          '&:hover': {
+            bgcolor: 'action.hover',
+          },
         },
         '&.Mui-expanded': {
-          backgroundColor: theme.palette.background.default
-        }
-      })}
+          bgcolor: 'background.default',
+        },
+      }}
     >
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Box
@@ -134,33 +156,8 @@ const DocItemAccordion = memo(function DocItemAccordion({
             {name}
           </Typography>
 
-          <Chip
-            size="small"
-            label={item.type}
-            sx={(theme) => ({
-              height: 20,
-              fontSize: 11,
-              borderRadius: 1,
-              borderColor: theme.palette.divider,
-              color: theme.palette.text.secondary
-            })}
-            variant="outlined"
-          />
-
-          {item.signature && (
-            <Chip
-              size="small"
-              label="sig"
-              sx={(theme) => ({
-                height: 20,
-                fontSize: 11,
-                borderRadius: 1,
-                borderColor: theme.palette.divider,
-                color: theme.palette.text.secondary
-              })}
-              variant="outlined"
-            />
-          )}
+          <SmallChip label={item.type} />
+          {item.signature && <SmallChip label="sig" />}
         </Box>
       </AccordionSummary>
 
@@ -169,19 +166,21 @@ const DocItemAccordion = memo(function DocItemAccordion({
           <Box my={1.5}>
             <Typography
               component="pre"
-              sx={(theme) => ({
-                margin: 0,
-                padding: '8px 10px',
+              sx={{
+                m: 0,
+                px: '10px',
+                py: '8px',
                 whiteSpace: 'break-spaces',
                 fontSize: 12,
                 lineHeight: 1.6,
                 fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                backgroundColor: theme.palette.background.paper,
-                border: `1px solid ${theme.palette.divider}`,
+                bgcolor: 'background.paper',
+                border: '1px solid',
+                borderColor: 'divider',
                 borderRadius: 1,
-                color: theme.palette.text.secondary,
-                overflowX: 'auto'
-              })}
+                color: 'text.secondary',
+                overflowX: 'auto',
+              }}
             >
               {item.signature}
             </Typography>
@@ -191,18 +190,20 @@ const DocItemAccordion = memo(function DocItemAccordion({
         {item.doc ? (
           <Typography
             component="pre"
-            sx={(theme) => ({
+            sx={{
               my: 1.5,
-              padding: '10px 12px',
+              px: '12px',
+              py: '10px',
               fontSize: 13,
               lineHeight: 1.7,
               whiteSpace: 'pre-wrap',
               fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-              backgroundColor: theme.palette.background.default,
-              border: `1px solid ${theme.palette.divider}`,
+              bgcolor: 'background.default',
+              border: '1px solid',
+              borderColor: 'divider',
               borderRadius: 1,
-              color: theme.palette.text.primary
-            })}
+              color: 'text.primary',
+            }}
           >
             {item.doc}
           </Typography>
@@ -253,7 +254,7 @@ function DocSection({
   title,
   items,
   pluginPackage,
-  isFilter = false
+  isFilter = false,
 }: {
   title: string;
   items: Record<string, DocItem>;
@@ -266,31 +267,28 @@ function DocSection({
 
   const handleTryRender = useCallback(
     async (name: string, inputStr: string) => {
-      // Template changes depending on globals vs filters
       const tpl = isFilter
         ? `{{ ${inputStr} | ${name} }}`
         : `{{ ${name}(${inputStr}) }}`;
 
-      setRenderResults((prev) => ({
-        ...prev,
-        [name]: { loading: true }
-      }));
-
       try {
-        // render raw output
         const output = await jinjaEvaluate(pluginPackage, tpl, {}, true);
+
         setRenderResults((prev) => ({
           ...prev,
-          [name]: { loading: false, output }
+          [name]: { loading: false, output },
         }));
       } catch (error: any) {
         setRenderResults((prev) => ({
           ...prev,
-          [name]: { loading: false, error: error.message || 'Render error' }
+          [name]: {
+            loading: false,
+            error: error?.message || 'Render error',
+          },
         }));
       }
     },
-    [pluginPackage, isFilter]
+    [pluginPackage, isFilter],
   );
 
   if (Object.keys(items).length === 0) {
@@ -351,8 +349,8 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
     if (!normalizedQuery) return data.globals;
     return Object.fromEntries(
       Object.entries(data.globals).filter(([name]) =>
-        name.toLowerCase().includes(normalizedQuery)
-      )
+        name.toLowerCase().includes(normalizedQuery),
+      ),
     );
   }, [data.globals, normalizedQuery]);
 
@@ -360,8 +358,8 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
     if (!normalizedQuery) return data.filters;
     return Object.fromEntries(
       Object.entries(data.filters).filter(([name]) =>
-        name.toLowerCase().includes(normalizedQuery)
-      )
+        name.toLowerCase().includes(normalizedQuery),
+      ),
     );
   }, [data.filters, normalizedQuery]);
 
@@ -369,7 +367,7 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
     let rawParams = params ? Object.entries(params) : [];
     if (normalizedQuery)
       rawParams = rawParams.filter(([name]) =>
-        name.toLowerCase().includes(normalizedQuery)
+        name.toLowerCase().includes(normalizedQuery),
       );
     return Object.fromEntries(
       rawParams.map(([name, value]) => [
@@ -377,9 +375,9 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
         {
           type: 'variable',
           doc:
-            typeof value === 'string' ? value : JSON.stringify(value, null, 2)
-        } as DocItem
-      ])
+            typeof value === 'string' ? value : JSON.stringify(value, null, 2),
+        } as DocItem,
+      ]),
     );
   }, [params, normalizedQuery]);
 
@@ -392,21 +390,21 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
         placeholder="Search globals and filters…"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        sx={(theme) => ({
+        sx={{
           mb: 3,
           '& .MuiOutlinedInput-root': {
             fontFamily: 'monospace',
-            backgroundColor: theme.palette.background.paper
-          }
-        })}
+            bgcolor: 'background.paper',
+          },
+        }}
         slotProps={{
           input: {
             startAdornment: (
               <InputAdornment position="start">
                 <SearchIcon fontSize="small" />
               </InputAdornment>
-            )
-          }
+            ),
+          },
         }}
       />
 

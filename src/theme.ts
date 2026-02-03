@@ -1,79 +1,100 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme, PaletteMode, PaletteOptions } from '@mui/material';
 import { ReactCodeMirrorProps } from '@uiw/react-codemirror';
 
-export const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#6366f1',
-      light: '#818cf8',
-      dark: '#4f46e5'
+export const darkPalette: PaletteOptions = {
+  primary: {
+    main: '#4f46e5',
+  },
+  secondary: {
+    main: '#db2777',
+  },
+  success: {
+    main: '#16a34a',
+  },
+  warning: {
+    main: '#d97706',
+  },
+  error: {
+    main: '#dc2626',
+  },
+  background: {
+    default: '#0a0a0f',
+    paper: '#111119',
+  },
+  divider: 'rgba(255, 255, 255, 0.08)',
+};
+
+export const lightPalette: PaletteOptions = {
+  primary: {
+    main: '#818cf8',
+  },
+  secondary: {
+    main: '#f472b6',
+  },
+  success: {
+    main: '#4ade80',
+  },
+  warning: {
+    main: '#fbbf24',
+  },
+  error: {
+    main: '#f87171',
+  },
+  background: {
+    default: '#f8fafc',
+    paper: '#ffffff',
+  },
+  divider: 'rgba(0, 0, 0, 0.08)',
+};
+
+export const theme = createTheme({
+  colorSchemes: {
+    light: {
+      palette: lightPalette,
     },
-    secondary: {
-      main: '#ec4899',
-      light: '#f472b6',
-      dark: '#db2777'
+    dark: {
+      palette: darkPalette,
     },
-    success: {
-      main: '#22c55e',
-      light: '#4ade80',
-      dark: '#16a34a'
-    },
-    warning: {
-      main: '#f59e0b',
-      light: '#fbbf24',
-      dark: '#d97706'
-    },
-    error: {
-      main: '#ef4444',
-      light: '#f87171',
-      dark: '#dc2626'
-    },
-    background: {
-      default: '#0a0a0f',
-      paper: '#111119'
-    },
-    divider: 'rgba(255, 255, 255, 0.08)'
   },
   typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif'
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
   },
   shape: {
-    borderRadius: 12
+    borderRadius: 12,
   },
   components: {
     MuiCard: {
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          border: '1px solid rgba(255, 255, 255, 0.08)'
-        }
-      }
+        },
+      },
     },
     MuiButton: {
       styleOverrides: {
         root: {
           textTransform: 'none',
-          fontWeight: 500
-        }
-      }
+          fontWeight: 500,
+        },
+      },
     },
     MuiTextField: {
       defaultProps: {
         variant: 'outlined',
-        size: 'small'
-      }
+        size: 'small',
+      },
     },
     MuiSelect: {
       defaultProps: {
-        size: 'small'
-      }
-    }
-  }
+        size: 'small',
+      },
+    },
+  },
 });
 
 export const getCodeMirrorStyle = (
-  fullscreen: boolean
+  mode: PaletteMode,
+  fullscreen: boolean,
 ): ReactCodeMirrorProps => {
   return {
     style: {
@@ -83,16 +104,16 @@ export const getCodeMirrorStyle = (
       flexDirection: 'column',
       minHeight: fullscreen ? '100%' : 200,
       maxHeight: fullscreen ? '100%' : 600,
-      height: '100%'
+      height: '100%',
     },
     minHeight: fullscreen ? '100%' : '200px',
     height: '100%',
-    theme: 'dark',
+    theme: mode,
     basicSetup: {
       lineNumbers: true,
       highlightActiveLine: true,
-      foldGutter: false
-    }
+      foldGutter: false,
+    },
   };
 };
 
@@ -108,7 +129,7 @@ export const getContainerStyle = (fullscreen: boolean) => {
         zIndex: 1300,
         p: 2,
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
       }
     : {};
 };

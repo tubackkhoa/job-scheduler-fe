@@ -42,15 +42,15 @@ interface Plugin {
 export default function (
   { useCallback, useState, useEffect }: typeof React,
   { List, ListItemText }: typeof Mui,
-  { buildJinjaContext }: typeof Utils
+  { buildJinjaContext }: typeof Utils,
 ) {
   const DynamicField: React.FC<FieldProps> = ({ registry }) => {
     const render = useCallback(
       buildJinjaContext(
         registry.formContext.pluginPackage,
-        registry.formContext.formData
+        registry.formContext.formData,
       ),
-      [registry.formContext]
+      [registry.formContext],
     );
 
     const [plugins, setPlugins] = useState<Plugin[]>([]);
@@ -87,7 +87,7 @@ Once the Field component is written, bundle it into a single JavaScript
 file.
 
 ```bash
-node bundle.js libs/input.tsx plugins/sample_plugin/field.js --base64
+node bundle.js libs/input.tsx plugins/sample_plugin/field.js
 ```
 
 This produces a self-contained artifact that can be embedded into your

@@ -1,29 +1,29 @@
 import { FieldProps, RJSFSchema } from '@rjsf/utils';
-import React from 'react';
-import { ConfirmationDialog } from './components/ConfirmationDialog';
-import * as Mui from '@mui/material';
-import * as Utils from './utils';
+import dayjs from 'dayjs';
+import * as MuiNS from '@mui/material';
+import * as UtilsNS from './utils';
 import _ from 'lodash';
-import * as MuiIcon from '@mui/icons-material';
-import * as LightweightChart from 'lightweight-charts';
-import { Chart } from 'chart.js/auto';
-
-export interface GlobalProps {
-  React: typeof React;
-  Chart: typeof Chart;
-  LightweightChart: typeof LightweightChart;
-  MuiIcon: typeof MuiIcon;
-  Mui: typeof Mui & {
-    ConfirmationDialog: typeof ConfirmationDialog;
-  };
-  Utils: typeof Utils & {
-    _: typeof _;
-  };
-}
-
-export type DynamicFieldProps = FieldProps & GlobalProps;
+import * as MuiIconNS from '@mui/icons-material';
+import * as LightweightChartNS from 'lightweight-charts';
+import ComponentsNS from './components';
+import * as RouterDomNS from 'react-router-dom';
+import ApiNS from './api';
+import ReactNS from 'react';
 
 declare global {
+  // @ts-ignore : allow duplicate to help libs notify it
+  const React: typeof ReactNS;
+  const LightweightChart: typeof LightweightChartNS;
+  const MuiIcon: typeof MuiIconNS;
+  const RouterDom: typeof RouterDomNS;
+  const Mui: typeof MuiNS;
+  const Components: typeof ComponentsNS;
+  const api: typeof ApiNS;
+  const Utils: typeof UtilsNS & {
+    _: typeof _;
+    dayjs: typeof dayjs;
+  };
+
   type Order = 'asc' | 'desc';
   interface PluginData {
     id: number;
@@ -38,7 +38,7 @@ declare global {
   }
 
   interface ModuleCode {
-    default: React.FC<DynamicFieldProps>;
+    default: ReactNS.FC<FieldProps>;
   }
 
   interface User {
@@ -57,7 +57,7 @@ declare global {
     plugin_id: number;
     session_id: number;
     description: string;
-    config?: unknown;
+    config?: { [key: string]: any };
     active?: number; // usually 0 | 1
   }
 
@@ -142,7 +142,7 @@ declare global {
     job_id: number;
   }
 
-  interface SqlVersion {
+  interface ValueVersion {
     id: number;
     name: string;
     description?: string;
@@ -159,12 +159,6 @@ declare global {
     captured_at: string;
   }
 
-  interface JobStatsItem extends Job {
-    sql_version?: SqlVersion;
-    last_signal?: string; // ISO timestamp
-    signals?: Signal[];
-  }
-
   interface JobStatsParams {
     limit?: number;
     offset?: number;
@@ -173,21 +167,32 @@ declare global {
     active?: boolean;
     plugin_id?: number[];
     model_key?: string[];
-    sql_id?: number[];
+    config?: Record<string, number[]>;
+    version_id?: string[];
     order_by?: string;
     sort?: 'asc' | 'desc';
     session_id?: number[];
   }
 
   interface JobStatsResponse {
-    items: JobStatsItem[];
+    jobs: Job[];
+    signals_map: Record<number, Signal[]>;
+    versions: Record<string, ValueVersion[]>;
     total: number;
     limit: number;
     offset: number;
   }
 
-  interface SqlVersionsResponse {
-    versions: SqlVersion[];
+  interface ValueVersionParams {
+    field_id: string;
+    plugin_id?: number;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }
+
+  interface ValueVersionsResponse {
+    versions: ValueVersion[];
     count: number;
     total: number;
     search: string | null;
@@ -197,7 +202,6 @@ declare global {
 
   interface Window {
     ctx: { user: User };
-    globalProps: GlobalProps;
     // or: ctx?: YourType
   }
 }

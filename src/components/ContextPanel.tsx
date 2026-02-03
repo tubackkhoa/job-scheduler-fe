@@ -14,7 +14,7 @@ import {
   Avatar,
   Button,
   TextField,
-  Autocomplete
+  Autocomplete,
 } from '@mui/material';
 import { Refresh, Person, Add } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -27,7 +27,7 @@ export function ContextPanel({
   pluginId,
   onReloadPlugin,
   onCreatePlugin,
-  isLoading
+  isLoading,
 }) {
   const navigate = useNavigate();
 
@@ -35,7 +35,7 @@ export function ContextPanel({
     id: p.id,
     label: p.package,
     description: p.description,
-    interval: p.interval
+    interval: p.interval,
   }));
 
   const selectedPlugin =
@@ -45,8 +45,9 @@ export function ContextPanel({
     <Card
       sx={{
         bgcolor: 'background.paper',
+        flexGrow: 1,
         backgroundImage:
-          'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%)'
+          'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%)',
       }}
     >
       <CardContent sx={{ p: 3 }}>
@@ -56,7 +57,7 @@ export function ContextPanel({
             sx={{
               bgcolor: 'primary.main',
               width: 44,
-              height: 44
+              height: 44,
             }}
           >
             <Person />
@@ -113,7 +114,7 @@ export function ContextPanel({
                 navigate(
                   isUserPlugin
                     ? `/plugins/${valueId}`
-                    : `/plugins/${valueId}/sessions/${sessionId}`
+                    : `/plugins/${valueId}/sessions/${sessionId}`,
                 );
               }
             }}
@@ -139,8 +140,8 @@ export function ContextPanel({
                                   p: 0,
                                   bgcolor: 'rgba(245, 158, 11, 0.1)',
                                   '&:hover': {
-                                    bgcolor: 'rgba(245, 158, 11, 0.2)'
-                                  }
+                                    bgcolor: 'rgba(245, 158, 11, 0.2)',
+                                  },
                                 }}
                               >
                                 <Refresh
@@ -150,8 +151,8 @@ export function ContextPanel({
                                       : 'none',
                                     '@keyframes spin': {
                                       '0%': { transform: 'rotate(0deg)' },
-                                      '100%': { transform: 'rotate(360deg)' }
-                                    }
+                                      '100%': { transform: 'rotate(360deg)' },
+                                    },
                                   }}
                                 />
                               </IconButton>
@@ -160,8 +161,8 @@ export function ContextPanel({
                         )}
                         {params.InputProps.startAdornment}
                       </>
-                    )
-                  }
+                    ),
+                  },
                 }}
               />
             )}
@@ -179,7 +180,7 @@ export function ContextPanel({
                       sx={{
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
+                        whiteSpace: 'nowrap',
                       }}
                     >
                       {option.label}
@@ -207,8 +208,8 @@ export function ContextPanel({
               color: 'primary.main',
               '&:hover': {
                 borderStyle: 'solid',
-                bgcolor: 'rgba(99, 102, 241, 0.08)'
-              }
+                bgcolor: 'rgba(99, 102, 241, 0.08)',
+              },
             }}
           >
             Create New Plugin

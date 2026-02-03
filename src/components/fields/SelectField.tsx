@@ -6,7 +6,7 @@ import {
   InputAdornment,
   Box,
   Select,
-  Typography
+  Typography,
 } from '@mui/material';
 import { FieldProps } from '@rjsf/utils';
 import { useMemo, useCallback } from 'react';
@@ -16,7 +16,7 @@ export function SelectField({
   fieldPathId,
   schema,
   uiSchema,
-  onChange
+  onChange,
 }: FieldProps) {
   const labelId = `${fieldPathId?.$id}-label`;
   // uiSchema is updated
@@ -36,7 +36,7 @@ export function SelectField({
     return (raw as any[]).map((opt) =>
       uiOptions.id
         ? { id: opt[uiOptions.id], title: opt[uiOptions.title ?? uiOptions.id] }
-        : { id: opt, title: opt }
+        : { id: opt, title: opt },
     );
   }, [schema, uiOptions]);
 
@@ -45,12 +45,12 @@ export function SelectField({
    */
   const optionIds = useMemo(
     () => new Set(options.map((opt) => opt.id)),
-    [options]
+    [options],
   );
 
   const optionMap = useMemo(
     () => new Map(options.map((opt) => [opt.id, opt.title])),
-    [options]
+    [options],
   );
 
   /**
@@ -67,7 +67,7 @@ export function SelectField({
 
   const selectedSet = useMemo(
     () => new Set(Array.isArray(selectedValue) ? selectedValue : []),
-    [selectedValue]
+    [selectedValue],
   );
 
   const allSelected =
@@ -87,13 +87,13 @@ export function SelectField({
 
         onChange(
           value.filter((v) => optionIds.has(v)),
-          fieldPathId?.path
+          fieldPathId?.path,
         );
       } else {
         onChange(optionIds.has(value) ? value : undefined, fieldPathId?.path);
       }
     },
-    [multiple, onChange, optionIds, fieldPathId?.path]
+    [multiple, onChange, optionIds, fieldPathId?.path],
   );
 
   /**
@@ -104,10 +104,10 @@ export function SelectField({
       e.stopPropagation();
       onChange(
         allSelected ? [] : options.map((opt) => opt.id),
-        fieldPathId?.path
+        fieldPathId?.path,
       );
     },
-    [allSelected, options, onChange, fieldPathId?.path]
+    [allSelected, options, onChange, fieldPathId?.path],
   );
 
   /**
@@ -132,13 +132,13 @@ export function SelectField({
               variant="subtitle2"
               key={id}
               sx={{
-                backgroundColor: 'primary.dark',
+                bgcolor: 'primary.main',
                 px: 1,
                 borderRadius: 0.5,
                 maxWidth: 120,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
               }}
             >
               {optionMap.get(id) ?? id}
@@ -147,7 +147,7 @@ export function SelectField({
         </Box>
       );
     },
-    [multiple, optionMap]
+    [multiple, optionMap],
   );
 
   return (
@@ -176,9 +176,9 @@ export function SelectField({
         MenuProps={{
           PaperProps: {
             sx: {
-              maxHeight: 300
-            }
-          }
+              maxHeight: 300,
+            },
+          },
         }}
       >
         {options.map(({ id, title }) => (

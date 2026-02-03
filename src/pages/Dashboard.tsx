@@ -1,8 +1,8 @@
 import api from '@/api';
 import UserRoleManagement from '@/components/UserRoleManagement';
-import { Box, Grid, Paper, Typography, Button } from '@mui/material';
+import { Box, Grid, Paper, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import JobStatsTable from '@/components/JobStatsTable';
+import { PluginSitemap } from '@/components/PluginSitemap';
 
 export default function Dashboard({ setLoading, setError }) {
   const [health, setHealth] = useState<HealthResponse>();
@@ -18,10 +18,10 @@ export default function Dashboard({ setLoading, setError }) {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          mb: 4
+          my: 4,
         }}
       >
-        <Typography variant="h4" fontWeight={600}>
+        <Typography variant="h5" fontWeight={600}>
           Dashboard
         </Typography>
       </Box>
@@ -64,12 +64,11 @@ export default function Dashboard({ setLoading, setError }) {
         </Grid>
       )}
 
-      {/* Job Statistics */}
       <Box sx={{ mt: 4 }}>
         <Typography variant="h5" fontWeight={600} gutterBottom>
-          Job Statistics
+          Site map
         </Typography>
-        <JobStatsTable />
+        <PluginSitemap />
       </Box>
       <Box sx={{ mt: 4 }}>
         <Typography variant="h5" fontWeight={600} gutterBottom>

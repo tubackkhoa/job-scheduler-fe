@@ -1,7 +1,8 @@
 import { Console } from 'console-feed';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Box, Paper, Typography, Stack, Divider } from '@mui/material';
+import { useAppColorScheme } from '@/utils';
 
 interface Props {
   text: string;
@@ -16,7 +17,7 @@ const runCode = (
   iframe: HTMLIFrameElement,
   code: string,
   providers: string[],
-  hideConsole = true
+  hideConsole = true,
 ) => {
   iframe.srcdoc = `
 <script>
@@ -72,8 +73,9 @@ const runCode = (
 export const JavascriptPreview: React.FC<Props> = ({
   text,
   fullscreen,
-  providers
+  providers,
 }) => {
+  const [mode] = useAppColorScheme();
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const [logs, setLogs] = useState<any[]>([]);
 
@@ -87,8 +89,8 @@ export const JavascriptPreview: React.FC<Props> = ({
         ...prev,
         {
           method: event.data.method,
-          data: event.data.args
-        }
+          data: event.data.args,
+        },
       ]);
     };
 
@@ -108,7 +110,7 @@ export const JavascriptPreview: React.FC<Props> = ({
         maxHeight: fullscreen ? '100%' : 600,
         minHeight: 300,
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
       }}
     >
       <iframe ref={iframeRef} style={{ display: 'none' }} />
@@ -134,10 +136,10 @@ export const JavascriptPreview: React.FC<Props> = ({
           px: 1,
           py: 0.5,
           fontFamily: 'Roboto Mono, monospace',
-          fontSize: 13
+          fontSize: 13,
         }}
       >
-        <Console logs={logs} variant="dark" />
+        <Console logs={logs} variant={mode} />
       </Box>
     </Paper>
   );
