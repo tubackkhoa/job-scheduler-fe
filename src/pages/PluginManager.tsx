@@ -323,8 +323,6 @@ export default function PluginManager({ setLoading, setError }) {
               display: 'flex',
               flexDirection: isPanelOpen ? 'column' : 'row',
               gap: 3,
-              position: { xs: 'static', md: 'sticky' },
-              top: 125,
             }}
           >
             <ContextPanel

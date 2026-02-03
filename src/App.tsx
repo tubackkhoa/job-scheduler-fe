@@ -30,8 +30,11 @@ export default function App() {
       <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
         <LoadingBar isLoading={loading} />
 
-        <Container maxWidth={false} sx={{ pb: 3, px: { xs: 2, sm: 3, md: 4 } }}>
-          <Header />
+        <Container
+          maxWidth={false}
+          sx={{ pt: '125px', pb: 3, px: { xs: 2, sm: 3, md: 4 } }}
+        >
+          <Header height={120} />
 
           {error && (
             <Box sx={{ my: 3 }}>

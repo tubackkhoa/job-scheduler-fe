@@ -19,9 +19,11 @@ import ChatbotIcon from '@mui/icons-material/ChatBubbleOutline';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { scrollToTop, useAppColorScheme } from '@/utils';
+import { useScroll } from '@/hooks/useScroll';
 
-export function Header() {
+export function Header({ height }: { height: number }) {
   // 🌗 theme mode
+  const offset = useScroll(height);
   const [mode, setMode] = useAppColorScheme();
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -50,12 +52,18 @@ export function Header() {
         alignItems: 'flex-start',
         justifyContent: 'space-between',
         py: 3,
+        height,
         bgcolor: 'background.default',
         borderBottom: 1,
-        zIndex: 1000,
         borderColor: 'divider',
-        position: { xs: 'static', md: 'sticky' },
+        zIndex: 1000,
+        position: 'fixed',
         top: 0,
+        left: 0,
+        right: 0,
+        px: { xs: 2, md: 4 },
+        willChange: 'transform',
+        transform: `translateY(-${offset}px)`,
       }}
     >
       {/* Left: Title */}
@@ -82,13 +90,22 @@ export function Header() {
           Job Scheduler Dashboard
         </Typography>
 
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ mt: 0.5, display: { xs: 'none', md: 'block' } }}
+        >
           Manage plugins, jobs, configurations, and live logs in one view.
         </Typography>
       </Box>
 
       {/* Right: Menu */}
-      <Box sx={{ display: 'flex', flexDirection: { md: 'row', xs: 'column' } }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { md: 'row', xs: 'column' },
+        }}
+      >
         <IconButton
           onClick={() => setMode(mode === 'light' ? 'dark' : 'light')}
           color="inherit"
