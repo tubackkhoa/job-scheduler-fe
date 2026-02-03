@@ -63,6 +63,8 @@ export function Header({ height }: { height: number }) {
         right: 0,
         px: { xs: 2, md: 4 },
         transform: `translate3d(0, -${offset}px, 0)`,
+        transition: 'transform 0.2s ease-out',
+        willChange: 'transform',
       }}
     >
       {/* Left: Title */}
