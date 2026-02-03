@@ -41,7 +41,7 @@ export default function PluginManager({ setLoading, setError }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const [isPanelOpen, setIsPanelOpen] = useState(() =>
+  const [isPanelOpen, setIsPanelOpen] = useState<boolean>(() =>
     JSON.parse(localStorage.getItem(PANEL_OPEN_KEY) ?? 'true'),
   );
 
@@ -303,9 +303,9 @@ export default function PluginManager({ setLoading, setError }) {
           size="small"
           onClick={() =>
             setIsPanelOpen((v) => {
-              const panelOpen = !v;
-              localStorage.setItem(PANEL_OPEN_KEY, JSON.stringify(panelOpen));
-              return panelOpen;
+              const newState = !v;
+              localStorage.setItem(PANEL_OPEN_KEY, JSON.stringify(newState));
+              return newState;
             })
           }
           sx={{
