@@ -395,7 +395,7 @@ export default function JobStatsTable({
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleToggleJob = async (id: number, active: boolean) => {
     try {
