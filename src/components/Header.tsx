@@ -62,8 +62,7 @@ export function Header({ height }: { height: number }) {
         left: 0,
         right: 0,
         px: { xs: 2, md: 4 },
-        willChange: 'transform',
-        transform: `translateY(-${offset}px)`,
+        transform: `translate3d(0, -${offset}px, 0)`,
       }}
     >
       {/* Left: Title */}
