@@ -32,7 +32,7 @@ export default function App() {
 
         <Container
           maxWidth={false}
-          sx={{ pt: '125px', pb: 3, px: { xs: 2, sm: 3, md: 4 } }}
+          sx={{ pt: '140px', pb: 3, px: { xs: 2, sm: 3, md: 4 } }}
         >
           <Header height={120} />
 
