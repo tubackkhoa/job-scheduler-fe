@@ -196,7 +196,7 @@ export default ({ formData }: FieldProps<string>) => {
       </Stack>
 
       {/* 👁 Column toggles */}
-      <Stack direction="row" spacing={1} flexWrap="wrap" mb={1}>
+      <Stack direction="row" gap={1} flexWrap="wrap" mb={1}>
         {(Object.keys(columnConfig) as (keyof Row)[]).map((key) => (
           <FormControlLabel
             key={key}

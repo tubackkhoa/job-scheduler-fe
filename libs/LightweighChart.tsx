@@ -274,7 +274,7 @@ export default function MultiSymbolChart({ formData }: FieldProps<string>) {
   // -----------------------------
   return (
     <Box sx={{ width: '100%', minHeight: 720 }}>
-      <Stack direction="row" spacing={1} sx={{ mb: 1, flexWrap: 'wrap' }}>
+      <Stack direction="row" gap={1} sx={{ mb: 1, flexWrap: 'wrap' }}>
         {symbols.map((sym) => {
           const color = SYMBOL_COLORS[sym]?.candleUp ?? '#64748b';
           const active = visible.has(sym);
