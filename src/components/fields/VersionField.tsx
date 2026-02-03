@@ -13,7 +13,7 @@ import {
   Checkbox,
   ListItemButton,
   ListItemText,
-  ListItemIcon
+  ListItemIcon,
 } from '@mui/material';
 import { Save, PublishedWithChanges } from '@mui/icons-material';
 import { buildJinjaContext } from '@/utils';
@@ -26,7 +26,7 @@ export function VersionField({
   onChange,
   schema,
   fieldPathId,
-  registry
+  registry,
 }: FieldProps) {
   const [versions, setVersions] = useState([]);
   const [selectedVersion, setSelectedVersion] = useState(null);
@@ -49,15 +49,15 @@ export function VersionField({
   const render = useCallback(
     buildJinjaContext(
       registry.formContext.pluginPackage,
-      registry.formContext.formData
+      registry.formContext.formData,
     ),
-    [registry.formContext]
+    [registry.formContext],
   );
 
   // Generic evaluate wrapper
   const evaluateExpr = useCallback(
     (exprKey, data) => render(schema['model:expr'][exprKey], data),
-    [schema, render]
+    [schema, render],
   );
 
   const listVersions = useCallback(
@@ -67,39 +67,39 @@ export function VersionField({
         search: searchTerm,
         id: version_id,
         limit,
-        offset
+        offset,
       }),
-    [evaluateExpr]
+    [evaluateExpr],
   );
 
   const getVersion = useCallback(
     (id) => evaluateExpr('detail', { id }),
-    [evaluateExpr]
+    [evaluateExpr],
   );
 
   const updateVersion = useCallback(
     (id, payload) => evaluateExpr('update', { id, payload }),
-    [evaluateExpr]
+    [evaluateExpr],
   );
 
   const createVersion = useCallback(
     (payload) => evaluateExpr('create', { payload }),
-    [evaluateExpr]
+    [evaluateExpr],
   );
 
   const applyVersion = useCallback(
     (id, job_ids) => evaluateExpr('apply', { id, job_ids }),
-    [evaluateExpr]
+    [evaluateExpr],
   );
 
   const deleteVersion = useCallback(
     (id) => evaluateExpr('delete', { id }),
-    [evaluateExpr]
+    [evaluateExpr],
   );
 
   const localValue = useCallback(
     () => _.get(registry.formContext.formData, schema['model:binding']) || '',
-    [registry, schema['model:binding']]
+    [registry, schema['model:binding']],
   );
 
   const debounceTimeout = useRef(null);
@@ -120,7 +120,7 @@ export function VersionField({
         const result = await listVersions(
           fieldPathId?.$id,
           searchTerm,
-          formData
+          formData,
         );
         const items = result?.versions || [];
         setVersions(items);
@@ -214,7 +214,7 @@ export function VersionField({
         // Update existing version
         savedVersion = await updateVersion(selectedVersion.id, {
           name: nameTrimmed,
-          value
+          value,
         });
         setMessage(`Updated version #${savedVersion.id}`);
       } else {
@@ -224,7 +224,7 @@ export function VersionField({
           name: nameTrimmed,
           value,
           description: '',
-          tags: ''
+          tags: '',
         });
         setMessage(`Saved as version #${savedVersion.id}`);
 
@@ -339,7 +339,7 @@ export function VersionField({
         bgcolor: 'rgba(99, 102, 241, 0.08)',
         borderRadius: 1,
         border: '1px solid',
-        borderColor: 'divider'
+        borderColor: 'divider',
       }}
     >
       <Stack spacing={1.5}>
@@ -471,14 +471,16 @@ export function VersionField({
             selectedJobIds={selectedJobIds}
             onToggle={(id) => {
               setSelectedJobIds((prev) =>
-                prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+                prev.includes(id)
+                  ? prev.filter((x) => x !== id)
+                  : [...prev, id],
               );
             }}
             onSelectAll={(ids, select) => {
               setSelectedJobIds((prev) =>
                 select
                   ? [...new Set([...prev, ...ids])]
-                  : prev.filter((id) => !ids.includes(id))
+                  : prev.filter((id) => !ids.includes(id)),
               );
             }}
           />
@@ -592,14 +594,16 @@ export function VersionField({
             selectedDeleteJobIds={selectedDeleteJobIds}
             onToggle={(id) => {
               setSelectedDeleteJobIds((prev) =>
-                prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+                prev.includes(id)
+                  ? prev.filter((x) => x !== id)
+                  : [...prev, id],
               );
             }}
             onSelectAll={(ids, select) => {
               setSelectedDeleteJobIds((prev) =>
                 select
                   ? [...new Set([...prev, ...ids])]
-                  : prev.filter((id) => !ids.includes(id))
+                  : prev.filter((id) => !ids.includes(id)),
               );
             }}
           />
@@ -622,14 +626,14 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
       setLoading(true);
       const results = {};
       const jobs = await render(
-        `{{ dao.get_jobs_by_plugin_and_session(plugin_id) | list }}`
+        `{{ dao.get_jobs_by_plugin_and_session(plugin_id) | list | pick("id", "description") }}`,
       );
       SESSIONS.map((session) => {
         try {
           if (jobs?.length) {
             results[session.id] = {
               name: session.name,
-              jobs: jobs.filter((j) => j.session_id === session.id)
+              jobs: jobs.filter((j) => j.session_id === session.id),
             };
           }
         } catch (e) {
@@ -661,10 +665,10 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
         const { name, jobs } = jobsBySession[sessionId];
         const sessionJobIds = jobs.map((j) => j.id);
         const allSelected = sessionJobIds.every((id) =>
-          selectedJobIds.includes(id)
+          selectedJobIds.includes(id),
         );
         const someSelected = sessionJobIds.some((id) =>
-          selectedJobIds.includes(id)
+          selectedJobIds.includes(id),
         );
 
         return (
@@ -723,7 +727,7 @@ const DeleteMessage = ({
   selectedVersion,
   selectedDeleteJobIds,
   onToggle,
-  onSelectAll
+  onSelectAll,
 }) => {
   const [jobsBySession, setJobsBySession] = useState({});
   const [loading, setLoading] = useState(true);
@@ -739,7 +743,7 @@ const DeleteMessage = ({
       setLoading(true);
       try {
         const jobs = await render(
-          `{{ dao.get_jobs_depending_on_version(${selectedVersion.id}) | tojson }}`
+          `{{ dao.get_jobs_depending_on_version(${selectedVersion.id}) | tojson }}`,
         );
         setDependentJobs(jobs || []);
 
@@ -809,7 +813,7 @@ const DeleteMessage = ({
           borderColor: 'divider',
           borderRadius: 1,
           p: 1,
-          bgcolor: 'background.paper'
+          bgcolor: 'background.paper',
         }}
       >
         <Typography
