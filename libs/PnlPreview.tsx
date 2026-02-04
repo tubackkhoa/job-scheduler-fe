@@ -1008,10 +1008,13 @@ export default ({ formData, registry }: FieldProps) => {
       const payload = { ...newValues };
       const identity = editingRow['Identity'];
 
-      await render('{{ update_model_config(identity, payload) }}', {
-        identity,
-        payload,
-      });
+      await render(
+        '{{ update_model_config(webhook_url, webhook_api_key,identity, payload) }}',
+        {
+          identity,
+          payload,
+        },
+      );
 
       // Optimistic Update: Update table data immediately
       setTableData((prev) =>
