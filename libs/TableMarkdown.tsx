@@ -12,7 +12,13 @@ import {
   Box,
   TextField,
   Chip,
+  Button,
+  Popover,
+  FormControlLabel,
+  Checkbox,
+  Stack,
 } from '@mui/material';
+import { ViewColumn } from '@mui/icons-material';
 
 type Direction = 'LONG' | 'SHORT' | 'NONE';
 
@@ -80,6 +86,17 @@ function floorToHour(d: Date): Date {
   return copy;
 }
 
+function parseUtcNoOffset(s) {
+  // "2026-02-04 06:00:00" -> "2026-02-04T06:00:00Z"
+  return new Date(s.replace(' ', 'T') + 'Z');
+}
+function floorToMinuteUtc(input) {
+  const d = new Date(input);
+
+  d.setUTCSeconds(0, 0); // set giây = 0, ms = 0 (UTC)
+  return d.toISOString();
+}
+
 const positionsCache = {};
 async function fetchPositions(
   baseUrl: string,
@@ -120,16 +137,9 @@ function buildPnlMap(positions: Position[]): Map<string, number> {
 
     if (!symbol || !modelKey || !entryTimeStr) continue;
 
-    const entryTime = new Date(entryTimeStr);
-    if (isNaN(entryTime.getTime())) continue;
+    const entryTimeIso = floorToMinuteUtc(entryTimeStr);
 
-    // Floor to hour (UTC-safe)
-    const entryHour = floorToHour(entryTime);
-
-    // Python removes timezone before isoformat()
-    const entryHourIso = entryHour.toISOString().replace('Z', '');
-
-    const key = `${symbol}|${modelKey}|${entryHourIso}`;
+    const key = `${symbol}|${modelKey}|${entryTimeIso}`;
 
     pnlMap.set(key, pnl);
   }
@@ -143,7 +153,6 @@ function parseTableMessage(message: string): ParsedTable | null {
   const cleaned = message.trim();
   if (!cleaned) return null;
 
-  // Split lines, trim, remove empty
   const lines = cleaned
     .split('\n')
     .map((l) => l.trim())
@@ -188,9 +197,6 @@ function parseTableMessage(message: string): ParsedTable | null {
 
   const dataRows: string[][] = [];
 
-  // --------------------------------------------------
-  // Parse data rows
-  // --------------------------------------------------
   for (let i = headerIndex + 1; i < lines.length; i++) {
     let line = lines[i];
     if (!line || line.length < 3) continue;
@@ -278,7 +284,7 @@ async function buildSignalComparison(
         predTime += ' 00:00:00';
       }
 
-      const dt = new Date(predTime);
+      const dt = parseUtcNoOffset(predTime);
       if (isNaN(dt.getTime())) continue;
 
       const baseAsset = row[baseAssetIdx] ?? '';
@@ -330,14 +336,10 @@ async function buildSignalComparison(
 
   const pnlMap = buildPnlMap(positions);
 
-  /* -------------------------------------------------- */
-  /* 3. Build signal payloads                           */
-  /* -------------------------------------------------- */
-
   const grouped = new Map<string, any>();
 
   for (const r of flatRows) {
-    const hour = floorToHour(r.pred_time).toISOString();
+    // Key by Time + Symbol so we create a row for every symbol at every time
     const key = `${r.pred_time.toISOString()}|${r.base_asset}`;
 
     if (!grouped.has(key)) {
@@ -348,7 +350,7 @@ async function buildSignalComparison(
       });
     }
 
-    const pnlKey = `${r.base_asset}|${r._identity}|${hour}`;
+    const pnlKey = `${r.base_asset}|${r._identity}|${r.pred_time.toISOString()}`;
     const pnl = coerceFloat(pnlMap.get(pnlKey));
     const hasPosition = pnlMap.has(pnlKey);
 
@@ -360,7 +362,7 @@ async function buildSignalComparison(
       has_position: hasPosition,
       is_gated: r.is_gated,
       model: r._identity,
-      pred_hour: hour,
+      pred_hour: r.pred_time.toISOString(),
     };
   }
 
@@ -368,18 +370,16 @@ async function buildSignalComparison(
   /* 4. Build final rows                                */
   /* -------------------------------------------------- */
 
-  const sorted = Array.from(grouped.values()).sort(
-    (a, b) => b.pred_time - a.pred_time,
-  );
+  const sorted = Array.from(grouped.values()).sort((a, b) => {
+    const timeDiff = b.pred_time.getTime() - a.pred_time.getTime();
+    if (timeDiff !== 0) return timeDiff;
+    return a.base_asset.localeCompare(b.base_asset);
+  });
 
-  let lastTime = '';
   const rowsOut: OutputRow[] = [];
 
   for (const r of sorted) {
     const timeStr = r.pred_time.toISOString().slice(0, 16).replace('T', ' ');
-
-    const displayTime = timeStr === lastTime ? '' : timeStr;
-    lastTime = timeStr;
 
     const signals: Record<string, SignalCell> = {};
 
@@ -388,7 +388,7 @@ async function buildSignalComparison(
     }
 
     rowsOut.push({
-      time: displayTime,
+      time: timeStr,
       symbol: r.base_asset,
       signals,
     });
@@ -421,9 +421,15 @@ export default function SignalComparisonTable({
   const [order, setOrder] = useState<Order>('desc');
   const [orderBy, setOrderBy] = useState<'time' | 'symbol'>('time');
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [rowsPerPage, setRowsPerPage] = useState(50);
   const [filter, setFilter] = useState('');
   const [data, setData] = useState<Output | undefined>(undefined);
+
+  // Column Visibility
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(
+    {},
+  );
 
   useEffect(() => {
     async function run() {
@@ -453,10 +459,31 @@ export default function SignalComparisonTable({
     run();
   }, [formData, registry.formContext.formData]);
 
-  console.log(data);
-
   const rows = data?.rows;
   const models = data?.columns ?? [];
+
+  // Init visible columns
+  useEffect(() => {
+    if (models.length > 0) {
+      setVisibleColumns((prev) => {
+        const next = { ...prev };
+        let hasChanges = false;
+        models.forEach((col) => {
+          if (next[col] === undefined) {
+            next[col] = true;
+            hasChanges = true;
+          }
+        });
+        return hasChanges ? next : prev;
+      });
+    }
+  }, [models]);
+
+  const toggleColumn = (col: string) => {
+    setVisibleColumns((prev) => ({ ...prev, [col]: !prev[col] }));
+  };
+
+  const activeModels = models.filter((m) => visibleColumns[m]);
 
   /* ---------- Filtering ---------- */
 
@@ -491,19 +518,51 @@ export default function SignalComparisonTable({
 
   return (
     <>
-      {/* 🔍 Filter */}
-      <Box mb={1}>
-        <TextField
+      {/* 🔍 Filter & Columns */}
+      <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+        <Button
+          startIcon={<ViewColumn />}
+          onClick={(e) => setAnchorEl(e.currentTarget)}
+          variant="outlined"
           size="small"
-          fullWidth
-          placeholder="Filter by time or symbol…"
-          value={filter}
-          onChange={(e) => {
-            setFilter(e.target.value);
-            setPage(0);
+          sx={{ minWidth: 120 }}
+        >
+          Columns
+        </Button>
+
+        <Popover
+          open={Boolean(anchorEl)}
+          anchorEl={anchorEl}
+          onClose={() => setAnchorEl(null)}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
           }}
-        />
-      </Box>
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+        >
+          <Box sx={{ p: 2, maxHeight: 300, overflow: 'auto' }}>
+            <Box sx={{ mb: 1, fontWeight: 600 }}>Visible Columns</Box>
+            <Stack>
+              {models.map((col) => (
+                <FormControlLabel
+                  key={col}
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={!!visibleColumns[col]}
+                      onChange={() => toggleColumn(col)}
+                    />
+                  }
+                  label={col}
+                />
+              ))}
+            </Stack>
+          </Box>
+        </Popover>
+      </Stack>
 
       <TableContainer>
         <Table size="small">
@@ -529,61 +588,110 @@ export default function SignalComparisonTable({
                 </TableSortLabel>
               </TableCell>
 
-              {models.map((model) => (
+              {activeModels.map((model) => (
                 <TableCell key={model}>{model}</TableCell>
               ))}
             </TableRow>
           </TableHead>
 
           <TableBody>
-            {pagedRows.map((row, i) => (
-              <TableRow key={`${row.time}-${row.symbol}-${i}`} hover>
-                <TableCell>{row.time}</TableCell>
-                <TableCell>{row.symbol}</TableCell>
+            {pagedRows.map((row, i) => {
+              // Determine if this is the first row in a time group
+              const isFirstInGroup =
+                i === 0 || pagedRows[i - 1].time !== row.time;
 
-                {models.map((model) => {
-                  const cell = row.signals[model];
+              // Count how many consecutive rows share the same time
+              let rowSpan = 1;
+              if (isFirstInGroup && row.time) {
+                let j = i + 1;
+                while (j < pagedRows.length && pagedRows[j].time === row.time) {
+                  rowSpan++;
+                  j++;
+                }
+              }
 
-                  if (!cell) {
-                    return <TableCell key={model}>—</TableCell>;
-                  }
-
-                  const color =
-                    cell.direction === 'LONG'
-                      ? 'success.main'
-                      : cell.direction === 'SHORT'
-                        ? 'error.main'
-                        : 'text.secondary';
-
-                  return (
+              return (
+                <TableRow key={`${row.time}-${row.symbol}-${i}`} hover>
+                  {/* Only render Time cell if this is the first row in the group */}
+                  {isFirstInGroup && row.time && (
                     <TableCell
-                      key={model}
+                      sortDirection={false}
+                      rowSpan={rowSpan}
                       sx={{
-                        color,
+                        verticalAlign: 'top',
                         fontWeight: 600,
-                        textDecoration: cell.is_gated ? 'line-through' : 'none',
-                        opacity: cell.has_position ? 1 : 0.6,
+                        borderRight: '1px solid rgba(224, 224, 224, 1)',
+                        bgcolor: 'rgba(0, 0, 0, 0.02)',
                       }}
                     >
-                      {cell.symbol}
-                      <Chip
-                        size="small"
-                        label={cell.direction}
-                        color={
-                          cell.direction === 'LONG'
-                            ? 'success'
-                            : cell.direction === 'SHORT'
-                              ? 'error'
-                              : 'default'
-                        }
-                        sx={{ mx: 0.5 }}
-                      />
-                      {cell.pnl.toFixed(4)}
+                      {row.time}
                     </TableCell>
-                  );
-                })}
-              </TableRow>
-            ))}
+                  )}
+
+                  {/* If time is empty (merged), don't render anything */}
+                  {!row.time && !isFirstInGroup && null}
+
+                  <TableCell sortDirection={false}>{row.symbol}</TableCell>
+
+                  {activeModels.map((model) => {
+                    const cell = row.signals[model];
+
+                    if (!cell) {
+                      return <TableCell key={model}>—</TableCell>;
+                    }
+
+                    const isLong = cell.direction === 'LONG';
+                    const isShort = cell.direction === 'SHORT';
+
+                    const symbolColor = isLong
+                      ? '#24fc03'
+                      : isShort
+                        ? '#fc0303'
+                        : 'text.secondary';
+
+                    const pnlVal = cell.pnl;
+                    const isProfit = pnlVal > 0;
+                    const isLoss = pnlVal < 0;
+                    const pnlColor = isProfit
+                      ? '#24fc03'
+                      : isLoss
+                        ? '#fc0303'
+                        : 'text.secondary';
+
+                    return (
+                      <TableCell
+                        key={model}
+                        sx={{
+                          fontWeight: 700,
+                          textDecoration: cell.is_gated
+                            ? 'line-through'
+                            : 'none',
+                          opacity: cell.has_position ? 1 : 0.6,
+                        }}
+                      >
+                        <Box component="span" sx={{ color: symbolColor }}>
+                          {cell.symbol}
+                        </Box>
+                        <Box
+                          component="span"
+                          sx={{
+                            color: pnlColor,
+                            mx: 0.5,
+                            fontSize: '1.2em',
+                            fontWeight: 'bold',
+                          }}
+                        >
+                          {isLong ? '↑' : isShort ? '↓' : ''}
+                        </Box>
+                        <Box component="span" sx={{ color: pnlColor }}>
+                          {cell.pnl.toFixed(4)}
+                        </Box>
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
