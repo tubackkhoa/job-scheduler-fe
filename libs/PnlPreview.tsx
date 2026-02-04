@@ -1264,7 +1264,7 @@ export default ({ formData, registry }: FieldProps) => {
             {pagedRows.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={activeColumns.length + 1}
+                  colSpan={activeColumns.length + 2}
                   align="center"
                   sx={{ py: 3 }}
                 >
