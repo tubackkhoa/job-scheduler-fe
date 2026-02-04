@@ -445,7 +445,7 @@ const EquityChartModal = ({
     chart.timeScale().fitContent();
 
     // ---- Crosshair handler (stable & safe) ----
-    const handleCrosshairMove = (param: MouseEventParams) => {
+    const handleCrosshairMove = Utils._.throttle((param: MouseEventParams) => {
       if (!param?.time || !param?.point) {
         setTooltip((t) => ({ ...t, visible: false }));
         return;
@@ -485,7 +485,7 @@ const EquityChartModal = ({
           accumulatedPnl: dataPoint.accumulatedPnl,
         },
       });
-    };
+    }, 40);
 
     chart.subscribeCrosshairMove(handleCrosshairMove);
 
