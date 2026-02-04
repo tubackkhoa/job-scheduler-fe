@@ -18,7 +18,7 @@ import {
 import { Save, PublishedWithChanges } from '@mui/icons-material';
 import { buildJinjaContext } from '@/utils';
 import { ConfirmationDialog } from '../ConfirmationDialog';
-import { SESSIONS } from '@/constants/session';
+import { SESSIONS } from '@/constants';
 import { FieldProps } from '@rjsf/utils';
 
 export function VersionField({

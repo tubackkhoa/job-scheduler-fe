@@ -27,7 +27,6 @@
     "@uiw/react-codemirror": "^4.25.4",
     "console-feed": "^3.8.0",
     "dayjs": "^1.11.19",
-    "dompurify": "^3.3.1",
     "esbuild-wasm": "^0.27.2",
     "json5": "^2.2.3",
     "lightweight-charts": "^5.1.0",
@@ -51,6 +50,7 @@
     "globals": "^16.5.0",
     "patch-package": "^8.0.1",
     "pyodide": "^0.29.1",
+    "ts-morph": "^27.0.2",
     "vite": "^7.2.4"
   },
   "resolutions": {

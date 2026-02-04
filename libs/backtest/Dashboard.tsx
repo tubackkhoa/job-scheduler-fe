@@ -1,10 +1,5 @@
 import { FieldProps } from '@rjsf/utils';
-
-const { useState, Fragment, useEffect, useCallback } = React;
-const { Link: RouterLink } = RouterDom;
-const { dayjs } = Utils;
-const { SignalsLogsViewer } = Components;
-const {
+import {
   Box,
   Table,
   TableHead,
@@ -31,9 +26,8 @@ const {
   TableSortLabel,
   Card,
   Autocomplete,
-} = Mui;
-
-const {
+} from '@mui/material';
+import {
   KeyboardArrowDown,
   KeyboardArrowUp,
   Memory,
@@ -41,9 +35,6 @@ const {
   AccessTime,
   SignalCellularAlt,
   Edit,
-} = MuiIcon;
-
-const {
   FirstPage,
   LastPage,
   ChevronLeft,
@@ -51,7 +42,12 @@ const {
   Search,
   FilterList,
   Clear,
-} = MuiIcon;
+} from '@mui/icons-material';
+import { useState, Fragment, useEffect, useCallback } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+
+const { dayjs } = Utils;
+const { SignalsLogsViewer } = Components;
 
 const SESSIONS = [
   {
@@ -395,7 +391,7 @@ export default function JobStatsTable({
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleToggleJob = async (id: number, active: boolean) => {
     try {

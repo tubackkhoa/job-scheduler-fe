@@ -11,6 +11,7 @@ import {
   Stack,
   Chip,
   Switch,
+  CircularProgress,
 } from '@mui/material';
 import { Add, NoteAdd } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -25,6 +26,7 @@ export function JobsList({
   onNewJob,
   isNewJobMode,
   disabled,
+  togglingJobId,
 }) {
   const filteredJobs: Job[] = jobs.filter((j) => j.id !== 0);
   const navigate = useNavigate();
@@ -137,12 +139,36 @@ export function JobsList({
                       {job.description || 'Untitled job'}
                     </Typography>
                     <Chip
-                      label={job.active ? 'Active' : 'Paused'}
+                      label={
+                        togglingJobId === job.id
+                          ? 'Updating...'
+                          : job.active
+                            ? 'Active'
+                            : 'Paused'
+                      }
                       size="small"
-                      color={job.active ? 'success' : 'default'}
+                      color={
+                        togglingJobId === job.id
+                          ? 'default'
+                          : job.active
+                            ? 'success'
+                            : 'default'
+                      }
                       variant={job.active ? 'filled' : 'outlined'}
                       icon={
-                        job.active ? (
+                        togglingJobId === job.id ? (
+                          <Box
+                            sx={{
+                              width: 12,
+                              height: 12,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <CircularProgress size={10} color="inherit" />
+                          </Box>
+                        ) : job.active ? (
                           <Box
                             sx={{
                               width: 6,
@@ -180,6 +206,7 @@ export function JobsList({
               <Switch
                 edge="end"
                 checked={!!job.active}
+                disabled={togglingJobId === job.id}
                 onChange={(e) => {
                   e.stopPropagation();
                   onToggleJob(e.target.checked, job.id);

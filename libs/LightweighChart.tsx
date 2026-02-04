@@ -1,8 +1,11 @@
 import { FieldProps } from '@rjsf/utils';
-
-const { Box, Chip, Stack } = Mui;
-const { useEffect, useRef, useState, useMemo } = React;
-const { createChart, CandlestickSeries, BaselineSeries } = LightweightChart;
+import {
+  createChart,
+  CandlestickSeries,
+  BaselineSeries,
+} from 'lightweight-charts';
+import { Box, Chip, Stack } from '@mui/material';
+import { useEffect, useRef, useState, useMemo } from 'react';
 
 // -----------------------------
 // Types

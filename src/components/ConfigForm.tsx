@@ -17,7 +17,7 @@ export const ConfigForm = ({
   formData,
   onChange,
   pluginPackage,
-  pluginId
+  pluginId,
 }) => {
   const [localSchema, setLocalSchema] = useState(schema);
   const [extraErrors, setExtraErrors] = useState({});
@@ -25,7 +25,7 @@ export const ConfigForm = ({
 
   const handleChange = (
     { formData: newFormData }: IChangeEvent,
-    fieldPathId?: string
+    fieldPathId?: string,
   ) => {
     if (onChange) {
       onChange(newFormData);
@@ -39,7 +39,7 @@ export const ConfigForm = ({
       pluginPackage,
       formData,
       localSchema, // remain state
-      changedFieldId.current
+      changedFieldId.current,
     ).then(([newSchema, errors]) => {
       setLocalSchema(newSchema);
       if (errors.length) setExtraErrors({ __errors: errors });
@@ -59,8 +59,8 @@ export const ConfigForm = ({
         '& .rjsf': {
           '& .form-group': { mb: 0 },
           '& .field': { mb: 0 },
-          '& .control-label': { mb: 1 }
-        }
+          '& .control-label': { mb: 1 },
+        },
       }}
     >
       <ErrorBoundary>
@@ -78,7 +78,7 @@ export const ConfigForm = ({
           onChange={handleChange}
           liveValidate={false}
           templates={{
-            ObjectFieldTemplate
+            ObjectFieldTemplate,
           }}
         />
       </ErrorBoundary>
