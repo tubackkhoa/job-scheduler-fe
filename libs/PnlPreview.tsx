@@ -590,7 +590,9 @@ const EquityChartModal = ({
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+        <Button variant="contained" color="warning" onClick={onClose}>
+          Close
+        </Button>
       </DialogActions>
     </Dialog>
   );
