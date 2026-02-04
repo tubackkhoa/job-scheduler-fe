@@ -67,6 +67,199 @@ type ChartTooltipProps = {
   data?: TooltipData;
 };
 
+const THEME = {
+  positive: '#28a745',
+  negative: '#dc3545',
+  neutral: '#6c757d',
+  warning: '#ffc107',
+} as const;
+
+function colorSpan(text: string, color: string, bold = false): string {
+  const weight = bold ? 'font-weight:bold;' : '';
+  return `<span style="color:${color};${weight}">${text}</span>`;
+}
+
+function fmtPnl(v?: number | null): string {
+  if (v == null) return '-';
+
+  if (v > 0) {
+    return colorSpan(`↗ +$${v.toFixed(4)}`, THEME.positive, true);
+  }
+  if (v < 0) {
+    return colorSpan(`↘ $${v.toFixed(4)}`, THEME.negative, true);
+  }
+  return colorSpan('$0.0000', THEME.neutral);
+}
+
+function fmtStatus(status?: { state?: string; label?: string } | null): string {
+  if (!status) return '-';
+
+  if (status.state === 'active') {
+    return colorSpan(`✓ Active (${status.label})`, THEME.positive);
+  }
+  if (status.state === 'inactive') {
+    return colorSpan(`⏸ Inactive (${status.label})`, THEME.warning);
+  }
+  return colorSpan('⊘ No Job', THEME.neutral);
+}
+
+function fmtLatest(
+  latest?: { symbol: string; direction: string; pnl: number } | null,
+): string {
+  if (!latest) return '-';
+
+  const color =
+    latest.direction === 'BUY' || latest.direction === 'LONG'
+      ? THEME.positive
+      : THEME.negative;
+
+  return `${colorSpan(latest.symbol, color, true)} ${fmtPnl(latest.pnl)}`;
+}
+
+function fmtWinrate(winrate?: number | null): string {
+  if (winrate == null) return '-';
+
+  const pct = winrate * 100;
+  let color: string = THEME.negative;
+
+  if (pct >= 50) color = THEME.positive;
+  else if (pct >= 40) color = THEME.neutral;
+
+  return colorSpan(`${pct.toFixed(1)}%`, color, true);
+}
+
+function fmtDrawdown(drawdown?: number | null): string {
+  if (!drawdown) return '-';
+
+  const pct = Math.abs(drawdown) * 100;
+  let color: string = THEME.neutral;
+
+  if (pct > 20) color = THEME.negative;
+  else if (pct > 10) color = THEME.warning;
+
+  return colorSpan(`-${pct.toFixed(1)}%`, color, true);
+}
+
+function formatUtcTime(value?: string): string {
+  if (!value) return '-';
+
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return '-';
+
+  const yyyy = date.getUTCFullYear();
+  const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(date.getUTCDate()).padStart(2, '0');
+  const hh = String(date.getUTCHours()).padStart(2, '0');
+  const min = String(date.getUTCMinutes()).padStart(2, '0');
+
+  return `${yyyy}-${mm}-${dd} ${hh}:${min} UTC`;
+}
+
+type AnyDict = Record<string, any>;
+
+type IdentityState = { state: 'active' | 'inactive'; label: string };
+
+function buildStatsTable(
+  stats: AnyDict[],
+  jobs: AnyDict[],
+): {
+  rows: AnyDict[];
+  totals: {
+    total_models: number;
+    total_pnl: number;
+    total_positions: number;
+  };
+} {
+  if (!stats?.length) {
+    return {
+      rows: [],
+      totals: {
+        total_models: 0,
+        total_pnl: 0,
+        total_positions: 0,
+      },
+    };
+  }
+
+  // Deduplicate stats by identity (keep latest)
+  const seenIdentities: Record<string, AnyDict> = {};
+  for (const stat of stats) {
+    const identity = stat.identity;
+    if (identity) {
+      seenIdentities[identity] = stat;
+    }
+  }
+  stats = Object.values(seenIdentities);
+
+  // Map model identity → job info
+  const identityJob: Record<string, IdentityState> = {};
+
+  for (const job of jobs) {
+    const modelKey = job?.config?.model_key;
+    if (modelKey) {
+      identityJob[modelKey] = {
+        state: job.active ? 'active' : 'inactive',
+        label: job.description || 'No description',
+      };
+    }
+  }
+
+  const rows: AnyDict[] = [];
+  let totalPnl = 0;
+  let totalPositions = 0;
+
+  for (const stat of stats) {
+    const identity = stat.identity;
+    if (!identity) continue;
+
+    const pnl = stat.totalPnl ?? 0;
+    const positions = Number(stat.totalPositions ?? 0);
+
+    totalPnl += pnl;
+    totalPositions += positions;
+
+    // Convert lastPosition
+    const lastPos = stat.lastPosition;
+    const lastPosFormatted = lastPos
+      ? {
+          symbol: lastPos.symbol ?? '',
+          direction: lastPos.side ?? '',
+          pnl: lastPos.pnl ?? 0,
+        }
+      : null;
+
+    const lastPosTime = lastPos?.time ?? null;
+    const item = identityJob[identity];
+
+    rows.push({
+      Identity: identity,
+      Model: stat.modelName,
+      'Total PNL': fmtPnl(pnl),
+      'PNL 1H': fmtPnl(stat.pnlDelta1h ?? 0),
+      'PNL 4H': fmtPnl(stat.pnlDelta4h ?? 0),
+      'PNL 1D': fmtPnl(stat.pnlDelta1d ?? 0),
+      Winrate: fmtWinrate(stat.winrate),
+      'Max Drawdown': stat.maxDrawdown,
+      'Latest Position': fmtLatest(lastPosFormatted),
+      'Latest Position Time': lastPosTime,
+      Status: fmtStatus(item),
+      'Hide Status': item?.state ?? '',
+      Started: formatUtcTime(stat.startedAt ?? ''),
+      'Total Positions': positions,
+      'Total Runtime': stat.totalRunningTime ?? '-',
+    });
+  }
+
+  return {
+    rows,
+    totals: {
+      total_models: rows.length,
+      total_pnl: totalPnl,
+      total_positions: totalPositions,
+    },
+  };
+}
+
 function parseDate(value: any): string {
   // the date is 2026-01-19T15:41:59.216Z => convert 2026-01-19 15:41:59 UTC
   if (!value) return '';
@@ -640,14 +833,26 @@ export default ({ formData, registry }: FieldProps) => {
 
   useEffect(() => {
     if (!formData) {
-      setTableData([]);
       return;
     }
     try {
-      const parsed = JSON.parse(formData);
-      setTableData(Array.isArray(parsed) ? parsed : []);
-    } catch {
-      setTableData([]);
+      const { models, jobList, stats } = Utils.convertByType(
+        formData,
+        'object',
+      );
+      const { rows } = buildStatsTable(stats, jobList);
+      const cfg = Object.fromEntries(
+        models.map((m) => [m.identity, m.currentConfig]),
+      );
+
+      const parsed = rows.map((r) => ({
+        ...r,
+        'Hide currentConfig': cfg[r.Identity],
+      }));
+      console.log(parsed);
+      setTableData(parsed);
+    } catch (e) {
+      console.error(e);
     }
   }, [formData]);
 
