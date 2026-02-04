@@ -48,6 +48,7 @@ libs/*
 # Allow this single file
 !libs/CrudField.tsx
 !libs/TableMarkdown.tsx
+!libs/PnlPreview.tsx
 !libs/LightweighChart.tsx
 !libs/CompilePluginComponent.tsx
 

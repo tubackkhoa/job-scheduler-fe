@@ -9,6 +9,7 @@ import {
   Tooltip,
   IconButton,
   Box,
+  CircularProgress,
 } from '@mui/material';
 import { jinja } from '@codemirror/lang-jinja';
 import { TemplatePreview } from './TemplatePreview';
@@ -181,6 +182,25 @@ export function TemplateField({
           flexGrow: fullscreen ? 1 : 'unset',
         }}
       >
+        {/* add loading layer */}
+        {loadingPreview && tabIndex === 1 && (
+          <Box
+            sx={{
+              position: 'absolute',
+              display: 'flex',
+              top: 100,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 2,
+              borderRadius: 1,
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        )}
+
         <Box
           sx={{
             display: tabIndex === 1 ? 'none' : 'block',
