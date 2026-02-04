@@ -562,7 +562,7 @@ export const jinjaEvaluate = async (
   tmpl: string,
   params: {
     [key: string]: any;
-  },
+  } = {},
   raw = false,
 ) => {
   // extract includeKeys to pass to server

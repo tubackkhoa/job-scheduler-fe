@@ -849,7 +849,7 @@ export default ({ formData, registry }: FieldProps) => {
         ...r,
         'Hide currentConfig': cfg[r.Identity],
       }));
-      console.log(parsed);
+
       setTableData(parsed);
     } catch (e) {
       console.error(e);

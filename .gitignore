@@ -55,3 +55,6 @@ libs/*
 # Allow backtest folder AND its contents
 !libs/backtest/
 !libs/backtest/**
+
+!libs/forwardtest/
+!libs/forwardtest/**

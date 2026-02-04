@@ -125,7 +125,7 @@ export default {
     return data;
   },
 
-  fetchRoutes(pluginId: number): Promise<string[]> {
+  fetchRoutes(pluginId: number): Promise<RoutesResponse> {
     return request(`/api/plugins/routes/${pluginId}`);
   },
 

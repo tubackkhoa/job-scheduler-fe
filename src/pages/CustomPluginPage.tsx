@@ -6,7 +6,7 @@ import PageNotFound from './PageNotFound';
 
 export default function CustomPluginPage({ setLoading, setError }) {
   const { plugin_id, '*': restPath } = useParams();
-  const [routes, setRoutes] = useState<string[]>([]);
+  const [routes, setRoutes] = useState<RoutesResponse>();
   const [pageProps, setPageProps] = useState(null);
 
   useEffect(() => {
@@ -14,17 +14,17 @@ export default function CustomPluginPage({ setLoading, setError }) {
   }, [plugin_id]);
 
   useEffect(() => {
-    if (!routes.length) return;
+    if (!routes) return;
     const load = async () => {
       setLoading(true);
       let data: any;
       // find the first match
       try {
-        for (const route of routes) {
+        for (const route of routes.routes) {
           const matched = matchPath(route, `/${restPath}`);
           if (matched) {
             const schema = await api.fetchRouteSchema(Number(plugin_id), route);
-            data = { formData: matched.params, schema };
+            data = { formData: { ...matched.params, ...routes }, schema };
             return;
           }
         }

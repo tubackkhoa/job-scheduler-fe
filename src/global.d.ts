@@ -60,6 +60,11 @@ declare global {
     globals?: Globals;
   }
 
+  interface RoutesResponse {
+    package: string;
+    routes: string[];
+  }
+
   interface PluginUserCodeResponse {
     form: string;
     script: string;

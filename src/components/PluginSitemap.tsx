@@ -63,7 +63,7 @@ export function PluginSitemap() {
       let routes: string[];
       try {
         const data = await api.fetchRoutes(pluginId);
-        routes = data.filter((r) => !r.includes(':'));
+        routes = data.routes.filter((r) => !r.includes(':'));
       } catch (err) {
         setError(err.message);
       } finally {
