@@ -63,6 +63,7 @@ export function JobDetails({
   onSaveAsNew,
   onDelete,
   isSubmitting,
+  isToggling,
 }) {
   const [tabIndex, setTabIndex] = useState(0);
   const [localFormData, setLocalFormData] = useState();
@@ -179,7 +180,15 @@ export function JobDetails({
                 variant={isActive ? 'outlined' : 'contained'}
                 color={isActive ? 'warning' : 'success'}
                 size="small"
-                startIcon={isActive ? <Pause /> : <PlayArrow />}
+                startIcon={
+                  isToggling ? (
+                    <CircularProgress size={16} color="inherit" />
+                  ) : isActive ? (
+                    <Pause />
+                  ) : (
+                    <PlayArrow />
+                  )
+                }
                 onClick={async () => {
                   if (typeof pluginId === 'string') {
                     try {
@@ -196,13 +205,15 @@ export function JobDetails({
                   }
                   onToggleActive();
                 }}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isToggling}
               >
                 {typeof pluginId == 'string'
                   ? 'Run'
-                  : isActive
-                    ? 'Pause'
-                    : 'Start'}
+                  : isToggling
+                    ? 'Processing...'
+                    : isActive
+                      ? 'Pause'
+                      : 'Start'}
               </Button>
             </Stack>
           )

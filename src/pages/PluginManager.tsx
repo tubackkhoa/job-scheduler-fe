@@ -155,10 +155,13 @@ export default function PluginManager({ setLoading, setError }) {
     setJobDesc('');
   }, []);
 
+  const [togglingJobId, setTogglingJobId] = useState<number | null>(null);
+
   const handleJobActivation = useCallback(
     async (active: boolean, targetJobId = jobId) => {
       if (!targetJobId) return;
 
+      setTogglingJobId(targetJobId);
       try {
         const response = await api.activateJob(targetJobId, active);
         if (response.success) {
@@ -171,6 +174,8 @@ export default function PluginManager({ setLoading, setError }) {
         setResult(response);
       } catch (err: any) {
         setError(err.message);
+      } finally {
+        setTogglingJobId(null);
       }
     },
     [jobId],
@@ -353,6 +358,7 @@ export default function PluginManager({ setLoading, setError }) {
                 onNewJob={handleNewJob}
                 isNewJobMode={isNewJobMode}
                 disabled={!schema}
+                togglingJobId={togglingJobId}
               />
             )}
           </Box>
@@ -377,6 +383,7 @@ export default function PluginManager({ setLoading, setError }) {
             onDescChange={setJobDesc}
             onToggleActive={() => handleJobActivation(!isActive)}
             onSave={(data) => handleSubmit({ formData: data })}
+            isToggling={togglingJobId === jobId}
             onSaveAsNew={(data) =>
               handleSubmit({ formData: data, saveNew: true })
             }
