@@ -21,11 +21,10 @@ export default ({
 {% set identities = stats | map(attribute="identity") | list %}
 {% set job_list = dao.get_jobs_by_model_keys(identities) | pick ("active", "description", "config.model_key") %}
 {
-  models: {{ models | tojson }},
-  jobList: {{ job_list | tojson }},
-  stats: {{ stats | tojson }}
-}
-        `,
+  "models": {{ models | tojson }},
+  "jobList": {{ job_list | tojson }},
+  "stats": {{ stats | tojson }}
+}`,
         {},
         true,
       );
