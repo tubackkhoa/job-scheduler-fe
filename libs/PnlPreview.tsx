@@ -53,6 +53,7 @@ import {
 
 type TooltipData = {
   time: string;
+  openTime: string;
   symbol: string;
   side: 'BUY' | 'SELL';
   pnl: number;
@@ -65,6 +66,12 @@ type ChartTooltipProps = {
   y: number;
   data?: TooltipData;
 };
+
+function parseDate(value: any): string {
+  // the date is 2026-01-19T15:41:59.216Z => convert 2026-01-19 15:41:59 UTC
+  if (!value) return '';
+  return new Date(value).toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+}
 
 const ChartTooltip: React.FC<ChartTooltipProps> = React.memo(
   ({ visible, x, y, data }) => {
@@ -89,7 +96,10 @@ const ChartTooltip: React.FC<ChartTooltipProps> = React.memo(
         }}
       >
         <Typography variant="caption" display="block">
-          <strong>Time:</strong> {data.time}
+          <strong>Open time:</strong> {data.openTime}
+        </Typography>
+        <Typography variant="caption" display="block">
+          <strong>Close time:</strong> {data.time}
         </Typography>
 
         <Typography variant="caption" display="block">
@@ -467,7 +477,8 @@ const EquityChartModal = ({
         x: Math.min(param.point.x + 15, maxX),
         y: Math.min(param.point.y + 15, maxY),
         data: {
-          time: new Date(dataPoint.time).toLocaleString(),
+          time: parseDate(dataPoint.time),
+          openTime: parseDate(dataPoint.openTime),
           symbol: dataPoint.symbol,
           side: dataPoint.side,
           pnl: dataPoint.pnl,
