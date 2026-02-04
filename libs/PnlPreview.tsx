@@ -508,7 +508,7 @@ const EquityChartModal = ({
   registry,
 }: EquityChartModalProps) => {
   const [loading, setLoading] = useState(false);
-  const [chartData, setChartData] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<any[]>();
   const [error, setError] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<string>('');
   const [endTime, setEndTime] = useState<string>('');
@@ -545,7 +545,7 @@ const EquityChartModal = ({
       const end = formatToISO(endTime);
 
       const result = await render(
-        '{{ get_equity_curve_forward_test(webhook_url, webhook_api_key, identity, startTime, endTime) }}',
+        '{{ get_equity_curve_forward_test(identity, startTime, endTime) }}',
         { identity, startTime: start, endTime: end },
       );
 
@@ -577,7 +577,7 @@ const EquityChartModal = ({
   }, [open, row, fetchChartData]);
 
   useEffect(() => {
-    if (!open || !chartContainerRef.current || chartData.length === 0) return;
+    if (!open || !chartContainerRef.current || !chartData) return;
 
     // Cleanup any existing chart (StrictMode-safe)
     chartRef.current?.remove();
@@ -769,29 +769,29 @@ const EquityChartModal = ({
             <Typography color="error">{error}</Typography>
           </Box>
         )}
-        {!loading && !error && chartData.length === 0 && (
-          <Box
-            minHeight={400}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Typography color="text.secondary">No data available</Typography>
-          </Box>
-        )}
-        {!loading && !error && chartData.length > 0 && (
-          <Box
-            ref={chartContainerRef}
-            sx={{
-              position: 'relative',
-              width: '100%',
-              height: 540,
-              mt: 2,
-            }}
-          >
-            <ChartTooltip {...tooltip} />
-          </Box>
-        )}
+        {chartData &&
+          (chartData.length ? (
+            <Box
+              ref={chartContainerRef}
+              sx={{
+                position: 'relative',
+                width: '100%',
+                height: 540,
+                mt: 2,
+              }}
+            >
+              <ChartTooltip {...tooltip} />
+            </Box>
+          ) : (
+            <Box
+              minHeight={400}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Typography color="text.secondary">No data available</Typography>
+            </Box>
+          ))}
       </DialogContent>
       <DialogActions>
         <Button variant="contained" color="warning" onClick={onClose}>
@@ -1039,8 +1039,6 @@ export default ({ formData, registry }: FieldProps) => {
 
   const activeColumns = allColumns.filter((c) => visibleColumns[c]);
 
-  if (!tableData.length)
-    return <Typography color="text.secondary">No data available</Typography>;
   return (
     <Box>
       {/* Summary Cards */}

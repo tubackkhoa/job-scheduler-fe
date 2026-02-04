@@ -1,7 +1,8 @@
 import { FieldProps } from '@rjsf/utils';
-import PnlPreview from '../PnlPreview';
 import { useEffect, useState } from 'react';
+import PnlPreview from '../PnlPreview';
 
+const { LoadingSkeleton } = Components;
 const { jinjaEvaluate } = Utils;
 
 export default ({
@@ -32,15 +33,15 @@ export default ({
     };
     load();
   }, [formData.package]);
+
+  if (!pnlData) return <LoadingSkeleton size={3} />;
   return (
-    pnlData && (
-      <PnlPreview
-        formData={pnlData}
-        registry={{
-          formContext: { pluginPackage: formData.package },
-        }}
-        {...(rest as FieldProps)}
-      />
-    )
+    <PnlPreview
+      formData={pnlData}
+      registry={{
+        formContext: { pluginPackage: formData.package },
+      }}
+      {...(rest as FieldProps)}
+    />
   );
 };
