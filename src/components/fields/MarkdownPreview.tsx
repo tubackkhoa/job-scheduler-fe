@@ -2,7 +2,6 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
-import DOMPurify from 'dompurify';
 import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { useMemo } from 'react';
@@ -99,7 +98,7 @@ export const MarkdownPreview = ({
                 return (
                   <div
                     dangerouslySetInnerHTML={{
-                      __html: DOMPurify.sanitize(children as string),
+                      __html: children as string,
                     }}
                   />
                 );
