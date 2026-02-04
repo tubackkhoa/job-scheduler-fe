@@ -154,18 +154,35 @@ export function TemplateField({
           <Tab label="Code" />
           <Tab label="Preview" onClick={() => updatePrewiewCode(localValue)} />
         </Tabs>
-        <Tooltip title={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>
-          <IconButton
-            onClick={() => {
-              setFullscreen((f) => !f);
-            }}
-            size="small"
-            aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-            sx={{ ml: 1 }}
-          >
-            {fullscreen ? <FullscreenExit /> : <Fullscreen />}
-          </IconButton>
-        </Tooltip>
+
+        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+          <Tooltip title={copied ? 'Copied!' : 'Copy Code'}>
+            <IconButton
+              onClick={handleCopyCode}
+              disabled={loadingPreview}
+              size="small"
+            >
+              {copied ? (
+                <Check color="success" fontSize="small" />
+              ) : (
+                <ContentCopySharp fontSize="small" />
+              )}
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>
+            <IconButton
+              onClick={() => {
+                setFullscreen((f) => !f);
+              }}
+              size="small"
+              aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+              sx={{ ml: 1 }}
+            >
+              {fullscreen ? <FullscreenExit /> : <Fullscreen />}
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Box>
 
       {errorMessage && (
@@ -223,26 +240,6 @@ export function TemplateField({
             height: fullscreen ? '100%' : 'unset',
           }}
         >
-          <Tooltip title={copied ? 'Copied!' : 'Copy Code'}>
-            <IconButton
-              onClick={handleCopyCode}
-              disabled={loadingPreview}
-              sx={{
-                position: 'absolute',
-                top: 8,
-                right: 8,
-                zIndex: 1,
-                bgcolor: 'action.hover',
-              }}
-              size="small"
-            >
-              {copied ? (
-                <Check color="success" fontSize="small" />
-              ) : (
-                <ContentCopySharp fontSize="small" />
-              )}
-            </IconButton>
-          </Tooltip>
           <TemplatePreview
             fullscreen={fullscreen}
             codeStyle={codeStyle}
