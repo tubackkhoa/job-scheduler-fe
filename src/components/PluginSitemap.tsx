@@ -20,18 +20,15 @@ type RouteState = {
   routes?: string[];
 };
 
-export function PluginSitemap() {
+export function PluginSitemap({ plugins }: { plugins: PluginData[] }) {
   const navigate = useNavigate();
   const [error, setError] = useState<string>();
-  const [plugins, setPlugins] = useState<PluginData[]>([]);
+
   const [routeState, setRouteState] = useState<Record<number, RouteState>>({});
 
   useEffect(() => {
     const load = async () => {
       try {
-        const plugins = await api.fetchPlugins();
-        setPlugins(plugins);
-
         const routesMap = await api.fetchAllRoutes();
         setRouteState(
           Object.fromEntries(

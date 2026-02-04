@@ -3,12 +3,15 @@ import UserRoleManagement from '@/components/UserRoleManagement';
 import { Box, Grid, Paper, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { PluginSitemap } from '@/components/PluginSitemap';
+import { PortalPage } from '@/components/Portal';
 
 export default function Dashboard({ setLoading, setError }) {
   const [health, setHealth] = useState<HealthResponse>();
+  const [plugins, setPlugins] = useState<PluginData[]>();
 
   useEffect(() => {
     api.health().then(setHealth);
+    api.fetchPlugins().then(setPlugins);
   }, []);
   return (
     <Box>
@@ -64,11 +67,13 @@ export default function Dashboard({ setLoading, setError }) {
         </Grid>
       )}
 
+      <Box sx={{ mt: 4 }}>{plugins && <PortalPage plugins={plugins} />}</Box>
+
       <Box sx={{ mt: 4 }}>
         <Typography variant="h5" fontWeight={600} gutterBottom>
           Site map
         </Typography>
-        <PluginSitemap />
+        {plugins && <PluginSitemap plugins={plugins} />}
       </Box>
       <Box sx={{ mt: 4 }}>
         <Typography variant="h5" fontWeight={600} gutterBottom>
