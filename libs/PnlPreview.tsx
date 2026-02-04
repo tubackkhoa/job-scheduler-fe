@@ -20,7 +20,9 @@ import {
   Clear,
   Settings,
   ShowChart,
+  Storefront,
 } from '@mui/icons-material';
+import { PublishModal } from './PublishModal';
 import {
   Table,
   TableBody,
@@ -157,7 +159,7 @@ function formatUtcTime(value?: string): string {
 
 type AnyDict = Record<string, any>;
 
-type IdentityState = { state: 'active' | 'inactive'; label: string };
+type IdentityState = { state: 'active' | 'inactive'; label: string; job?: any };
 
 function buildStatsTable(
   stats: AnyDict[],
@@ -200,6 +202,7 @@ function buildStatsTable(
       identityJob[modelKey] = {
         state: job.active ? 'active' : 'inactive',
         label: job.description || 'No description',
+        job,
       };
     }
   }
@@ -244,6 +247,7 @@ function buildStatsTable(
       'Latest Position Time': lastPosTime,
       Status: fmtStatus(item),
       'Hide Status': item?.state ?? '',
+      'Hide Job': item?.job,
       Started: formatUtcTime(stat.startedAt ?? ''),
       'Total Positions': positions,
       'Total Runtime': stat.totalRunningTime ?? '-',
@@ -831,6 +835,21 @@ export default ({ formData, registry }: FieldProps) => {
 
   const [tableData, setTableData] = useState<any[]>([]);
 
+  // Publish Modal State
+  const [publishModalOpen, setPublishModalOpen] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<{
+    identity: string;
+    job?: any;
+  } | null>(null);
+
+  const handlePublish = (row: any) => {
+    setSelectedModel({
+      identity: row.Identity,
+      job: row['Hide Job'],
+    });
+    setPublishModalOpen(true);
+  };
+
   useEffect(() => {
     if (!formData) {
       return;
@@ -1246,6 +1265,14 @@ export default ({ formData, registry }: FieldProps) => {
                 <TableCell>
                   <IconButton
                     size="small"
+                    onClick={() => handlePublish(row)}
+                    color="warning"
+                    title="Publish to Marketplace"
+                  >
+                    <Storefront fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
                     onClick={() => handleEditConfig(row)}
                     color="primary"
                     title="Edit Config"
@@ -1305,6 +1332,12 @@ export default ({ formData, registry }: FieldProps) => {
         onClose={() => setChartOpen(false)}
         row={chartRow}
         registry={registry}
+      />
+      <PublishModal
+        open={publishModalOpen}
+        onClose={() => setPublishModalOpen(false)}
+        modelIdentity={selectedModel?.identity}
+        existingJob={selectedModel?.job}
       />
     </Box>
   );
