@@ -418,16 +418,15 @@ export const jinjaLinter = (
           break;
 
         case 'VariableName':
-          if (node.parent?.name === 'NamedArgument') {
-            // if left key and value is False, True, None then return
-            if (
-              node.cursor().nextSibling() ||
-              text === 'False' ||
-              text === 'True' ||
-              text === 'None'
-            ) {
-              break;
-            }
+          if (
+            node.parent?.name === 'NamedArgument' &&
+            node.cursor().nextSibling()
+          ) {
+            break;
+          }
+          // if left key and value is False, True, None then return
+          if (text === 'False' || text === 'True' || text === 'None') {
+            break;
           }
 
           if (
