@@ -17,9 +17,9 @@ export default ({
         formData.package,
         `
 {% set stats = fetch_stats_running_models() %}
-{% set models = get_running_models() | pick ("identity","currentConfig") %}
+{% set models = get_running_models() | pick ("identity", "currentConfig") %}
 {% set identities = stats | map(attribute="identity") | list %}
-{% set job_list = dao.get_jobs_by_model_keys(identities) %}
+{% set job_list = dao.get_jobs_by_model_keys(identities) | pick ("active", "description", "config.model_key") %}
 {
   models: {{ models | tojson }},
   jobList: {{ job_list | tojson }},
