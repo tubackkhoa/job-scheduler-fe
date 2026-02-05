@@ -85,23 +85,27 @@ const ColorText: React.FC<{
 );
 
 function fmtPnl(v?: number | null): React.ReactNode {
-  if (v == null) return '-';
+  if (v == null || Number.isNaN(v)) return '-';
 
-  if (v > 0)
-    return (
-      <ColorText color={THEME.positive} bold>
-        ↗ +${v.toFixed(4)}
-      </ColorText>
-    );
+  const fmt = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 4,
+    maximumFractionDigits: 4,
+  });
 
-  if (v < 0)
-    return (
-      <ColorText color={THEME.negative} bold>
-        ↘ ${v.toFixed(4)}
-      </ColorText>
-    );
+  const absFormatted = fmt.format(Math.abs(v));
 
-  return <ColorText color={THEME.neutral}>$0.0000</ColorText>;
+  const sign = v > 0 ? '+' : v < 0 ? '-' : '';
+  const arrow = v > 0 ? '↗' : v < 0 ? '↘' : '';
+  const color = v > 0 ? THEME.positive : v < 0 ? THEME.negative : THEME.neutral;
+
+  return (
+    <ColorText color={color} bold={v !== 0}>
+      {arrow} {sign}
+      {absFormatted}
+    </ColorText>
+  );
 }
 
 function fmtStatus(
@@ -1212,7 +1216,7 @@ export default ({ formData, registry }: FieldProps) => {
 
           <TableBody>
             {pagedRows.map((row, index) => (
-              <TableRow key={`${row.Identity || index}-${index}`} hover>
+              <TableRow key={`${row.Identity || index}`} hover>
                 <TableCell padding="none" align="center">
                   <IconButton
                     size="small"
