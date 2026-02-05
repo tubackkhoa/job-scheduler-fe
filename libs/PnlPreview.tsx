@@ -162,6 +162,32 @@ function fmtWinrate(winrate?: number | null): React.ReactNode {
   );
 }
 
+const renderCell = (key: string, value: any) => {
+  switch (key) {
+    case 'Total PNL':
+    case 'PNL 1H':
+    case 'PNL 4H':
+    case 'PNL 1D':
+      return fmtPnl(value);
+
+    case 'Winrate':
+      return fmtWinrate(value);
+
+    case 'Status':
+      return fmtStatus(value);
+
+    case 'Latest Position':
+      return fmtLatest(value);
+
+    case 'Started':
+    case 'Latest Position Time':
+      return Utils.formatUtcTime(value);
+
+    default:
+      return value;
+  }
+};
+
 type AnyDict = Record<string, any>;
 
 type IdentityState = { state: 'active' | 'inactive'; label: string };
@@ -241,17 +267,23 @@ function buildStatsTable(
     rows.push({
       Identity: identity,
       Model: stat.modelName,
-      'Total PNL': fmtPnl(pnl),
-      'PNL 1H': fmtPnl(stat.pnlDelta1h ?? 0),
-      'PNL 4H': fmtPnl(stat.pnlDelta4h ?? 0),
-      'PNL 1D': fmtPnl(stat.pnlDelta1d ?? 0),
-      Winrate: fmtWinrate(stat.winrate),
+
+      // STORE RAW VALUES (no JSX)
+      'Total PNL': pnl,
+      'PNL 1H': stat.pnlDelta1h ?? 0,
+      'PNL 4H': stat.pnlDelta4h ?? 0,
+      'PNL 1D': stat.pnlDelta1d ?? 0,
+
+      Winrate: stat.winrate ?? null,
       'Max Drawdown': stat.maxDrawdown,
-      'Latest Position': fmtLatest(lastPosFormatted),
+
+      'Latest Position': lastPosFormatted,
       'Latest Position Time': lastPosTime,
-      Status: fmtStatus(item),
+
+      Status: item,
       'Hide Status': item?.state ?? '',
-      Started: Utils.formatUtcTime(stat.startedAt ?? ''),
+
+      Started: stat.startedAt ?? '',
       'Total Positions': positions,
       'Total Runtime': stat.totalRunningTime ?? '-',
     });
@@ -1230,14 +1262,8 @@ export default ({ formData, registry }: FieldProps) => {
                   </IconButton>
                 </TableCell>
                 {activeColumns.map((key) => {
-                  const cellValue = row[key];
-
                   return (
-                    <TableCell key={key}>
-                      {React.isValidElement(cellValue)
-                        ? cellValue
-                        : Utils.formatUtcTime(cellValue)}
-                    </TableCell>
+                    <TableCell key={key}>{renderCell(key, row[key])}</TableCell>
                   );
                 })}
                 <TableCell>
