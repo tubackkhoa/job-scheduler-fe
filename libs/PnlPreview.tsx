@@ -74,38 +74,57 @@ const THEME = {
   warning: '#ffc107',
 } as const;
 
-function colorSpan(text: string, color: string, bold = false): string {
-  const weight = bold ? 'font-weight:bold;' : '';
-  return `<span style="color:${color};${weight}">${text}</span>`;
-}
+const ColorText: React.FC<{
+  color: string;
+  bold?: boolean;
+  children: React.ReactNode;
+}> = ({ color, bold, children }) => (
+  <Box component="span" sx={{ color, fontWeight: bold ? 700 : 400 }}>
+    {children}
+  </Box>
+);
 
-function fmtPnl(v?: number | null): string {
+function fmtPnl(v?: number | null): React.ReactNode {
   if (v == null) return '-';
 
-  if (v > 0) {
-    return colorSpan(`↗ +$${v.toFixed(4)}`, THEME.positive, true);
-  }
-  if (v < 0) {
-    return colorSpan(`↘ $${v.toFixed(4)}`, THEME.negative, true);
-  }
-  return colorSpan('$0.0000', THEME.neutral);
+  if (v > 0)
+    return (
+      <ColorText color={THEME.positive} bold>
+        ↗ +${v.toFixed(4)}
+      </ColorText>
+    );
+
+  if (v < 0)
+    return (
+      <ColorText color={THEME.negative} bold>
+        ↘ ${v.toFixed(4)}
+      </ColorText>
+    );
+
+  return <ColorText color={THEME.neutral}>$0.0000</ColorText>;
 }
 
-function fmtStatus(status?: { state?: string; label?: string } | null): string {
+function fmtStatus(
+  status?: { state?: string; label?: string } | null,
+): React.ReactNode {
   if (!status) return '-';
 
-  if (status.state === 'active') {
-    return colorSpan(`✓ Active (${status.label})`, THEME.positive);
-  }
-  if (status.state === 'inactive') {
-    return colorSpan(`⏸ Inactive (${status.label})`, THEME.warning);
-  }
-  return colorSpan('⊘ No Job', THEME.neutral);
+  if (status.state === 'active')
+    return (
+      <ColorText color={THEME.positive}>✓ Active ({status.label})</ColorText>
+    );
+
+  if (status.state === 'inactive')
+    return (
+      <ColorText color={THEME.warning}>⏸ Inactive ({status.label})</ColorText>
+    );
+
+  return <ColorText color={THEME.neutral}>⊘ No Job</ColorText>;
 }
 
 function fmtLatest(
   latest?: { symbol: string; direction: string; pnl: number } | null,
-): string {
+): React.ReactNode {
   if (!latest) return '-';
 
   const color =
@@ -113,10 +132,17 @@ function fmtLatest(
       ? THEME.positive
       : THEME.negative;
 
-  return `${colorSpan(latest.symbol, color, true)} ${fmtPnl(latest.pnl)}`;
+  return (
+    <>
+      <ColorText color={color} bold>
+        {latest.symbol}
+      </ColorText>{' '}
+      {fmtPnl(latest.pnl)}
+    </>
+  );
 }
 
-function fmtWinrate(winrate?: number | null): string {
+function fmtWinrate(winrate?: number | null): React.ReactNode {
   if (winrate == null) return '-';
 
   const pct = winrate * 100;
@@ -125,34 +151,11 @@ function fmtWinrate(winrate?: number | null): string {
   if (pct >= 50) color = THEME.positive;
   else if (pct >= 40) color = THEME.neutral;
 
-  return colorSpan(`${pct.toFixed(1)}%`, color, true);
-}
-
-function fmtDrawdown(drawdown?: number | null): string {
-  if (!drawdown) return '-';
-
-  const pct = Math.abs(drawdown) * 100;
-  let color: string = THEME.neutral;
-
-  if (pct > 20) color = THEME.negative;
-  else if (pct > 10) color = THEME.warning;
-
-  return colorSpan(`-${pct.toFixed(1)}%`, color, true);
-}
-
-function formatUtcTime(value?: string): string {
-  if (!value) return '-';
-
-  const date = new Date(value);
-  if (isNaN(date.getTime())) return '-';
-
-  const yyyy = date.getUTCFullYear();
-  const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const dd = String(date.getUTCDate()).padStart(2, '0');
-  const hh = String(date.getUTCHours()).padStart(2, '0');
-  const min = String(date.getUTCMinutes()).padStart(2, '0');
-
-  return `${yyyy}-${mm}-${dd} ${hh}:${min} UTC`;
+  return (
+    <ColorText color={color} bold>
+      {pct.toFixed(1)}%
+    </ColorText>
+  );
 }
 
 type AnyDict = Record<string, any>;
@@ -244,7 +247,7 @@ function buildStatsTable(
       'Latest Position Time': lastPosTime,
       Status: fmtStatus(item),
       'Hide Status': item?.state ?? '',
-      Started: formatUtcTime(stat.startedAt ?? ''),
+      Started: Utils.formatUtcTime(stat.startedAt ?? ''),
       'Total Positions': positions,
       'Total Runtime': stat.totalRunningTime ?? '-',
     });
@@ -346,14 +349,13 @@ const ChartTooltip: React.FC<ChartTooltipProps> = React.memo(
 
 function parseNumber(value: any): number {
   if (typeof value === 'number') return value;
+
   if (typeof value === 'string') {
-    // Remove HTML tags
-    const text = value.replace(/<[^>]*>/g, '');
-    // Remove symbols like $, ↘, ↗, , and whitespace
-    const clean = text.replace(/[^\d.-]/g, '');
+    const clean = value.replace(/[^\d.-]/g, '');
     const num = parseFloat(clean);
     return isNaN(num) ? 0 : num;
   }
+
   return 0;
 }
 
@@ -431,8 +433,6 @@ const ConfigModal = ({
   onSave,
   saving,
 }: ConfigModalProps) => {
-  if (!editingRow) return null;
-
   const [internalValues, setInternalValues] = useState(initialValues || {});
 
   useEffect(() => {
@@ -449,6 +449,8 @@ const ConfigModal = ({
   const handleSave = () => {
     onSave(internalValues);
   };
+
+  if (!editingRow) return null;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -1225,19 +1227,12 @@ export default ({ formData, registry }: FieldProps) => {
                 </TableCell>
                 {activeColumns.map((key) => {
                   const cellValue = row[key];
-                  const isHtml =
-                    typeof cellValue === 'string' &&
-                    /<\/?[a-z][\s\S]*>/i.test(cellValue);
 
                   return (
                     <TableCell key={key}>
-                      {isHtml ? (
-                        <div dangerouslySetInnerHTML={{ __html: cellValue }} />
-                      ) : Utils?.formatUtcTime ? (
-                        Utils.formatUtcTime(cellValue)
-                      ) : (
-                        <div>{cellValue}</div>
-                      )}
+                      {React.isValidElement(cellValue)
+                        ? cellValue
+                        : Utils.formatUtcTime(cellValue)}
                     </TableCell>
                   );
                 })}
