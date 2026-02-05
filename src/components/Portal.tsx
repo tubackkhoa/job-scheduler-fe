@@ -154,18 +154,20 @@ interface Props {
 }
 export function PortalPage({ plugins, routeState }: Props) {
   const initialWidgets = useMemo<PortalWidget[]>(() => {
-    return Object.entries(routeState).map(([key, routeState]) => {
-      const pluginId = Number(key);
+    return Object.entries(routeState)
+      .filter((item) => item[1].portal)
+      .map(([key, routeState]) => {
+        const pluginId = Number(key);
 
-      return {
-        id: pluginId,
-        title: plugins.find((item) => item.id === pluginId).package,
-        props: {
-          formData: pluginId % 2 ? 'line' : 'area',
-          schema: routeState.portal,
-        } as FieldProps,
-      };
-    });
+        return {
+          id: pluginId,
+          title: plugins.find((item) => item.id === pluginId).package,
+          props: {
+            formData: pluginId % 2 ? 'line' : 'area',
+            schema: routeState.portal,
+          } as FieldProps,
+        };
+      });
   }, [plugins, routeState]);
 
   const [widgets, setWidgets] = React.useState<PortalWidget[]>([]);
@@ -252,14 +254,14 @@ export function PortalPage({ plugins, routeState }: Props) {
             }}
           >
             <Masonry columns={{ xs: 1, sm: 2, md: 3 }} spacing={2}>
-              {widgets.map((widget) => (
+              {widgets.map(({ id, title, props }) => (
                 <SortableWidget
-                  key={widget.id}
-                  id={widget.id}
-                  title={widget.title}
+                  key={id}
+                  id={id}
+                  title={title}
                   onRemove={handleRemoveWidget}
                 >
-                  {widget.props?.schema && <DynamicField {...widget.props} />}
+                  <DynamicField {...props} />
                 </SortableWidget>
               ))}
             </Masonry>
