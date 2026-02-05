@@ -9,22 +9,26 @@ import {
   Typography,
   CircularProgress,
   Alert,
-  Tabs,
-  Tab,
   Box,
   TextField,
-  Switch,
-  FormControlLabel,
   Chip,
+  Divider,
 } from '@mui/material';
-import { Storefront, Work, CheckCircle } from '@mui/icons-material';
+import {
+  CheckCircle,
+  CloudUpload,
+  Delete,
+  Info,
+  Warning,
+} from '@mui/icons-material';
 
 const { ConfigForm } = Components;
-
 const { SESSIONS } = Constants;
 const { buildJinjaContext } = Utils;
 
-const PLUGIN_PACKAGE = 'alpha_miner.plugins.LiveTradeForUserPlugin';
+const USER_PLUGIN_PACKAGE = 'alpha_miner.plugins.LiveTradeForUserPlugin';
+const MONITOR_PLUGIN_PACKAGE = 'alpha_miner.plugins.LiveTradeForMonitorPlugin';
+
 const PRODUCTION_SESSION_ID = SESSIONS[1].id;
 const MARKETPLACE_ENV = 'production';
 const JINJA_CONTEXT = {
@@ -32,15 +36,6 @@ const JINJA_CONTEXT = {
   url: null,
   apikey: null,
 } as const;
-
-function TabPanel(props: any) {
-  const { children, value, index, ...other } = props;
-  return (
-    <div role="tabpanel" hidden={value !== index} {...other}>
-      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
-    </div>
-  );
-}
 
 interface PublishModalProps {
   open: boolean;
@@ -54,77 +49,131 @@ export function PublishModal({
   modelIdentity,
 }: PublishModalProps) {
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [tabIndex, setTabIndex] = useState(0);
 
-  // Schema state
-  const [pluginId, setPluginId] = useState<number | null>(null);
-  const [schema, setSchema] = useState<any>(null);
+  // Schema & Config state
+  const [userPluginId, setUserPluginId] = useState<number | null>(null);
+  const [userSchema, setUserSchema] = useState<any>(null);
   const [env, setEnv] = useState<any>(null);
-  const [productionJob, setProductionJob] = useState<any>(null);
-
   const [formData, setFormData] = useState<any>({});
-  const [creatingJob, setCreatingJob] = useState(false);
-  const [togglingJob, setTogglingJob] = useState(false);
+
+  // Job state
+  const [productionJob, setProductionJob] = useState<any>(null);
 
   // Registration state
   const [isRegistered, setIsRegistered] = useState(false);
-  const [registering, setRegistering] = useState(false);
   const [registerName, setRegisterName] = useState('');
   const [registerDescription, setRegisterDescription] = useState('');
 
   useEffect(() => {
     if (open && modelIdentity) {
-      setProductionJob(null);
-      setIsRegistered(false);
-
-      loadPluginData();
-      checkRegistrationStatus();
+      resetState();
+      loadData();
     }
   }, [open, modelIdentity]);
 
-  const loadPluginData = async () => {
+  const resetState = () => {
+    setLoading(false);
+    setActionLoading(false);
+    setError(null);
+    setProductionJob(null);
+    setIsRegistered(false);
+    setFormData({});
+    setRegisterName('');
+    setRegisterDescription('');
+  };
+
+  const loadData = async () => {
     setLoading(true);
     setError(null);
     try {
       const plugins = await api.fetchPlugins();
-      const targetPlugin = plugins.find((p) => p.package === PLUGIN_PACKAGE);
-
-      if (!targetPlugin) {
-        throw new Error(
-          `Plugin ${PLUGIN_PACKAGE} not found. Available plugins: ${plugins.map((p) => p.package).join(', ')}`,
-        );
-      }
-
-      setPluginId(targetPlugin.id);
-
-      const sessionId = PRODUCTION_SESSION_ID;
-
-      const response = await api.fetchSchema(sessionId, targetPlugin.id);
-      const { schema, globals, jobs } = response;
-      setSchema(schema);
-      const defaultFormData = Object.fromEntries(
-        Object.entries(schema.properties).map(([key, value]) => [
-          key,
-          (value as any).default,
-        ]),
+      const userPlugin = plugins.find((p) => p.package === USER_PLUGIN_PACKAGE);
+      const monitorPlugin = plugins.find(
+        (p) => p.package === MONITOR_PLUGIN_PACKAGE,
       );
 
-      setEnv(await Utils.getEnvDoc(globals || {}));
-      setFormData({
-        ...defaultFormData,
-        model_key: modelIdentity,
+      if (!userPlugin) {
+        throw new Error(`Plugin ${USER_PLUGIN_PACKAGE} not found.`);
+      }
+
+      setUserPluginId(userPlugin.id);
+
+      // 1. Fetch User Plugin Schema & Env
+      const userSessionId = PRODUCTION_SESSION_ID; // Use production session for user plugin
+      const userResponse = await api.fetchSchema(userSessionId, userPlugin.id);
+      setUserSchema(userResponse.schema);
+      setEnv(await Utils.getEnvDoc(userResponse.globals || {}));
+
+      // 2. Fetch Monitor Plugin Job for Defaults
+      let combinedConfig = {};
+      if (monitorPlugin) {
+        try {
+          const monitorResponse = await api.fetchSchema(
+            PRODUCTION_SESSION_ID,
+            monitorPlugin.id,
+          );
+          const monitorJob = monitorResponse.jobs?.find(
+            (j) => j.config?.model_key === modelIdentity,
+          );
+
+          if (monitorJob) {
+            combinedConfig = { ...monitorJob.config };
+          } else {
+            const monitorResponse0 = await api.fetchSchema(
+              SESSIONS[0].id,
+              monitorPlugin.id,
+            );
+            const monitorJob0 = monitorResponse0.jobs?.find(
+              (j) => j.config?.model_key === modelIdentity,
+            );
+            if (monitorJob0) {
+              combinedConfig = { ...monitorJob0.config };
+            }
+          }
+        } catch (e) {
+          console.warn('Could not fetch monitor plugin jobs', e);
+        }
+      }
+
+      // 3. Prepare Config
+      // Start with schema defaults
+      const schemaDefaults = Object.fromEntries(
+        Object.entries(userResponse.schema.properties || {}).map(
+          ([key, value]) => [key, (value as any).default],
+        ),
+      );
+
+      // Overrides
+      const overrides = {
+        webhook_url: '',
+        webhook_api_key: '',
         model_tag: 'production',
+        model_key: modelIdentity,
+      };
+
+      setFormData({
+        ...schemaDefaults,
+        ...combinedConfig,
+        ...overrides,
       });
 
-      if (jobs && Array.isArray(jobs)) {
-        const found = jobs.find((j) => j.config?.model_key === modelIdentity);
+      // 4. Check Existing User Job
+      if (userResponse.jobs && Array.isArray(userResponse.jobs)) {
+        const found = userResponse.jobs.find(
+          (j) => j.config?.model_key === modelIdentity,
+        );
         if (found) {
           setProductionJob(found);
         }
       }
+
+      // 5. Check Registration Status (Marketplace)
+      await checkRegistrationStatus();
     } catch (err: any) {
-      setError(err.message);
+      console.error(err);
+      setError(err.message || 'Failed to load data');
     } finally {
       setLoading(false);
     }
@@ -132,7 +181,7 @@ export function PublishModal({
 
   const checkRegistrationStatus = async () => {
     try {
-      const render = buildJinjaContext(PLUGIN_PACKAGE, {}, true);
+      const render = buildJinjaContext(USER_PLUGIN_PACKAGE, {}, true);
       const result = await render(
         `{{ list_trade_models(env, url, apikey) }}`,
         JINJA_CONTEXT,
@@ -142,23 +191,25 @@ export function PublishModal({
           ? JSON.parse(result.replace(/'/g, '"'))
           : result
       )['versions'];
-      const isRegistered = Array.isArray(models)
+
+      const registered = Array.isArray(models)
         ? models.some((model: any) => model.id === modelIdentity)
         : false;
 
-      setIsRegistered(isRegistered);
+      setIsRegistered(registered);
     } catch (err: any) {
-      console.error('Error checking registration status:', err);
-      // On error, assume not registered
+      console.warn('Error checking registration status:', err);
       setIsRegistered(false);
     }
   };
 
-  const handleRegister = async () => {
-    setRegistering(true);
+  const handleSubscribe = async () => {
+    if (!userPluginId) return;
+    setActionLoading(true);
     setError(null);
     try {
-      const render = buildJinjaContext(PLUGIN_PACKAGE, {}, true);
+      // 1. Register Model
+      const render = buildJinjaContext(USER_PLUGIN_PACKAGE, {}, true);
       const payload = {
         key: modelIdentity,
         name: registerName || undefined,
@@ -170,81 +221,57 @@ export function PublishModal({
         ...JINJA_CONTEXT,
       });
 
+      const cleanConfig = Object.fromEntries(
+        Object.entries(formData).filter(([_, v]) => v !== undefined),
+      );
+
+      const jobPayload = {
+        config: cleanConfig,
+        description: `Live Trading for ${modelIdentity}`,
+        pluginId: userPluginId,
+        sessionId: PRODUCTION_SESSION_ID,
+      };
+
+      await api.updateConfig(0, jobPayload);
+
+      // Refresh
+      await loadData();
       setIsRegistered(true);
-      // Reload to check if there's now a production job
-      await loadPluginData();
     } catch (err: any) {
-      setError(err.message || 'Failed to register model');
+      setError(err.message || 'Failed to subscribe');
     } finally {
-      setRegistering(false);
+      setActionLoading(false);
     }
   };
 
   const handleUnsubscribe = async () => {
-    setRegistering(true);
+    setActionLoading(true);
     setError(null);
     try {
-      const render = buildJinjaContext(PLUGIN_PACKAGE, {}, true);
-
+      // 1. Deactivate Model
+      const render = buildJinjaContext(USER_PLUGIN_PACKAGE, {}, true);
       await render(`{{ deactivate_trade_model(key, url, apikey, env) }}`, {
         key: modelIdentity,
         ...JINJA_CONTEXT,
       });
 
+      // 2. Delete Job if exists
+      if (productionJob) {
+        await api.deleteJob(productionJob.id);
+      }
+
+      // Refresh
+      await loadData();
       setIsRegistered(false);
     } catch (err: any) {
-      setError(err.message || 'Failed to unsubscribe model');
+      setError(err.message || 'Failed to unsubscribe');
     } finally {
-      setRegistering(false);
-    }
-  };
-
-  const handleCreateJob = async () => {
-    if (!pluginId) return;
-    setCreatingJob(true);
-    setError(null);
-    try {
-      const sessionId = PRODUCTION_SESSION_ID;
-
-      // Remove undefined values to prevent JSON serialization error
-      const cleanConfig = Object.fromEntries(
-        Object.entries(formData).filter(([_, v]) => v !== undefined),
-      );
-
-      const payload = {
-        config: cleanConfig,
-        description: `Live Trading for ${modelIdentity}`,
-        pluginId,
-        sessionId,
-      };
-
-      await api.updateConfig(0, payload);
-      // Reload to find the new job
-      loadPluginData();
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setCreatingJob(false);
-    }
-  };
-  const handleToggleJob = async () => {
-    if (!productionJob) return;
-    setTogglingJob(true);
-    setError(null);
-    try {
-      const newActiveState = !productionJob.active;
-      await api.activateJob(productionJob.id, newActiveState);
-      // Update local state
-      setProductionJob({ ...productionJob, active: newActiveState ? 1 : 0 });
-    } catch (err: any) {
-      setError(err.message || 'Failed to toggle job status');
-    } finally {
-      setTogglingJob(false);
+      setActionLoading(false);
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Publish Model: {modelIdentity}</DialogTitle>
 
       <DialogContent dividers>
@@ -260,150 +287,200 @@ export function PublishModal({
           </Box>
         ) : (
           <Box>
-            <Tabs
-              value={tabIndex}
-              onChange={(_, v) => setTabIndex(v)}
-              sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}
-            >
-              <Tab
-                icon={<Storefront />}
-                iconPosition="start"
-                label="Marketplace"
-              />
-              <Tab
-                icon={<Work />}
-                iconPosition="start"
-                label="Production Job"
-              />
-            </Tabs>
-
-            <TabPanel value={tabIndex} index={0}>
+            {isRegistered ? (
+              // ----- UNPUBLISH VIEW -----
               <Stack spacing={3} alignItems="center" py={4}>
-                <Typography variant="h6">
-                  Marketplace Status:{' '}
-                  {isRegistered ? 'Registered' : 'Not Registered'}
-                </Typography>
+                <CheckCircle color="success" sx={{ fontSize: 64 }} />
+                <Typography variant="h5">Model Published</Typography>
 
-                {isRegistered ? (
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    onClick={handleUnsubscribe}
-                    disabled={registering}
+                <Box
+                  sx={{
+                    width: '100%',
+                    maxWidth: 500,
+                    my: 2,
+                    p: 2,
+                    bgcolor: 'action.hover',
+                    borderRadius: 2,
+                  }}
+                >
+                  <Typography variant="subtitle2" gutterBottom>
+                    Production Status
+                  </Typography>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    alignItems="center"
+                    justifyContent="space-between"
                   >
-                    Unsubscribe Model
-                  </Button>
-                ) : (
-                  <Stack spacing={2} width="100%" maxWidth={400}>
+                    <Typography variant="body2">Job State:</Typography>
+                    {productionJob ? (
+                      <Chip
+                        label={productionJob.active ? 'Running' : 'Paused'}
+                        color={productionJob.active ? 'success' : 'warning'}
+                        size="small"
+                      />
+                    ) : (
+                      <Chip label="Missing Job" color="error" size="small" />
+                    )}
+                  </Stack>
+                  {productionJob && (
+                    <Stack
+                      direction="row"
+                      spacing={2}
+                      alignItems="center"
+                      justifyContent="space-between"
+                      mt={1}
+                    >
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Typography variant="body2">Job ID:</Typography>
+                        <Typography variant="body2" fontFamily="monospace">
+                          {productionJob.id}
+                        </Typography>
+                      </Stack>
+
+                      <Button
+                        size="small"
+                        variant="contained"
+                        onClick={() =>
+                          window.open(
+                            `/plugins/${userPluginId}/sessions/${PRODUCTION_SESSION_ID}/jobs/${productionJob.id}`,
+                            '_blank',
+                          )
+                        }
+                      >
+                        View jobs
+                      </Button>
+                    </Stack>
+                  )}
+                </Box>
+
+                <Alert
+                  severity="warning"
+                  icon={<Warning />}
+                  sx={{ maxWidth: 500, width: '100%' }}
+                >
+                  Unpublishing will deactivate the model in the marketplace and
+                  DELETE the production job.
+                </Alert>
+
+                <Button
+                  variant="contained"
+                  color="error"
+                  startIcon={<Delete />}
+                  onClick={handleUnsubscribe}
+                  disabled={actionLoading}
+                  size="large"
+                >
+                  {actionLoading ? 'Unpublishing...' : 'Unpublish Model'}
+                </Button>
+              </Stack>
+            ) : (
+              // ----- PUBLISH VIEW -----
+              <Stack spacing={4}>
+                <Alert severity="info" icon={<Info />}>
+                  Subscribe this model to the Marketplace. This will register
+                  the model and automatically create a production job using the
+                  configuration from the Monitor plugin.
+                </Alert>
+
+                <Box>
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{ fontWeight: 600 }}
+                  >
+                    1. Model Details
+                  </Typography>
+                  <Stack spacing={2} direction="row">
                     <TextField
                       fullWidth
-                      label="Model Name (Optional)"
+                      label="Model Name"
                       value={registerName}
                       onChange={(e) => setRegisterName(e.target.value)}
-                      placeholder="Enter a display name for your model"
-                      disabled={registering}
+                      placeholder="Display name"
+                      disabled={actionLoading}
                     />
                     <TextField
                       fullWidth
-                      label="Description (Optional)"
+                      label="Description"
                       value={registerDescription}
                       onChange={(e) => setRegisterDescription(e.target.value)}
-                      placeholder="Describe your model's strategy"
-                      multiline
-                      rows={3}
-                      disabled={registering}
-                    />
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      startIcon={<CheckCircle />}
-                      onClick={handleRegister}
-                      disabled={registering}
-                    >
-                      Register Model
-                    </Button>
-                  </Stack>
-                )}
-                <Typography variant="body2" color="text.secondary">
-                  Registering allows other users to subscribe to this model's
-                  signals.
-                </Typography>
-              </Stack>
-            </TabPanel>
-
-            <TabPanel value={tabIndex} index={1}>
-              {productionJob ? (
-                <Stack spacing={2} alignItems="center" py={4}>
-                  <CheckCircle color="success" sx={{ fontSize: 48 }} />
-                  <Typography variant="h6">Production Job Found</Typography>
-                  <Typography>Job ID: {productionJob.id}</Typography>
-
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    <Chip
-                      label={productionJob.active ? 'Active' : 'Inactive'}
-                      color={productionJob.active ? 'success' : 'default'}
-                      size="medium"
-                    />
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={!!productionJob.active}
-                          onChange={handleToggleJob}
-                          disabled={togglingJob}
-                        />
-                      }
-                      label="Active"
+                      placeholder="Description"
+                      disabled={actionLoading}
                     />
                   </Stack>
+                </Box>
 
-                  <Button
-                    variant="outlined"
-                    onClick={() =>
-                      window.open(
-                        `/plugins/${pluginId}/sessions/${PRODUCTION_SESSION_ID}/jobs/${productionJob.id}`,
-                        '_blank',
-                      )
-                    }
+                <Divider />
+
+                <Box>
+                  {/* <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{ fontWeight: 600 }}
                   >
-                    View Job Details
-                  </Button>
-                </Stack>
-              ) : (
-                <Stack spacing={2}>
-                  <Alert severity="info">
-                    No production job found. Configure settings below to create
-                    one.
-                  </Alert>
+                    2. Job Configuration Preview
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" paragraph>
+                    The following configuration matches the monitor plugin's
+                    settings for this model (if available), with necessary
+                    overrides for production.
+                  </Typography> */}
 
-                  {schema && (
-                    <ConfigForm
-                      pluginId={pluginId}
-                      pluginPackage={PLUGIN_PACKAGE}
-                      sessionId={SESSIONS[1].id}
-                      schema={schema}
-                      formData={formData}
-                      onChange={setFormData}
-                      env={env}
-                    />
-                  )}
+                  {/* Read-only config preview */}
+                  {/* {userSchema && (
+                    <Box
+                      sx={{
+                        maxHeight: 500,
+                        overflow: 'auto',
+                        border: 1,
+                        borderColor: 'divider',
+                        borderRadius: 1,
+                        bgcolor: 'background.paper',
+                        p: 2,
+                      }}
+                    >
+                      <fieldset
+                        style={{ border: 'none', padding: 0, margin: 0 }}
+                        disabled
+                      >
+                        <ConfigForm
+                          pluginId={userPluginId}
+                          pluginPackage={USER_PLUGIN_PACKAGE}
+                          sessionId={PRODUCTION_SESSION_ID}
+                          schema={userSchema}
+                          formData={formData}
+                          onChange={() => {}}
+                          env={env}
+                        />
+                      </fieldset>
+                    </Box>
+                  )} */}
+                </Box>
 
+                <Box display="flex" justifyContent="flex-end" pt={2}>
                   <Button
                     variant="contained"
-                    color="success"
-                    onClick={handleCreateJob}
-                    disabled={creatingJob}
+                    color="primary"
+                    startIcon={<CloudUpload />}
+                    onClick={handleSubscribe}
+                    disabled={actionLoading || !userPluginId}
+                    size="large"
                   >
-                    {creatingJob ? 'Creating...' : 'Create Production Job'}
+                    {actionLoading
+                      ? 'Subscribing...'
+                      : 'Subscribe & Create Job'}
                   </Button>
-                </Stack>
-              )}
-            </TabPanel>
+                </Box>
+              </Stack>
+            )}
           </Box>
         )}
       </DialogContent>
-
       <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+        <Button onClick={onClose} disabled={actionLoading}>
+          Close
+        </Button>
       </DialogActions>
     </Dialog>
   );
