@@ -164,6 +164,7 @@ type IdentityState = { state: 'active' | 'inactive'; label: string; job?: any };
 function buildStatsTable(
   stats: AnyDict[],
   jobs: AnyDict[],
+  publishedModels: string[] = [],
 ): {
   rows: AnyDict[];
   totals: {
@@ -245,7 +246,11 @@ function buildStatsTable(
       'Max Drawdown': stat.maxDrawdown,
       'Latest Position': fmtLatest(lastPosFormatted),
       'Latest Position Time': lastPosTime,
+
       Status: fmtStatus(item),
+      Published: publishedModels.includes(identity)
+        ? colorSpan('Yes', THEME.positive, true)
+        : '-',
       'Hide Status': item?.state ?? '',
       'Hide Job': item?.job,
       Started: formatUtcTime(stat.startedAt ?? ''),
@@ -848,6 +853,37 @@ export default ({ formData, registry }: FieldProps) => {
     setPublishModalOpen(true);
   };
 
+  const [publishedModels, setPublishedModels] = useState<string[]>([]);
+
+  const fetchPublishedModels = async () => {
+    try {
+      const render = Utils.buildJinjaContext(
+        'alpha_miner.plugins.LiveTradeForUserPlugin',
+        {},
+        true,
+      );
+      const result = await render(
+        `{{ list_trade_models(env, url, apikey) }}`, // list_trade_models(env, url, apikey)
+        { env: 'production', url: null, apikey: null },
+      );
+      const models = (
+        typeof result === 'string'
+          ? JSON.parse(result.replace(/'/g, '"'))
+          : result
+      )['versions'];
+
+      if (Array.isArray(models)) {
+        setPublishedModels(models.map((m: any) => m.id));
+      }
+    } catch (e) {
+      console.warn('Failed to fetch published models', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchPublishedModels();
+  }, [publishModalOpen]); // Refresh when modal closes
+
   useEffect(() => {
     if (!formData) {
       return;
@@ -857,7 +893,7 @@ export default ({ formData, registry }: FieldProps) => {
         formData,
         'object',
       );
-      const { rows } = buildStatsTable(stats, jobList);
+      const { rows } = buildStatsTable(stats, jobList, publishedModels);
       const cfg = Object.fromEntries(
         models.map((m) => [m.identity, m.currentConfig]),
       );
@@ -870,7 +906,7 @@ export default ({ formData, registry }: FieldProps) => {
     } catch (e) {
       console.error(e);
     }
-  }, [formData]);
+  }, [formData, publishedModels]);
 
   // Discover columns from the first filtered row or first row
   const allColumns = useMemo(() => {
@@ -920,11 +956,17 @@ export default ({ formData, registry }: FieldProps) => {
 
     // 3. Status Filter
     if (statusFilter !== 'All') {
-      r = r.filter((row) => {
-        const val = String(row['Hide Status']).toLowerCase();
-        if (!val) return false;
-        return val === statusFilter;
-      });
+      if (statusFilter === 'Published') {
+        r = r.filter((row) => publishedModels.includes(row.Identity));
+      } else if (statusFilter === 'Unpublished') {
+        r = r.filter((row) => !publishedModels.includes(row.Identity));
+      } else {
+        r = r.filter((row) => {
+          const val = String(row['Hide Status']).toLowerCase();
+          if (!val) return false;
+          return val === statusFilter;
+        });
+      }
     }
 
     return r;
@@ -1146,9 +1188,11 @@ export default ({ formData, registry }: FieldProps) => {
             setStatusFilter(e.target.value);
             setPage(0);
           }}
-          sx={{ width: 50, flex: 1 }}
+          sx={{ maxWidth: 150 }}
         >
           <MenuItem value="All">All</MenuItem>
+          <MenuItem value="Published">Published</MenuItem>
+          <MenuItem value="Unpublished">Unpublished</MenuItem>
           <MenuItem value="active">Active</MenuItem>
           <MenuItem value="inactive">Inactive</MenuItem>
         </TextField>
