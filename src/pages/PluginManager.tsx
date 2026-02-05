@@ -286,14 +286,17 @@ export default function PluginManager({ setLoading, setError }) {
     [jobs, jobId],
   );
 
-  const formData = useMemo(
-    () =>
-      currentJob?.config ??
-      (isNewJobMode && schema
-        ? getDefaultFormState(validator, schema, undefined, schema)
-        : undefined),
-    [currentJob, isNewJobMode, schema],
-  );
+  const formData = useMemo(() => {
+    if (isNewJobMode && schema) {
+      return Object.fromEntries(
+        Object.entries(schema.properties).map(([key, value]) => [
+          key,
+          (value as any).default,
+        ]),
+      );
+    }
+    return currentJob?.config;
+  }, [isNewJobMode, schema, currentJob]);
 
   const isActive = !!currentJob?.active;
   const panelOpen = isMobile || isPanelOpen;

@@ -51,7 +51,11 @@ libs/*
 !libs/PnlPreview.tsx
 !libs/LightweighChart.tsx
 !libs/CompilePluginComponent.tsx
+!libs/PublishModal.tsx
 
 # Allow backtest folder AND its contents
 !libs/backtest/
 !libs/backtest/**
+
+!libs/forwardtest/
+!libs/forwardtest/**

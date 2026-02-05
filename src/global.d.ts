@@ -5,9 +5,10 @@ import _ from 'lodash';
 import ComponentsNS from './components';
 import ApiNS from './api';
 import ReactNS from 'react';
-
+import * as ConstantsNS from './constants';
 declare global {
   const Components: typeof ComponentsNS;
+  const Constants: typeof ConstantsNS;
   const api: typeof ApiNS;
   const Utils: typeof UtilsNS & {
     _: typeof _;
@@ -15,6 +16,15 @@ declare global {
   };
 
   type Order = 'asc' | 'desc';
+
+  interface RouteStateItem {
+    loading: boolean;
+    routes?: string[];
+    portal?: CodeSchema;
+  }
+
+  type RouteState = Record<number, RouteStateItem>;
+
   interface PluginData {
     id: number;
     package: string;
@@ -59,6 +69,13 @@ declare global {
     user: User;
     globals?: Globals;
   }
+
+  interface RoutesResponse {
+    package: string;
+    routes: [string[], CodeSchema];
+  }
+
+  type AllRoutesResponse = Record<string, [string[], CodeSchema]>;
 
   interface PluginUserCodeResponse {
     form: string;

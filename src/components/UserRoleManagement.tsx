@@ -10,9 +10,9 @@ import {
 import SaveIcon from '@mui/icons-material/Save';
 import { useEffect, useState } from 'react';
 import api from '@/api';
-import { Select } from './fields';
 import useNotifications from '@/hooks/useNotifications/useNotifications';
 import { RolePolicyTable } from './RolePolicyTable';
+import { SelectField } from './fields/SelectField';
 
 function groupPolicyByRole(policy: [string, string][]) {
   return policy.reduce<Record<string, string[]>>((acc, [role, perm]) => {
@@ -21,6 +21,14 @@ function groupPolicyByRole(policy: [string, string][]) {
     return acc;
   }, {});
 }
+
+const selectProps: any = {
+  uiSchema: {
+    'ui:options': {
+      multiple: true,
+    },
+  },
+};
 
 export default function UserRoleManagement({ setError, setLoading }) {
   const [roleMap, setRoleMap] = useState({});
@@ -92,16 +100,11 @@ export default function UserRoleManagement({ setError, setLoading }) {
               <TableCell>{user.username}</TableCell>
 
               <TableCell>
-                <Select
+                <SelectField
                   schema={{
                     type: 'array',
                     title: 'Roles',
                     enum: allRoles,
-                  }}
-                  uiSchema={{
-                    'ui:options': {
-                      multiple: true,
-                    },
                   }}
                   formData={user.roles}
                   onChange={(value) =>
@@ -111,6 +114,7 @@ export default function UserRoleManagement({ setError, setLoading }) {
                       ),
                     )
                   }
+                  {...selectProps}
                 />
               </TableCell>
 

@@ -20,7 +20,9 @@ import {
   Clear,
   Settings,
   ShowChart,
+  Storefront,
 } from '@mui/icons-material';
+import { PublishModal } from './PublishModal';
 import {
   Table,
   TableBody,
@@ -157,7 +159,7 @@ function formatUtcTime(value?: string): string {
 
 type AnyDict = Record<string, any>;
 
-type IdentityState = { state: 'active' | 'inactive'; label: string };
+type IdentityState = { state: 'active' | 'inactive'; label: string; job?: any };
 
 function buildStatsTable(
   stats: AnyDict[],
@@ -200,6 +202,7 @@ function buildStatsTable(
       identityJob[modelKey] = {
         state: job.active ? 'active' : 'inactive',
         label: job.description || 'No description',
+        job,
       };
     }
   }
@@ -244,6 +247,7 @@ function buildStatsTable(
       'Latest Position Time': lastPosTime,
       Status: fmtStatus(item),
       'Hide Status': item?.state ?? '',
+      'Hide Job': item?.job,
       Started: formatUtcTime(stat.startedAt ?? ''),
       'Total Positions': positions,
       'Total Runtime': stat.totalRunningTime ?? '-',
@@ -508,7 +512,7 @@ const EquityChartModal = ({
   registry,
 }: EquityChartModalProps) => {
   const [loading, setLoading] = useState(false);
-  const [chartData, setChartData] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<any[]>();
   const [error, setError] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<string>('');
   const [endTime, setEndTime] = useState<string>('');
@@ -545,7 +549,7 @@ const EquityChartModal = ({
       const end = formatToISO(endTime);
 
       const result = await render(
-        '{{ get_equity_curve_forward_test(webhook_url, webhook_api_key, identity, startTime, endTime) }}',
+        '{{ get_equity_curve_forward_test(identity, startTime, endTime) }}',
         { identity, startTime: start, endTime: end },
       );
 
@@ -577,7 +581,7 @@ const EquityChartModal = ({
   }, [open, row, fetchChartData]);
 
   useEffect(() => {
-    if (!open || !chartContainerRef.current || chartData.length === 0) return;
+    if (!open || !chartContainerRef.current || !chartData) return;
 
     // Cleanup any existing chart (StrictMode-safe)
     chartRef.current?.remove();
@@ -769,29 +773,29 @@ const EquityChartModal = ({
             <Typography color="error">{error}</Typography>
           </Box>
         )}
-        {!loading && !error && chartData.length === 0 && (
-          <Box
-            minHeight={400}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Typography color="text.secondary">No data available</Typography>
-          </Box>
-        )}
-        {!loading && !error && chartData.length > 0 && (
-          <Box
-            ref={chartContainerRef}
-            sx={{
-              position: 'relative',
-              width: '100%',
-              height: 540,
-              mt: 2,
-            }}
-          >
-            <ChartTooltip {...tooltip} />
-          </Box>
-        )}
+        {chartData &&
+          (chartData.length ? (
+            <Box
+              ref={chartContainerRef}
+              sx={{
+                position: 'relative',
+                width: '100%',
+                height: 540,
+                mt: 2,
+              }}
+            >
+              <ChartTooltip {...tooltip} />
+            </Box>
+          ) : (
+            <Box
+              minHeight={400}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Typography color="text.secondary">No data available</Typography>
+            </Box>
+          ))}
       </DialogContent>
       <DialogActions>
         <Button variant="contained" color="warning" onClick={onClose}>
@@ -831,6 +835,19 @@ export default ({ formData, registry }: FieldProps) => {
 
   const [tableData, setTableData] = useState<any[]>([]);
 
+  // Publish Modal State
+  const [publishModalOpen, setPublishModalOpen] = useState(false);
+  const [publishModel, setPublishModel] = useState<{
+    identity: string;
+  } | null>(null);
+
+  const handlePublish = (row: any) => {
+    setPublishModel({
+      identity: row.Identity,
+    });
+    setPublishModalOpen(true);
+  };
+
   useEffect(() => {
     if (!formData) {
       return;
@@ -849,7 +866,6 @@ export default ({ formData, registry }: FieldProps) => {
         ...r,
         'Hide currentConfig': cfg[r.Identity],
       }));
-      console.log(parsed);
       setTableData(parsed);
     } catch (e) {
       console.error(e);
@@ -1042,8 +1058,6 @@ export default ({ formData, registry }: FieldProps) => {
 
   const activeColumns = allColumns.filter((c) => visibleColumns[c]);
 
-  if (!tableData.length)
-    return <Typography color="text.secondary">No data available</Typography>;
   return (
     <Box>
       {/* Summary Cards */}
@@ -1249,6 +1263,14 @@ export default ({ formData, registry }: FieldProps) => {
                 <TableCell>
                   <IconButton
                     size="small"
+                    onClick={() => handlePublish(row)}
+                    color="warning"
+                    title="Publish to Marketplace"
+                  >
+                    <Storefront fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
                     onClick={() => handleEditConfig(row)}
                     color="primary"
                     title="Edit Config"
@@ -1269,7 +1291,7 @@ export default ({ formData, registry }: FieldProps) => {
             {pagedRows.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={activeColumns.length + 1}
+                  colSpan={activeColumns.length + 2}
                   align="center"
                   sx={{ py: 3 }}
                 >
@@ -1308,6 +1330,11 @@ export default ({ formData, registry }: FieldProps) => {
         onClose={() => setChartOpen(false)}
         row={chartRow}
         registry={registry}
+      />
+      <PublishModal
+        open={publishModalOpen}
+        onClose={() => setPublishModalOpen(false)}
+        modelIdentity={publishModel?.identity}
       />
     </Box>
   );
