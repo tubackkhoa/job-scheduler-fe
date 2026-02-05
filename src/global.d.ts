@@ -19,6 +19,7 @@ declare global {
   interface RouteStateItem {
     loading: boolean;
     routes?: string[];
+    portal?: CodeSchema;
   }
 
   type RouteState = Record<number, RouteStateItem>;
@@ -70,8 +71,10 @@ declare global {
 
   interface RoutesResponse {
     package: string;
-    routes: string[];
+    routes: [string[], CodeSchema];
   }
+
+  type AllRoutesResponse = Record<string, [string[], CodeSchema]>;
 
   interface PluginUserCodeResponse {
     form: string;

@@ -129,7 +129,7 @@ export default {
     return request(`/api/plugins/routes/${pluginId}`);
   },
 
-  fetchAllRoutes(): Promise<{ [key: string]: string[] }> {
+  fetchAllRoutes(): Promise<AllRoutesResponse> {
     return request(`/api/plugins/routes`);
   },
 

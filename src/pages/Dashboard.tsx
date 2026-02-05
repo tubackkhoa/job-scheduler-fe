@@ -20,9 +20,11 @@ export default function Dashboard({ setLoading, setError }) {
         [pluginId]: { loading: true },
       }));
       let routes: string[];
+      let portal: CodeSchema;
       try {
         const data = await api.fetchRoutes(pluginId);
-        routes = data.routes.filter((r) => !r.includes(':'));
+        portal = data.routes[1];
+        routes = data.routes[0].filter((r) => !r.includes(':'));
       } catch (err) {
         setError(err.message);
       } finally {
@@ -32,6 +34,7 @@ export default function Dashboard({ setLoading, setError }) {
           [pluginId]: {
             loading: false,
             routes,
+            portal,
           },
         }));
       }
@@ -48,10 +51,10 @@ export default function Dashboard({ setLoading, setError }) {
           Object.fromEntries(
             plugins
               .filter((p) => routesMap[p.package])
-              .map((p) => [
-                p.id,
-                { loading: false, routes: routesMap[p.package] },
-              ]),
+              .map((p) => {
+                const [routes, portal] = routesMap[p.package];
+                return [p.id, { loading: false, routes, portal }];
+              }),
           ),
         );
       } catch (err) {
@@ -120,7 +123,9 @@ export default function Dashboard({ setLoading, setError }) {
         </Grid>
       )}
 
-      <Box sx={{ mt: 4 }}>{plugins && <PortalPage plugins={plugins} />}</Box>
+      <Box sx={{ mt: 4 }}>
+        {plugins && <PortalPage plugins={plugins} routeState={routeState} />}
+      </Box>
 
       <Box sx={{ mt: 4 }}>
         <Typography variant="h5" fontWeight={600} gutterBottom>

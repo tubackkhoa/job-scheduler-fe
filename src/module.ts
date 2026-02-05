@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentType } from 'react';
 import * as Mui from '@mui/material';
 import * as Utils from '@/utils';
 import * as MuiIcon from '@mui/icons-material';
@@ -50,7 +50,7 @@ export const getModule = async ({
 // this help hot-reloading
 const lazyCache = new Map<
   string,
-  React.LazyExoticComponent<React.FC<FieldProps>>
+  React.LazyExoticComponent<ComponentType<FieldProps>>
 >();
 
 export const getLazyModule = (url?: string, code?: string) => {

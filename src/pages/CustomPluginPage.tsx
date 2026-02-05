@@ -1,8 +1,8 @@
 import api from '@/api';
-import DynamicField from '@/components/fields/DynamicField';
 import { useEffect, useState } from 'react';
 import { matchPath, useParams } from 'react-router-dom'; // Assuming you use React Router
 import PageNotFound from './PageNotFound';
+import DynamicField from '@/components/fields/DynamicField';
 
 export default function CustomPluginPage({ setLoading, setError }) {
   const { plugin_id, '*': restPath } = useParams();
@@ -20,7 +20,7 @@ export default function CustomPluginPage({ setLoading, setError }) {
       let data: any;
       // find the first match
       try {
-        for (const route of routes.routes) {
+        for (const route of routes.routes[0]) {
           const matched = matchPath(route, `/${restPath}`);
           if (matched) {
             const schema = await api.fetchRouteSchema(Number(plugin_id), route);
