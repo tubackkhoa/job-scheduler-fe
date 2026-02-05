@@ -3,12 +3,22 @@ import { CSS } from '@dnd-kit/utilities';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import { Box, Button, IconButton, Tooltip, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  IconButton,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+  Tooltip,
+  Typography,
+  ListItemText,
+} from '@mui/material';
 import Masonry from '@mui/lab/Masonry';
 import { Card, CardHeader, CardContent } from '@mui/material';
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 
-import { Settings } from '@mui/icons-material';
+import { DeleteOutline, Settings } from '@mui/icons-material';
 import DynamicField from './fields/DynamicField';
 
 const LAYOUT_KEY = 'portal-layout';
@@ -30,14 +40,73 @@ function resetStoredLayout() {
   localStorage.removeItem(LAYOUT_KEY);
 }
 
+export function WidgetSettingsButton({ onRemove }) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const stop = (e: React.SyntheticEvent) => {
+    e.stopPropagation();
+  };
+
+  const handleOpen = (e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    setAnchorEl(e.currentTarget);
+  };
+
+  const handleClose = (e?: React.SyntheticEvent) => {
+    e?.stopPropagation();
+    setAnchorEl(null);
+  };
+
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleClose();
+    onRemove?.();
+  };
+
+  return (
+    <>
+      <Tooltip title="Widget settings">
+        <IconButton
+          size="small"
+          onClick={handleOpen}
+          onMouseDown={stop}
+          onPointerDown={stop}
+          sx={{ color: 'text.secondary' }}
+        >
+          <Settings fontSize="small" />
+        </IconButton>
+      </Tooltip>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        onClick={(e) => e.stopPropagation()}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <MenuItem onClick={handleRemove}>
+          <ListItemIcon>
+            <DeleteOutline fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Remove</ListItemText>
+        </MenuItem>
+      </Menu>
+    </>
+  );
+}
+
 export function SortableWidget({
   id,
   children,
   title,
+  onRemove,
 }: {
   id: number;
   title: string;
   children: React.ReactNode;
+  onRemove: (id: number) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id, animateLayoutChanges: defaultAnimateLayoutChanges });
@@ -50,9 +119,21 @@ export function SortableWidget({
   return (
     <Card ref={setNodeRef} style={style} {...attributes}>
       <CardHeader
-        title={title}
+        title={
+          <Box
+            {...listeners}
+            sx={{
+              cursor: 'move',
+              fontSize: '1rem',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {title}
+          </Box>
+        }
         sx={{
-          cursor: 'move',
           backgroundColor: 'action.hover',
         }}
         slotProps={{
@@ -61,32 +142,8 @@ export function SortableWidget({
               minWidth: 0,
             },
           },
-          title: {
-            sx: {
-              fontSize: '0.875rem',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            },
-          },
         }}
-        action={
-          <Tooltip title="Widget settings">
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation(); // 🔑 prevent drag start
-                // open settings menu / dialog
-              }}
-              sx={{
-                color: 'text.secondary',
-              }}
-            >
-              <Settings fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        }
-        {...listeners}
+        action={<WidgetSettingsButton onRemove={() => onRemove(id)} />}
       />
       <CardContent>{children}</CardContent>
     </Card>
@@ -124,6 +181,14 @@ export function PortalPage({ plugins, routeState }: Props) {
   const handleResetLayout = () => {
     resetStoredLayout();
     setWidgets(initialWidgets);
+  };
+
+  const handleRemoveWidget = (id: number) => {
+    setWidgets((prev) => {
+      const next = prev.filter((w) => w.id !== id);
+      saveLayout(next.map((w) => w.id));
+      return next;
+    });
   };
 
   useEffect(() => {
@@ -200,6 +265,7 @@ export function PortalPage({ plugins, routeState }: Props) {
                   key={widget.id}
                   id={widget.id}
                   title={widget.title}
+                  onRemove={handleRemoveWidget}
                 >
                   <widget.Component />
                 </SortableWidget>
