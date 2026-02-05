@@ -1,6 +1,7 @@
 import React from 'react';
 import * as Mui from '@mui/material';
 import * as Utils from '@/utils';
+import * as Constants from '@/constants';
 import * as MuiIcon from '@mui/icons-material';
 import * as RouterDom from 'react-router-dom';
 import * as LightweightChart from 'lightweight-charts';
@@ -21,4 +22,5 @@ Object.assign(globalThis, {
   Components,
   api,
   Utils: { ...Utils, _, dayjs },
+  Constants,
 });

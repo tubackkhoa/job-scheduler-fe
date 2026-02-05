@@ -18,7 +18,8 @@ import {
   Chip,
 } from '@mui/material';
 import { Storefront, Work, CheckCircle } from '@mui/icons-material';
-import { ConfigForm } from '@/components/ConfigForm';
+
+const { ConfigForm } = Components;
 
 const { SESSIONS } = Constants;
 const { buildJinjaContext } = Utils;
