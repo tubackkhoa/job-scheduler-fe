@@ -837,15 +837,13 @@ export default ({ formData, registry }: FieldProps) => {
 
   // Publish Modal State
   const [publishModalOpen, setPublishModalOpen] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<{
+  const [publishModel, setPublishModel] = useState<{
     identity: string;
-    job?: any;
   } | null>(null);
 
   const handlePublish = (row: any) => {
-    setSelectedModel({
+    setPublishModel({
       identity: row.Identity,
-      job: row['Hide Job'],
     });
     setPublishModalOpen(true);
   };
@@ -868,7 +866,6 @@ export default ({ formData, registry }: FieldProps) => {
         ...r,
         'Hide currentConfig': cfg[r.Identity],
       }));
-      console.log(parsed);
       setTableData(parsed);
     } catch (e) {
       console.error(e);
@@ -1339,8 +1336,7 @@ export default ({ formData, registry }: FieldProps) => {
       <PublishModal
         open={publishModalOpen}
         onClose={() => setPublishModalOpen(false)}
-        modelIdentity={selectedModel?.identity}
-        existingJob={selectedModel?.job}
+        modelIdentity={publishModel?.identity}
       />
     </Box>
   );
