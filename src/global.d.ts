@@ -15,6 +15,14 @@ declare global {
   };
 
   type Order = 'asc' | 'desc';
+
+  interface RouteStateItem {
+    loading: boolean;
+    routes?: string[];
+  }
+
+  type RouteState = Record<number, RouteStateItem>;
+
   interface PluginData {
     id: number;
     package: string;
