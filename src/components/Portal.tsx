@@ -13,27 +13,35 @@ import {
   Tooltip,
   Typography,
   ListItemText,
+  Alert,
 } from '@mui/material';
 import Masonry from '@mui/lab/Masonry';
 import { Card, CardHeader, CardContent } from '@mui/material';
 import React, { useMemo, useEffect, useState } from 'react';
 
-import { DeleteOutline, Settings } from '@mui/icons-material';
+import { Clear, DeleteOutline, Settings } from '@mui/icons-material';
 import DynamicField from './fields/DynamicField';
 import { FieldProps } from '@rjsf/utils';
+import { LoadingSkeleton } from './Loading';
 
 const LAYOUT_KEY = 'portal-layout';
 
-function saveLayout(widgetIds: number[]) {
-  localStorage.setItem(LAYOUT_KEY, JSON.stringify(widgetIds));
+type LayoutState = {
+  order: number[];
+  hidden: number[];
+};
+
+function saveLayout(state: LayoutState) {
+  localStorage.setItem(LAYOUT_KEY, JSON.stringify(state));
 }
 
-function loadLayout(): number[] | null {
+function loadLayout(): LayoutState {
+  const defaultLayout = { order: [], hidden: [] };
   try {
     const raw = localStorage.getItem(LAYOUT_KEY);
-    return raw ? JSON.parse(raw) : null;
+    return JSON.parse(raw) ?? defaultLayout;
   } catch {
-    return null;
+    return defaultLayout;
   }
 }
 
@@ -80,7 +88,7 @@ export function WidgetSettingsButton({ onRemove }) {
       >
         <MenuItem onClick={handleRemove}>
           <ListItemIcon>
-            <DeleteOutline fontSize="small" />
+            <Clear fontSize="small" />
           </ListItemIcon>
           <ListItemText>Remove</ListItemText>
         </MenuItem>
@@ -158,7 +166,6 @@ export function PortalPage({ plugins, routeState }: Props) {
       .filter((item) => item[1].portal)
       .map(([key, routeState]) => {
         const pluginId = Number(key);
-
         return {
           id: pluginId,
           title: plugins.find((item) => item.id === pluginId).package,
@@ -170,7 +177,7 @@ export function PortalPage({ plugins, routeState }: Props) {
       });
   }, [plugins, routeState]);
 
-  const [widgets, setWidgets] = React.useState<PortalWidget[]>([]);
+  const [widgets, setWidgets] = React.useState<PortalWidget[]>();
 
   const handleResetLayout = () => {
     resetStoredLayout();
@@ -180,26 +187,37 @@ export function PortalPage({ plugins, routeState }: Props) {
   const handleRemoveWidget = (id: number) => {
     setWidgets((prev) => {
       const next = prev.filter((w) => w.id !== id);
-      saveLayout(next.map((w) => w.id));
+
+      const current = loadLayout() ?? { order: [], hidden: [] };
+
+      saveLayout({
+        order: next.map((w) => w.id),
+        hidden: [...new Set([...current.hidden, id])],
+      });
+
       return next;
     });
   };
 
   useEffect(() => {
-    const savedOrder = loadLayout();
-    if (!savedOrder) {
-      setWidgets(initialWidgets);
-      return;
+    try {
+      const layout = loadLayout();
+      const map = new Map(initialWidgets.map((w) => [w.id, w]));
+
+      const visibleSet = new Set(layout.order);
+      const hiddenSet = new Set(layout.hidden);
+
+      const ordered = layout.order.map((id) => map.get(id)).filter(Boolean);
+
+      const newWidgets = initialWidgets.filter(
+        (w) => !visibleSet.has(w.id) && !hiddenSet.has(w.id),
+      );
+      setWidgets([...ordered, ...newWidgets]);
+    } catch (e) {
+      console.log(e);
+      // fallback initialize
+      handleResetLayout();
     }
-
-    const map = new Map(initialWidgets.map((w) => [w.id, w]));
-
-    setWidgets([
-      // widgets that exist in saved layout
-      ...savedOrder.map((id) => map.get(id)).filter(Boolean),
-      // new widgets added later (important!)
-      ...initialWidgets.filter((w) => !savedOrder.includes(w.id)),
-    ]);
   }, [initialWidgets]);
 
   return (
@@ -228,6 +246,7 @@ export function PortalPage({ plugins, routeState }: Props) {
       </Box>
 
       {/* Dashboard */}
+
       <DndContext
         collisionDetection={closestCenter}
         onDragEnd={(event) => {
@@ -237,36 +256,46 @@ export function PortalPage({ plugins, routeState }: Props) {
           setWidgets((items) => {
             const oldIndex = items.findIndex((i) => i.id === active.id);
             const newIndex = items.findIndex((i) => i.id === over.id);
+            if (oldIndex === -1 || newIndex === -1) return items;
 
             const newItems = arrayMove(items, oldIndex, newIndex);
 
-            saveLayout(newItems.map((w) => w.id));
+            const current = loadLayout() ?? { order: [], hidden: [] };
+
+            saveLayout({
+              order: newItems.map((w) => w.id),
+              hidden: current.hidden,
+            });
 
             return newItems;
           });
         }}
       >
-        <SortableContext items={widgets.map((w) => w.id)}>
-          <Box
-            sx={{
-              pl: 1,
-              mx: -1, // counteracts Masonry internal spacing
-            }}
-          >
-            <Masonry columns={{ xs: 1, sm: 2, md: 3 }} spacing={2}>
-              {widgets.map(({ id, title, props }) => (
-                <SortableWidget
-                  key={id}
-                  id={id}
-                  title={title}
-                  onRemove={handleRemoveWidget}
-                >
-                  <DynamicField {...props} />
-                </SortableWidget>
-              ))}
-            </Masonry>
-          </Box>
-        </SortableContext>
+        {widgets ? (
+          <SortableContext items={widgets.map((w) => w.id)}>
+            <Box
+              sx={{
+                pl: 1,
+                mx: -1, // counteracts Masonry internal spacing
+              }}
+            >
+              <Masonry columns={{ xs: 1, sm: 2, md: 3 }} spacing={2}>
+                {widgets.map(({ id, title, props }) => (
+                  <SortableWidget
+                    key={id}
+                    id={id}
+                    title={title}
+                    onRemove={handleRemoveWidget}
+                  >
+                    <DynamicField {...props} />
+                  </SortableWidget>
+                ))}
+              </Masonry>
+            </Box>
+          </SortableContext>
+        ) : (
+          <LoadingSkeleton />
+        )}
       </DndContext>
     </>
   );
