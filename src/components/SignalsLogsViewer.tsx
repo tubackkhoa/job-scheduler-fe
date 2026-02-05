@@ -16,6 +16,7 @@ import { SignalCellularAlt, Delete, Refresh } from '@mui/icons-material';
 import api from '@/api';
 import { formatMessage, transformSignals } from '@/utils';
 import { LoadingSkeleton } from './Loading';
+import _ from 'lodash';
 
 /* -------------------------------- Utilities -------------------------------- */
 
@@ -238,7 +239,6 @@ export default function SignalsLogsViewer({
               alignItems: 'center',
               justifyContent: 'center',
               color: 'text.disabled',
-              fontSize: 12,
             }}
           >
             No tabular signals found
@@ -250,7 +250,7 @@ export default function SignalsLogsViewer({
                 <TableRow>
                   {columns.map((col) => (
                     <TableCell key={col} sx={{ fontWeight: 800 }}>
-                      {col}
+                      {_.startCase(col)}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -266,7 +266,6 @@ export default function SignalsLogsViewer({
                         sx={{
                           bgcolor: 'divider',
                           fontWeight: 700,
-                          fontSize: 12,
                         }}
                       >
                         {predTime} ({rows.length})
@@ -283,7 +282,6 @@ export default function SignalsLogsViewer({
                             <TableCell
                               key={col}
                               sx={{
-                                fontSize: 11,
                                 color: isNumeric
                                   ? 'text.primary'
                                   : 'text.secondary',
