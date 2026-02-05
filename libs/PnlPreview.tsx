@@ -319,7 +319,6 @@ const ChartTooltip: React.FC<ChartTooltipProps> = React.memo(
           color: '#fff',
           px: 1.5,
           py: 1,
-          borderRadius: 1,
           fontSize: 12,
           pointerEvents: 'none',
           zIndex: 10,
@@ -775,15 +774,11 @@ const EquityChartModal = ({
         {/* Legend */}
         <Box sx={{ display: 'flex', gap: 3, mb: 2, justifyContent: 'center' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box
-              sx={{ width: 20, height: 3, bgcolor: '#FF6B00', borderRadius: 1 }}
-            />
+            <Box sx={{ width: 20, height: 3, bgcolor: '#FF6B00' }} />
             <Typography variant="body2">PnL (Individual Trade)</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box
-              sx={{ width: 20, height: 3, bgcolor: '#2962FF', borderRadius: 1 }}
-            />
+            <Box sx={{ width: 20, height: 3, bgcolor: '#2962FF' }} />
             <Typography variant="body2">Accumulated PnL</Typography>
           </Box>
         </Box>
@@ -1226,7 +1221,7 @@ export default ({ formData, registry }: FieldProps) => {
       </Stack>
 
       {/* Table */}
-      <TableContainer component={Paper} variant="outlined">
+      <TableContainer>
         <Table size="small">
           <TableHead>
             <TableRow sx={{ bgcolor: 'action.hover' }}>
