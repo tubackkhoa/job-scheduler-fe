@@ -44,22 +44,15 @@ export function WidgetSettingsButton({ onRemove }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
-  const stop = (e: React.SyntheticEvent) => {
-    e.stopPropagation();
-  };
-
   const handleOpen = (e: React.MouseEvent<HTMLElement>) => {
-    e.stopPropagation();
     setAnchorEl(e.currentTarget);
   };
 
   const handleClose = (e?: React.SyntheticEvent) => {
-    e?.stopPropagation();
     setAnchorEl(null);
   };
 
   const handleRemove = (e: React.MouseEvent) => {
-    e.stopPropagation();
     handleClose();
     onRemove?.();
   };
@@ -70,8 +63,6 @@ export function WidgetSettingsButton({ onRemove }) {
         <IconButton
           size="small"
           onClick={handleOpen}
-          onMouseDown={stop}
-          onPointerDown={stop}
           sx={{ color: 'text.secondary' }}
         >
           <Settings fontSize="small" />
