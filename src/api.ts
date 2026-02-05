@@ -125,11 +125,11 @@ export default {
     return data;
   },
 
-  fetchRoutes(pluginId: number): Promise<string[]> {
+  fetchRoutes(pluginId: number): Promise<RoutesResponse> {
     return request(`/api/plugins/routes/${pluginId}`);
   },
 
-  fetchAllRoutes(): Promise<{ [key: string]: string[] }> {
+  fetchAllRoutes(): Promise<AllRoutesResponse> {
     return request(`/api/plugins/routes`);
   },
 

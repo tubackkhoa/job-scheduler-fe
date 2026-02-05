@@ -1,7 +1,8 @@
 import { TextField } from '@mui/material';
+import { WidgetProps } from '@rjsf/utils';
 import dayjs from 'dayjs';
 
-export const DateTimeLocalWidget = (props) => {
+export const DateTimeLocalWidget = (props: WidgetProps) => {
   const {
     options,
     value,
@@ -11,7 +12,7 @@ export const DateTimeLocalWidget = (props) => {
     placeholder,
     disabled,
     id,
-    label
+    label,
   } = props;
 
   const step = options.step || 1;

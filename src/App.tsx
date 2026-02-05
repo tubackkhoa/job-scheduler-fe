@@ -14,6 +14,7 @@ import Dashboard from './pages/Dashboard';
 import ChatBot from './pages/ChatBot';
 import PageNotFound from './pages/PageNotFound';
 import CustomPluginPage from './pages/CustomPluginPage';
+import './polyfill';
 
 export default function App() {
   // to show loading and error global

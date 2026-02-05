@@ -16,6 +16,15 @@ declare global {
   };
 
   type Order = 'asc' | 'desc';
+
+  interface RouteStateItem {
+    loading: boolean;
+    routes?: string[];
+    portal?: CodeSchema;
+  }
+
+  type RouteState = Record<number, RouteStateItem>;
+
   interface PluginData {
     id: number;
     package: string;
@@ -60,6 +69,13 @@ declare global {
     user: User;
     globals?: Globals;
   }
+
+  interface RoutesResponse {
+    package: string;
+    routes: [string[], CodeSchema];
+  }
+
+  type AllRoutesResponse = Record<string, [string[], CodeSchema]>;
 
   interface PluginUserCodeResponse {
     form: string;

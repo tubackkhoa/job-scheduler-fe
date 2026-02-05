@@ -7,8 +7,8 @@ import ReactCodeMirror from '@uiw/react-codemirror';
 import { useMemo } from 'react';
 import { SortableTable } from '../SortableTable';
 import { FieldPathId, FieldProps, RJSFSchema } from '@rjsf/utils';
-import DynamicField from './DynamicField';
 import { mdCodeLanguages, useAppColorScheme } from '@/utils';
+import DynamicField from './DynamicField';
 
 interface Props {
   text: string;
@@ -104,16 +104,12 @@ export const MarkdownPreview = ({
                 );
               case 'module':
                 // get name of the node as name
+                const rest: any = { registry, schema, fieldPathId };
                 return (
                   <DynamicField
-                    fieldPathId={fieldPathId}
                     name={String(node.properties.name)}
-                    onChange={undefined}
-                    onBlur={undefined}
-                    onFocus={undefined}
-                    registry={registry}
-                    schema={schema}
-                    formData={children as string}
+                    formData={children}
+                    {...rest}
                   />
                 );
               case 'json':
