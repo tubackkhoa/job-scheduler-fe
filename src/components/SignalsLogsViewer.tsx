@@ -4,12 +4,10 @@ import {
   Stack,
   Typography,
   IconButton,
-  Paper,
   Tooltip,
   List,
   ListItem,
   Chip,
-  Divider,
   Table,
   TableBody,
   TableCell,
@@ -129,27 +127,10 @@ const TableMessage = ({ message }) => {
     <TableContainer
       component={Box}
       sx={{
-        bgcolor: 'background.default',
         maxHeight: 500,
         maxWidth: '100%',
         overflowX: 'auto',
         overflowY: 'auto',
-        borderRadius: 1,
-        border: '1px solid rgba(255, 193, 7, 0.2)',
-        '&::-webkit-scrollbar': {
-          width: '8px',
-          height: '8px',
-        },
-        '&::-webkit-scrollbar-track': {
-          bgcolor: 'rgba(0, 0, 0, 0.2)',
-        },
-        '&::-webkit-scrollbar-thumb': {
-          bgcolor: 'rgba(255, 193, 7, 0.3)',
-          borderRadius: '4px',
-          '&:hover': {
-            bgcolor: 'rgba(255, 193, 7, 0.5)',
-          },
-        },
       }}
     >
       <Table size="small" stickyHeader sx={{ minWidth: 800 }}>
@@ -162,9 +143,8 @@ const TableMessage = ({ message }) => {
                   fontFamily: '"JetBrains Mono", monospace',
                   fontSize: '0.7rem',
                   fontWeight: 700,
-                  bgcolor: 'rgba(255, 193, 7, 0.25)',
-                  color: 'warning.main',
-                  borderBottom: '2px solid rgba(255, 193, 7, 0.4)',
+                  bgcolor: 'background.default',
+                  color: 'info.main',
                   whiteSpace: 'nowrap',
                   px: 1.5,
                   py: 1,
@@ -202,14 +182,14 @@ const TableMessage = ({ message }) => {
                     sx={{
                       fontFamily: '"JetBrains Mono", monospace',
                       fontSize: '0.7rem',
+                      bgcolor: 'background.paper',
                       color: isNone
                         ? 'text.disabled'
                         : isNumeric
-                          ? 'primary.main'
+                          ? 'text.primary'
                           : 'text.secondary',
                       py: 0.75,
                       px: 1.5,
-                      borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
                       whiteSpace: 'nowrap',
                     }}
                   >
@@ -229,120 +209,100 @@ const TableMessage = ({ message }) => {
 
 const SignalGroupRow = ({ group }: { group: ResultGroup }) => {
   return (
-    <Box>
-      <ListItem
-        disableGutters
+    <ListItem
+      disableGutters
+      sx={{
+        py: 1,
+        px: 0,
+        flexDirection: 'column',
+        alignItems: 'stretch',
+      }}
+    >
+      {/* Matched Entry */}
+      <Box
         sx={{
-          py: 1,
-          px: 0,
-          flexDirection: 'column',
-          alignItems: 'stretch',
+          md: {
+            p: 0,
+            mb: 1,
+          },
+          xs: { p: 0 },
         }}
       >
-        {/* Matched Entry */}
-        <Paper
-          sx={{
-            bgcolor: 'rgba(255, 193, 7, 0.1)',
-            border: '1px solid rgba(255, 193, 7, 0.3)',
-            p: 1.5,
-            mb: 1,
-          }}
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={2}
+          alignItems={{ xs: 'stretch', md: 'flex-start' }}
         >
-          <Stack direction="row" spacing={2} alignItems="flex-start">
-            <Chip
-              label="MATCHED"
-              size="small"
-              color="warning"
-              sx={{ fontWeight: 600, minWidth: 80 }}
-            />
-            <Box sx={{ flex: 1 }}>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{
-                  fontFamily: '"JetBrains Mono", monospace',
-                  display: 'block',
-                  mb: 0.5,
-                }}
-              >
-                {group.matched_entry.timestamp}
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  fontFamily: '"JetBrains Mono", monospace',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  color: getLevelColor(group.matched_entry.level),
-                  display: 'block',
-                  mb: 0.5,
-                }}
-              >
-                [{group.matched_entry.level}]
-              </Typography>
-              <TableMessage
-                message={formatMessage(group.matched_entry.message)}
-              />
-            </Box>
-          </Stack>
-        </Paper>
-
-        {/* Following Entries - Each with horizontal scroll */}
-        {group.following_entries && group.following_entries.length > 0 && (
-          <Box
-            sx={{
-              pl: 2,
-              borderLeft: '2px solid rgba(255, 193, 7, 0.3)',
-              mt: 0.5,
-            }}
-          >
+          <Box sx={{ flex: 1 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                fontFamily: '"JetBrains Mono", monospace',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                color: getLevelColor(group.matched_entry.level),
+                display: 'block',
+                mb: 0.5,
+              }}
+            >
+              [{group.matched_entry.level}]
+            </Typography>
             <Typography
               variant="caption"
               color="text.secondary"
               sx={{
                 fontFamily: '"JetBrains Mono", monospace',
-                mb: 0.5,
                 display: 'block',
-                fontSize: '0.7rem',
+                minWidth: 100,
+                mb: 0.5,
               }}
             >
-              Following ({group.following_entries.length}):
+              {group.matched_entry.timestamp.split(',').join('\n')}
             </Typography>
-            <Stack spacing={0.5}>
-              {group.following_entries.map((item, idx) => (
-                <Box
-                  key={item.id || idx}
-                  sx={{
-                    p: 1,
-                    bgcolor: 'rgba(0, 0, 0, 0.2)',
-                    borderRadius: 1,
-                    maxWidth: '100%',
-                    overflowX: 'auto',
-                    overflowY: 'hidden',
-                    '&::-webkit-scrollbar': {
-                      height: '6px',
-                    },
-                    '&::-webkit-scrollbar-track': {
-                      bgcolor: 'rgba(0, 0, 0, 0.2)',
-                    },
-                    '&::-webkit-scrollbar-thumb': {
-                      bgcolor: 'rgba(255, 193, 7, 0.3)',
-                      borderRadius: '3px',
-                      '&:hover': {
-                        bgcolor: 'rgba(255, 193, 7, 0.5)',
-                      },
-                    },
-                  }}
-                >
-                  <TableMessage message={formatMessage(item.message)} />
-                </Box>
-              ))}
-            </Stack>
           </Box>
-        )}
-      </ListItem>
-      <Divider sx={{ my: 1 }} />
-    </Box>
+          <TableMessage message={formatMessage(group.matched_entry.message)} />
+        </Stack>
+      </Box>
+
+      {/* Following Entries - Each with horizontal scroll */}
+      {group.following_entries && group.following_entries.length > 0 && (
+        <Box
+          sx={{
+            pl: 2,
+            borderLeft: '2px solid rgba(255, 193, 7, 0.3)',
+            mt: 0.5,
+          }}
+        >
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{
+              fontFamily: '"JetBrains Mono", monospace',
+              mb: 0.5,
+              display: 'block',
+              fontSize: '0.7rem',
+            }}
+          >
+            Following ({group.following_entries.length}):
+          </Typography>
+          <Stack spacing={0.5}>
+            {group.following_entries.map((item, idx) => (
+              <Box
+                key={item.id || idx}
+                sx={{
+                  p: 1,
+                  maxWidth: '100%',
+                  overflowX: 'auto',
+                  overflowY: 'hidden',
+                }}
+              >
+                <TableMessage message={formatMessage(item.message)} />
+              </Box>
+            ))}
+          </Stack>
+        </Box>
+      )}
+    </ListItem>
   );
 };
 
@@ -458,11 +418,10 @@ export default function SignalsLogsViewer({
       )}
 
       {/* Signals Container */}
-      <Paper
+      <Box
         sx={{
           height: '600px',
           overflow: 'auto',
-          bgcolor: 'rgba(0,0,0,0.4)',
           fontFamily: '"JetBrains Mono", monospace',
           p: 1,
           flex: 1,
@@ -473,9 +432,7 @@ export default function SignalsLogsViewer({
           <Box
             sx={{
               height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              display: 'block',
             }}
           >
             <LoadingSkeleton />
@@ -496,7 +453,7 @@ export default function SignalsLogsViewer({
             ))}
           </List>
         )}
-      </Paper>
+      </Box>
     </Stack>
   );
 }

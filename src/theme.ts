@@ -26,25 +26,25 @@ export const darkPalette: PaletteOptions = {
 
 export const lightPalette: PaletteOptions = {
   primary: {
-    main: '#818cf8',
+    main: '#6366f1', // darker indigo
   },
   secondary: {
-    main: '#f472b6',
+    main: '#db2777', // deeper pink
   },
   success: {
-    main: '#4ade80',
+    main: '#22c55e', // stronger green
   },
   warning: {
-    main: '#fbbf24',
+    main: '#f59e0b', // deeper amber
   },
   error: {
-    main: '#f87171',
+    main: '#ef4444', // richer red
   },
   background: {
-    default: '#f8fafc',
+    default: '#f1f5f9', // slightly darker than #f8fafc
     paper: '#ffffff',
   },
-  divider: 'rgba(0, 0, 0, 0.08)',
+  divider: 'rgba(0, 0, 0, 0.12)', // more visible in light theme
 };
 
 export const theme = createTheme({
