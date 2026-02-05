@@ -5,9 +5,10 @@ import _ from 'lodash';
 import ComponentsNS from './components';
 import ApiNS from './api';
 import ReactNS from 'react';
-
+import * as ConstantsNS from './constants';
 declare global {
   const Components: typeof ComponentsNS;
+  const Constants: typeof ConstantsNS;
   const api: typeof ApiNS;
   const Utils: typeof UtilsNS & {
     _: typeof _;

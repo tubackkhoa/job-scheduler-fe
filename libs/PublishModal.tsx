@@ -18,11 +18,10 @@ import {
   Chip,
 } from '@mui/material';
 import { Storefront, Work, CheckCircle } from '@mui/icons-material';
-import api from '@/api';
 import { ConfigForm } from '@/components/ConfigForm';
-import { SESSIONS } from '@/constants';
 
-declare const Utils: any;
+const { SESSIONS } = Constants;
+const { buildJinjaContext } = Utils;
 
 const PLUGIN_PACKAGE = 'alpha_miner.plugins.LiveTradeForUserPlugin';
 const PRODUCTION_SESSION_ID = SESSIONS[1].id;
@@ -132,7 +131,7 @@ export function PublishModal({
 
   const checkRegistrationStatus = async () => {
     try {
-      const render = Utils.buildJinjaContext(PLUGIN_PACKAGE, {}, true);
+      const render = buildJinjaContext(PLUGIN_PACKAGE, {}, true);
       const result = await render(
         `{{ list_trade_models(env, url, apikey) }}`,
         JINJA_CONTEXT,
@@ -158,7 +157,7 @@ export function PublishModal({
     setRegistering(true);
     setError(null);
     try {
-      const render = Utils.buildJinjaContext(PLUGIN_PACKAGE, {}, true);
+      const render = buildJinjaContext(PLUGIN_PACKAGE, {}, true);
       const payload = {
         key: modelIdentity,
         name: registerName || undefined,
@@ -184,7 +183,7 @@ export function PublishModal({
     setRegistering(true);
     setError(null);
     try {
-      const render = Utils.buildJinjaContext(PLUGIN_PACKAGE, {}, true);
+      const render = buildJinjaContext(PLUGIN_PACKAGE, {}, true);
 
       await render(`{{ deactivate_trade_model(key, url, apikey, env) }}`, {
         key: modelIdentity,
@@ -244,7 +243,7 @@ export function PublishModal({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle>Publish Model: {modelIdentity}</DialogTitle>
 
       <DialogContent dividers>
