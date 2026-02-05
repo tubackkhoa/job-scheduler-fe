@@ -20,6 +20,7 @@ import React, { useMemo, useEffect, useState } from 'react';
 
 import { DeleteOutline, Settings } from '@mui/icons-material';
 import DynamicField from './fields/DynamicField';
+import { FieldProps } from '@rjsf/utils';
 
 const LAYOUT_KEY = 'portal-layout';
 
@@ -144,7 +145,7 @@ export function SortableWidget({
 export interface PortalWidget {
   id: number;
   title: string;
-  Component: React.FC;
+  props: FieldProps;
 }
 
 interface Props {
@@ -155,14 +156,14 @@ export function PortalPage({ plugins, routeState }: Props) {
   const initialWidgets = useMemo<PortalWidget[]>(() => {
     return Object.entries(routeState).map(([key, routeState]) => {
       const pluginId = Number(key);
-      const props: any = {
-        formData: pluginId % 2 ? 'line' : 'area',
-        schema: routeState.portal,
-      };
+
       return {
         id: pluginId,
         title: plugins.find((item) => item.id === pluginId).package,
-        Component: () => props.schema && <DynamicField {...props} />,
+        props: {
+          formData: pluginId % 2 ? 'line' : 'area',
+          schema: routeState.portal,
+        } as FieldProps,
       };
     });
   }, [plugins, routeState]);
@@ -258,7 +259,7 @@ export function PortalPage({ plugins, routeState }: Props) {
                   title={widget.title}
                   onRemove={handleRemoveWidget}
                 >
-                  <widget.Component />
+                  {widget.props?.schema && <DynamicField {...widget.props} />}
                 </SortableWidget>
               ))}
             </Masonry>
