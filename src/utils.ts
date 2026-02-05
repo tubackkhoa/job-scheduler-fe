@@ -17,11 +17,8 @@ import * as esbuild from 'esbuild-wasm';
 import wasmUrl from 'esbuild-wasm/esbuild.wasm?url';
 import jinjaPython from './jinja.py?raw';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
 import { RJSFSchema } from '@rjsf/utils';
 import { PaletteMode, useColorScheme } from '@mui/material';
-
-dayjs.extend(utc);
 
 export const scrollToTop = () => {
   window.scrollTo({

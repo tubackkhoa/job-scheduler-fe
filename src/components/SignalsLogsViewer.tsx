@@ -11,6 +11,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
 } from '@mui/material';
 import { SignalCellularAlt, Delete, Refresh } from '@mui/icons-material';
 import api from '@/api';
@@ -102,6 +103,10 @@ export default function SignalsLogsViewer({
   const [groups, setGroups] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Native datetime-local filter values
+  const [fromDate, setFromDate] = useState<string>('');
+  const [toDate, setToDate] = useState<string>('');
+
   const derivedGroups = useMemo(() => {
     if (providedSignals?.length) {
       return transformSignals(providedSignals);
@@ -157,16 +162,28 @@ export default function SignalsLogsViewer({
 
     const map = new Map<string, Record<string, string>[]>();
 
+    const from = fromDate ? new Date(fromDate) : null;
+    const to = toDate ? new Date(toDate) : null;
+
     allRows.forEach((row) => {
-      const key = row.pred_time || 'unknown';
+      const pred = row.pred_time;
+      if (!pred) return;
+
+      const predDate = new Date(pred.replace(' ', 'T'));
+
+      if (from && predDate < from) return;
+      if (to && predDate > to) return;
+
+      const key = pred;
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(row);
     });
 
-    return { header, map };
-  }, [groups]);
+    if (map.size === 0) return null;
 
-  // Remove pred_time from displayed columns
+    return { header, map };
+  }, [groups, fromDate, toDate]);
+
   const columns = useMemo(() => {
     if (!groupedTable) return [];
     return groupedTable.header.filter((h) => h !== 'pred_time');
@@ -189,15 +206,13 @@ export default function SignalsLogsViewer({
 
           <Stack direction="row" spacing={0.5}>
             <Tooltip title="Refresh signals">
-              <span>
-                <IconButton
-                  onClick={fetchSignals}
-                  size="small"
-                  disabled={isLoading || !!providedSignals}
-                >
-                  <Refresh fontSize="small" />
-                </IconButton>
-              </span>
+              <IconButton
+                onClick={fetchSignals}
+                size="small"
+                disabled={isLoading || !!providedSignals}
+              >
+                <Refresh fontSize="small" />
+              </IconButton>
             </Tooltip>
 
             <Tooltip title="Clear signals">
@@ -221,6 +236,38 @@ export default function SignalsLogsViewer({
           </Stack>
         </Stack>
       )}
+
+      {/* Native date-time filters */}
+      <Stack direction="row" gap={1}>
+        <TextField
+          label="From"
+          type="datetime-local"
+          size="small"
+          value={fromDate}
+          onChange={(e) => setFromDate(e.target.value)}
+          slotProps={{ inputLabel: { shrink: true } }}
+        />
+        <TextField
+          label="To"
+          type="datetime-local"
+          size="small"
+          value={toDate}
+          onChange={(e) => setToDate(e.target.value)}
+          slotProps={{ inputLabel: { shrink: true } }}
+        />
+        <Tooltip title="Clear filter">
+          <IconButton
+            disableRipple
+            size="small"
+            onClick={() => {
+              setFromDate('');
+              setToDate('');
+            }}
+          >
+            <Refresh fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </Stack>
 
       <Box
         sx={{
@@ -259,7 +306,6 @@ export default function SignalsLogsViewer({
               <TableBody>
                 {[...groupedTable.map.entries()].map(([predTime, rows]) => (
                   <Fragment key={predTime}>
-                    {/* Group header row */}
                     <TableRow>
                       <TableCell
                         colSpan={totalColumns}

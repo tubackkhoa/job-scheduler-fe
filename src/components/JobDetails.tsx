@@ -336,7 +336,6 @@ export function JobDetails({
                 setError={setError}
                 jobId={jobId}
                 description={jobDesc}
-                keyword={schema.keyword}
               />
             </TabPanel>
           )}
