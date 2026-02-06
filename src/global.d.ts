@@ -211,3 +211,24 @@ declare global {
     // or: ctx?: YourType
   }
 }
+
+// extend declaration
+declare module '@mui/material/styles' {
+  interface ChartPalette {
+    background: string;
+    textColor: string;
+    grid: string;
+    crosshair: string;
+    border: string;
+  }
+
+  // This extends the theme config type: createTheme({ palette: { chart: ... } })
+
+  interface Palette {
+    chart: ChartPalette;
+  }
+
+  interface PaletteOptions {
+    chart?: ChartPalette;
+  }
+}

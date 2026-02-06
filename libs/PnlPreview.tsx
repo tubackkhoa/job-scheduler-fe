@@ -42,13 +42,13 @@ import {
   Typography,
   Grid,
   Popover,
-  Paper,
   MenuItem,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   CircularProgress,
+  useTheme,
 } from '@mui/material';
 
 type TooltipData = {
@@ -551,6 +551,7 @@ const EquityChartModal = ({
   const [endTime, setEndTime] = useState<string>('');
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi>(null);
+  const theme = useTheme();
 
   const [tooltip, setTooltip] = useState<ChartTooltipProps>({
     visible: false,
@@ -620,29 +621,42 @@ const EquityChartModal = ({
     chartRef.current?.remove();
     chartRef.current = null;
 
+    const { background, textColor, grid, crosshair, border } =
+      theme.palette.chart;
+
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height: 500,
       layout: {
-        background: { color: '#ffffff' },
-        textColor: '#333',
+        background: { color: background },
+        textColor,
       },
       grid: {
-        vertLines: { color: '#e1e8ed' },
-        horzLines: { color: '#e1e8ed' },
+        vertLines: { color: grid },
+        horzLines: { color: grid },
       },
       crosshair: {
         mode: 1,
-        vertLine: { width: 1, color: '#758696', style: 3 },
-        horzLine: { width: 1, color: '#758696', style: 3 },
+        vertLine: {
+          width: 1,
+          color: crosshair,
+          style: 3,
+          labelBackgroundColor: crosshair,
+        },
+        horzLine: {
+          width: 1,
+          color: crosshair,
+          style: 3,
+          labelBackgroundColor: crosshair,
+        },
       },
       timeScale: {
         timeVisible: true,
         secondsVisible: false,
-        borderColor: '#d1d4dc',
+        borderColor: border,
       },
       rightPriceScale: {
-        borderColor: '#d1d4dc',
+        borderColor: border,
       },
     });
 
