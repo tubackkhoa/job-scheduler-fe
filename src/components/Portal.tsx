@@ -1,7 +1,6 @@
-import { defaultAnimateLayoutChanges, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { DndContext, closestCenter } from '@dnd-kit/core';
-import { SortableContext, arrayMove } from '@dnd-kit/sortable';
+import { SortableContext, arrayMove, useSortable } from '@dnd-kit/sortable';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import {
   Box,
@@ -20,7 +19,6 @@ import React, { useMemo, useEffect, useState } from 'react';
 import { Clear, Settings } from '@mui/icons-material';
 import DynamicField from './fields/DynamicField';
 import { FieldProps } from '@rjsf/utils';
-import { LoadingSkeleton } from './Loading';
 
 const LAYOUT_KEY = 'portal-layout';
 
@@ -106,14 +104,8 @@ function SortableWidget({
   children: React.ReactNode;
   onRemove: (id: number) => void;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    isDragging,
-    transition,
-  } = useSortable({ id, animateLayoutChanges: defaultAnimateLayoutChanges });
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id });
 
   return (
     <Card
@@ -230,14 +222,13 @@ export function PortalPage({ plugins, routeState }: Props) {
     <Box
       sx={{
         position: 'relative',
-        px: 2,
         mt: 4,
       }}
     >
       <Button
         variant="outlined"
         size="small"
-        sx={{ position: 'absolute', right: 20, mt: -7 }}
+        sx={{ position: 'absolute', right: 15, mt: -7 }}
         startIcon={<RestartAltIcon />}
         onClick={handleResetLayout}
       >
@@ -268,30 +259,21 @@ export function PortalPage({ plugins, routeState }: Props) {
           });
         }}
       >
-        {widgets ? (
+        {widgets && (
           <SortableContext items={widgets.map((w) => w.id)}>
-            <Box
-              sx={{
-                pl: 1,
-                mx: -1, // counteracts Masonry internal spacing
-              }}
-            >
-              <Masonry columns={{ xs: 1, sm: 2, md: 3 }} spacing={2}>
-                {widgets.map(({ id, title, props }) => (
-                  <SortableWidget
-                    key={id}
-                    id={id}
-                    title={title}
-                    onRemove={handleRemoveWidget}
-                  >
-                    <DynamicField {...props} />
-                  </SortableWidget>
-                ))}
-              </Masonry>
-            </Box>
+            <Masonry columns={{ xs: 1, sm: 2, md: 3 }} spacing={2}>
+              {widgets.map(({ id, title, props }) => (
+                <SortableWidget
+                  key={id}
+                  id={id}
+                  title={title}
+                  onRemove={handleRemoveWidget}
+                >
+                  <DynamicField {...props} />
+                </SortableWidget>
+              ))}
+            </Masonry>
           </SortableContext>
-        ) : (
-          <LoadingSkeleton />
         )}
       </DndContext>
     </Box>
