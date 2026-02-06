@@ -52,6 +52,7 @@ libs/*
 !libs/LightweighChart.tsx
 !libs/CompilePluginComponent.tsx
 !libs/PublishModal.tsx
+!libs/HealthPortal.tsx
 
 # Allow backtest folder AND its contents
 !libs/backtest/
