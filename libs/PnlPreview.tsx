@@ -1218,7 +1218,12 @@ export default ({ formData, registry }: FieldProps) => {
       </Grid>
 
       {/* Toolbar */}
-      <Stack direction="row" spacing={2} sx={{ mb: 2 }} alignItems="center">
+      <Stack
+        direction={{ md: 'row', xs: 'column' }}
+        gap={2}
+        sx={{ mb: 2 }}
+        alignItems="center"
+      >
         <TextField
           size="small"
           placeholder="Search..."
@@ -1251,7 +1256,7 @@ export default ({ formData, registry }: FieldProps) => {
             setStatusFilter(e.target.value);
             setPage(0);
           }}
-          sx={{ maxWidth: 150 }}
+          sx={{ flex: 1 }}
         >
           <MenuItem value="All">All</MenuItem>
           <MenuItem value="active">Active</MenuItem>
@@ -1332,7 +1337,7 @@ export default ({ formData, registry }: FieldProps) => {
         <Table size="small">
           <TableHead>
             <TableRow sx={{ bgcolor: 'action.hover' }}>
-              <TableCell sx={{ width: 40 }} padding="none" />
+              <TableCell padding="none" />
               {activeColumns.map((key) => (
                 <TableCell key={key} sx={{ fontWeight: 600 }}>
                   <TableSortLabel
