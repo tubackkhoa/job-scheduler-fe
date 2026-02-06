@@ -33,6 +33,7 @@ import SignalsLogsViewer from './SignalsLogsViewer';
 import JinjaEnvDocs from './JinjaEnvDocs';
 import api from '@/api';
 import UserPluginCode from './UserPluginCode';
+import { LoadingSkeleton } from './Loading';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -145,14 +146,11 @@ export function JobDetails({
         sx={{
           bgcolor: 'background.paper',
           minHeight: 400,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
           p: 3,
         }}
       >
         {pluginPackage ? (
-          <CircularProgress />
+          <LoadingSkeleton size={2} />
         ) : (
           <Typography variant="body1" color="text.secondary">
             Pick a plugin to load its schema and jobs.
@@ -165,7 +163,7 @@ export function JobDetails({
   const isUserPlugin = typeof pluginId === 'string';
 
   return (
-    <Card sx={{ bgcolor: 'background.paper' }}>
+    <Card sx={{ bgcolor: 'background.paper', p: 1 }}>
       <CardHeader
         title={isUserPlugin ? 'User Plugin' : 'Job Details'}
         subheader={
@@ -338,7 +336,6 @@ export function JobDetails({
                 setError={setError}
                 jobId={jobId}
                 description={jobDesc}
-                keyword={schema.keyword}
               />
             </TabPanel>
           )}
