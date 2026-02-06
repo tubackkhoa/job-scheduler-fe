@@ -5,11 +5,7 @@ import PnlPreview from '../PnlPreview';
 const { LoadingSkeleton } = Components;
 const { jinjaEvaluate } = Utils;
 
-export default ({
-  formData,
-  registry,
-  ...rest
-}: FieldProps<RoutesResponse>) => {
+export default ({ formData, ...rest }: FieldProps<RoutesResponse>) => {
   const [pnlData, setPnlData] = useState<string>();
   useEffect(() => {
     const load = async () => {
@@ -34,13 +30,5 @@ export default ({
   }, [formData.package]);
 
   if (!pnlData) return <LoadingSkeleton size={3} />;
-  return (
-    <PnlPreview
-      formData={pnlData}
-      registry={{
-        formContext: { pluginPackage: formData.package },
-      }}
-      {...(rest as FieldProps)}
-    />
-  );
+  return <PnlPreview formData={pnlData} {...(rest as FieldProps)} />;
 };

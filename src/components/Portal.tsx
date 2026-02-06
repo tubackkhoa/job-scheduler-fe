@@ -1,4 +1,3 @@
-import { CSS } from '@dnd-kit/utilities';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, arrayMove, useSortable } from '@dnd-kit/sortable';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
@@ -111,7 +110,11 @@ function SortableWidget({
     <Card
       ref={setNodeRef}
       sx={{
-        transform: CSS.Transform.toString(transform),
+        transform: transform
+          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+          : undefined,
+        willChange: 'transform',
+        breakInside: 'avoid',
         transition,
       }}
       {...attributes}
@@ -164,11 +167,13 @@ export function PortalPage({ plugins, routeState }: Props) {
       .filter((item) => item[1].portal)
       .map(([key, routeState]) => {
         const pluginId = Number(key);
+        const plugin = plugins.find((item) => item.id === pluginId);
         return {
           id: pluginId,
-          title: plugins.find((item) => item.id === pluginId).package,
+          title: plugin.package,
           props: {
-            formData: pluginId % 2 ? 'line' : 'area',
+            formData: plugin,
+            registry: { formContext: { pluginPackage: plugin.package } },
             schema: routeState.portal,
           } as FieldProps,
         };
@@ -223,6 +228,7 @@ export function PortalPage({ plugins, routeState }: Props) {
       sx={{
         position: 'relative',
         mt: 4,
+        pl: 2,
       }}
     >
       <Button
@@ -261,7 +267,11 @@ export function PortalPage({ plugins, routeState }: Props) {
       >
         {widgets && (
           <SortableContext items={widgets.map((w) => w.id)}>
-            <Masonry columns={{ xs: 1, sm: 2, md: 3 }} spacing={2}>
+            <Masonry
+              columns={{ xs: 1, sm: 2, md: 3 }}
+              spacing={2}
+              sx={{ overflow: 'hidden' }}
+            >
               {widgets.map(({ id, title, props }) => (
                 <SortableWidget
                   key={id}
