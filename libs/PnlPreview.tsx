@@ -128,6 +128,18 @@ function fmtStatus(
   return <ColorText color={THEME.neutral}>⊘ No Job</ColorText>;
 }
 
+function fmtMarketplaceStatus(status?: string | null): React.ReactNode {
+  if (!status) return '-';
+
+  if (status === 'Published')
+    return <ColorText color={THEME.positive}>✓ Published</ColorText>;
+
+  if (status === 'Unpublished')
+    return <ColorText color={THEME.neutral}>Unpublished</ColorText>;
+
+  return status;
+}
+
 function fmtLatest(
   latest?: { symbol: string; direction: string; pnl: number } | null,
 ): React.ReactNode {
@@ -175,8 +187,10 @@ const renderCell = (key: string, value: any) => {
     case 'Winrate':
       return fmtWinrate(value);
 
-    case 'Status':
+    case 'Mornitor status':
       return fmtStatus(value);
+    case 'Marketplace Status':
+      return fmtMarketplaceStatus(value);
 
     case 'Latest Position':
       return fmtLatest(value);
@@ -284,7 +298,10 @@ function buildStatsTable(
       'Latest Position': lastPosFormatted,
       'Latest Position Time': lastPosTime,
 
-      Status: item,
+      'Mornitor status': item,
+      'Marketplace Status': publishedModels.includes(identity)
+        ? 'Published'
+        : 'Unpublished',
       'Hide Status': item?.state ?? '',
 
       Started: stat.startedAt ?? '',
@@ -861,6 +878,7 @@ export default ({ formData, registry }: FieldProps) => {
   const [orderBy, setOrderBy] = useState<string>('');
   const [filter, setFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [marketplaceStatusFilter, setMarketplaceStatusFilter] = useState('All');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -996,28 +1014,26 @@ export default ({ formData, registry }: FieldProps) => {
       );
     }
 
-    // 3. Status Filter
+    // 3. Monitor Status Filter
     if (statusFilter !== 'All') {
-      if (statusFilter === 'Published') {
-        r = r.filter((row) => publishedModels.includes(row.Identity));
-      } else if (statusFilter === 'Unpublished') {
-        r = r.filter((row) => !publishedModels.includes(row.Identity));
-      } else {
-        r = r.filter((row) => {
-          const val = String(row['Hide Status']).toLowerCase();
+      r = r.filter((row) => {
+        const val = String(row['Hide Status']).toLowerCase();
+        if (!val) return false;
+        return val === statusFilter;
+      });
+    }
 
-          if (statusFilter === 'active') {
-            return val === 'active' || publishedModels.includes(row.Identity);
-          }
-
-          if (!val) return false;
-          return val === statusFilter;
-        });
+    // 4. Marketplace Status Filter
+    if (marketplaceStatusFilter !== 'All') {
+      if (marketplaceStatusFilter === 'Published') {
+        r = r.filter((row) => row['Marketplace Status'] === 'Published');
+      } else if (marketplaceStatusFilter === 'Unpublished') {
+        r = r.filter((row) => row['Marketplace Status'] === 'Unpublished');
       }
     }
 
     return r;
-  }, [tableData, filter, hiddenRowIds, statusFilter]);
+  }, [tableData, filter, hiddenRowIds, statusFilter, marketplaceStatusFilter]);
 
   const sortedRows = useMemo(() => {
     if (!orderBy) return filteredRows;
@@ -1229,7 +1245,7 @@ export default ({ formData, registry }: FieldProps) => {
         <TextField
           select
           size="small"
-          label="Status"
+          label="Monitor Status"
           value={statusFilter}
           onChange={(e) => {
             setStatusFilter(e.target.value);
@@ -1238,10 +1254,24 @@ export default ({ formData, registry }: FieldProps) => {
           sx={{ maxWidth: 150 }}
         >
           <MenuItem value="All">All</MenuItem>
-          <MenuItem value="Published">Published</MenuItem>
-          <MenuItem value="Unpublished">Unpublished</MenuItem>
           <MenuItem value="active">Active</MenuItem>
           <MenuItem value="inactive">Inactive</MenuItem>
+        </TextField>
+
+        <TextField
+          select
+          size="small"
+          label="Marketplace"
+          value={marketplaceStatusFilter}
+          onChange={(e) => {
+            setMarketplaceStatusFilter(e.target.value);
+            setPage(0);
+          }}
+          sx={{ maxWidth: 150 }}
+        >
+          <MenuItem value="All">All</MenuItem>
+          <MenuItem value="Published">Published</MenuItem>
+          <MenuItem value="Unpublished">Unpublished</MenuItem>
         </TextField>
 
         <Box sx={{ flexGrow: 1 }} />
