@@ -22,6 +22,13 @@ export const darkPalette: PaletteOptions = {
     paper: '#111119',
   },
   divider: 'rgba(255, 255, 255, 0.08)',
+  chart: {
+    background: '#0B0E11',
+    textColor: '#B7BDC6',
+    grid: '#1E2329',
+    crosshair: '#2B3139',
+    border: '#2B3139',
+  },
 };
 
 export const lightPalette: PaletteOptions = {
@@ -45,6 +52,13 @@ export const lightPalette: PaletteOptions = {
     paper: '#ffffff',
   },
   divider: 'rgba(0, 0, 0, 0.08)',
+  chart: {
+    background: '#ffffff',
+    textColor: '#333',
+    grid: '#e1e8ed',
+    crosshair: '#758696',
+    border: '#d1d4dc',
+  },
 };
 
 export const theme = createTheme({
