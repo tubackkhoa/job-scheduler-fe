@@ -455,6 +455,19 @@ export default function SignalComparisonTable({
 
   const activeModels = models.filter((m) => visibleColumns[m]);
 
+  /* ---------- Sorting ---------- */
+
+  const handleRequestSort = (property: 'time' | 'symbol') => {
+    setOrder((prevOrder) => {
+      const isSameColumn = orderBy === property;
+      if (isSameColumn) {
+        return prevOrder === 'asc' ? 'desc' : 'asc';
+      }
+      return 'asc';
+    });
+    setOrderBy(property);
+  };
+
   /* ---------- Filtering ---------- */
 
   const filteredRows = useMemo(() => {
@@ -542,7 +555,7 @@ export default function SignalComparisonTable({
                 <TableSortLabel
                   active={orderBy === 'time'}
                   direction={order}
-                  onClick={() => setOrderBy('time')}
+                  onClick={() => handleRequestSort('time')}
                 >
                   Time
                 </TableSortLabel>
@@ -552,7 +565,7 @@ export default function SignalComparisonTable({
                 <TableSortLabel
                   active={orderBy === 'symbol'}
                   direction={order}
-                  onClick={() => setOrderBy('symbol')}
+                  onClick={() => handleRequestSort('symbol')}
                 >
                   Symbol
                 </TableSortLabel>
