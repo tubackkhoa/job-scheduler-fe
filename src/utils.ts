@@ -512,12 +512,6 @@ const initPyodide: Promise<PyodideAPI> = (async () => {
 
 // pre-init at background for faster load
 initPyodide;
-type EnvDoc = {
-  filters: Record<string, unknown>;
-  globals: Record<string, unknown>;
-  tests: string[];
-  tags: string[];
-};
 
 const envDocPromise: Promise<EnvDoc> = (async () => {
   const pyodide = await initPyodide;

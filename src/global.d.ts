@@ -206,6 +206,26 @@ declare global {
     offset: number;
   }
 
+  interface EnvDoc {
+    filters: Record<string, unknown>;
+    globals: Record<string, unknown>;
+    tests: string[];
+    tags: string[];
+  }
+
+  interface ConfigFormContext<T> {
+    formData: T;
+    pluginPackage: string;
+    env: EnvDoc;
+    sessionId: number;
+  }
+
+  type ConfigFieldProps<T = any, S = any> = FieldProps<
+    T,
+    S,
+    ConfigFormContext<T>
+  >;
+
   interface Window {
     ctx: { user: User };
     // or: ctx?: YourType
