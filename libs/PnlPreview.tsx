@@ -991,6 +991,11 @@ export default ({ formData, registry }: FieldProps) => {
       } else {
         r = r.filter((row) => {
           const val = String(row['Hide Status']).toLowerCase();
+
+          if (statusFilter === 'active') {
+            return val === 'active' || publishedModels.includes(row.Identity);
+          }
+
           if (!val) return false;
           return val === statusFilter;
         });
