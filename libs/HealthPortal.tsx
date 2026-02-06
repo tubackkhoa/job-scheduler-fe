@@ -16,7 +16,7 @@ export default function HealthPortal({}: FieldProps) {
   }
 
   return (
-    <Grid container spacing={3} sx={{ width: '100%', maxHeight: 100 }}>
+    <Grid container spacing={3}>
       <Grid size={{ xs: 12, md: 4 }}>
         <Typography variant="subtitle2" color="text.secondary">
           Plugins
