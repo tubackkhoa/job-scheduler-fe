@@ -47,7 +47,7 @@ function resetStoredLayout() {
   localStorage.removeItem(LAYOUT_KEY);
 }
 
-export function WidgetSettingsButton({ onRemove }) {
+function WidgetSettingsButton({ onRemove }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -95,7 +95,7 @@ export function WidgetSettingsButton({ onRemove }) {
   );
 }
 
-export function SortableWidget({
+function SortableWidget({
   id,
   children,
   title,
@@ -106,13 +106,19 @@ export function SortableWidget({
   children: React.ReactNode;
   onRemove: (id: number) => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id, animateLayoutChanges: defaultAnimateLayoutChanges });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    isDragging,
+    transition,
+  } = useSortable({ id, animateLayoutChanges: defaultAnimateLayoutChanges });
 
   return (
     <Card
       ref={setNodeRef}
-      style={{
+      sx={{
         transform: CSS.Transform.toString(transform),
         transition,
       }}
@@ -150,7 +156,7 @@ export function SortableWidget({
   );
 }
 
-export interface PortalWidget {
+interface PortalWidget {
   id: number;
   title: string;
   props: FieldProps;
