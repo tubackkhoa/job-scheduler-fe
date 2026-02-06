@@ -3,26 +3,45 @@ import { CSS } from '@dnd-kit/utilities';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import { Box, Button, IconButton, Tooltip, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  IconButton,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+  Tooltip,
+  Typography,
+  ListItemText,
+  Alert,
+} from '@mui/material';
 import Masonry from '@mui/lab/Masonry';
 import { Card, CardHeader, CardContent } from '@mui/material';
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 
-import { Settings } from '@mui/icons-material';
+import { Clear, DeleteOutline, Settings } from '@mui/icons-material';
 import DynamicField from './fields/DynamicField';
+import { FieldProps } from '@rjsf/utils';
+import { LoadingSkeleton } from './Loading';
 
 const LAYOUT_KEY = 'portal-layout';
 
-function saveLayout(widgetIds: number[]) {
-  localStorage.setItem(LAYOUT_KEY, JSON.stringify(widgetIds));
+type LayoutState = {
+  order: number[];
+  hidden: number[];
+};
+
+function saveLayout(state: LayoutState) {
+  localStorage.setItem(LAYOUT_KEY, JSON.stringify(state));
 }
 
-function loadLayout(): number[] | null {
+function loadLayout(): LayoutState {
+  const defaultLayout = { order: [], hidden: [] };
   try {
     const raw = localStorage.getItem(LAYOUT_KEY);
-    return raw ? JSON.parse(raw) : null;
+    return JSON.parse(raw) ?? defaultLayout;
   } catch {
-    return null;
+    return defaultLayout;
   }
 }
 
@@ -30,14 +49,64 @@ function resetStoredLayout() {
   localStorage.removeItem(LAYOUT_KEY);
 }
 
+export function WidgetSettingsButton({ onRemove }) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleOpen = (e: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(e.currentTarget);
+  };
+
+  const handleClose = (e?: React.SyntheticEvent) => {
+    setAnchorEl(null);
+  };
+
+  const handleRemove = (e: React.MouseEvent) => {
+    handleClose();
+    onRemove?.();
+  };
+
+  return (
+    <>
+      <Tooltip title="Widget settings">
+        <IconButton
+          size="small"
+          onClick={handleOpen}
+          sx={{ color: 'text.secondary' }}
+        >
+          <Settings fontSize="small" />
+        </IconButton>
+      </Tooltip>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        onClick={(e) => e.stopPropagation()}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <MenuItem onClick={handleRemove}>
+          <ListItemIcon>
+            <Clear fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Remove</ListItemText>
+        </MenuItem>
+      </Menu>
+    </>
+  );
+}
+
 export function SortableWidget({
   id,
   children,
   title,
+  onRemove,
 }: {
   id: number;
   title: string;
   children: React.ReactNode;
+  onRemove: (id: number) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id, animateLayoutChanges: defaultAnimateLayoutChanges });
@@ -50,9 +119,21 @@ export function SortableWidget({
   return (
     <Card ref={setNodeRef} style={style} {...attributes}>
       <CardHeader
-        title={title}
+        title={
+          <Box
+            {...listeners}
+            sx={{
+              cursor: 'move',
+              fontSize: '1rem',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {title}
+          </Box>
+        }
         sx={{
-          cursor: 'move',
           backgroundColor: 'action.hover',
         }}
         slotProps={{
@@ -61,32 +142,8 @@ export function SortableWidget({
               minWidth: 0,
             },
           },
-          title: {
-            sx: {
-              fontSize: '0.875rem',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            },
-          },
         }}
-        action={
-          <Tooltip title="Widget settings">
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation(); // 🔑 prevent drag start
-                // open settings menu / dialog
-              }}
-              sx={{
-                color: 'text.secondary',
-              }}
-            >
-              <Settings fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        }
-        {...listeners}
+        action={<WidgetSettingsButton onRemove={() => onRemove(id)} />}
       />
       <CardContent>{children}</CardContent>
     </Card>
@@ -96,7 +153,7 @@ export function SortableWidget({
 export interface PortalWidget {
   id: number;
   title: string;
-  Component: React.FC;
+  props: FieldProps;
 }
 
 interface Props {
@@ -105,42 +162,62 @@ interface Props {
 }
 export function PortalPage({ plugins, routeState }: Props) {
   const initialWidgets = useMemo<PortalWidget[]>(() => {
-    return Object.entries(routeState).map(([key, routeState]) => {
-      const pluginId = Number(key);
-      const props: any = {
-        formData: pluginId % 2 ? 'line' : 'area',
-        schema: routeState.portal,
-      };
-      return {
-        id: pluginId,
-        title: plugins.find((item) => item.id === pluginId).package,
-        Component: () => props.schema && <DynamicField {...props} />,
-      };
-    });
+    return Object.entries(routeState)
+      .filter((item) => item[1].portal)
+      .map(([key, routeState]) => {
+        const pluginId = Number(key);
+        return {
+          id: pluginId,
+          title: plugins.find((item) => item.id === pluginId).package,
+          props: {
+            formData: pluginId % 2 ? 'line' : 'area',
+            schema: routeState.portal,
+          } as FieldProps,
+        };
+      });
   }, [plugins, routeState]);
 
-  const [widgets, setWidgets] = React.useState<PortalWidget[]>([]);
+  const [widgets, setWidgets] = React.useState<PortalWidget[]>();
 
   const handleResetLayout = () => {
     resetStoredLayout();
     setWidgets(initialWidgets);
   };
 
+  const handleRemoveWidget = (id: number) => {
+    setWidgets((prev) => {
+      const next = prev.filter((w) => w.id !== id);
+
+      const current = loadLayout() ?? { order: [], hidden: [] };
+
+      saveLayout({
+        order: next.map((w) => w.id),
+        hidden: [...new Set([...current.hidden, id])],
+      });
+
+      return next;
+    });
+  };
+
   useEffect(() => {
-    const savedOrder = loadLayout();
-    if (!savedOrder) {
-      setWidgets(initialWidgets);
-      return;
+    try {
+      const layout = loadLayout();
+      const map = new Map(initialWidgets.map((w) => [w.id, w]));
+
+      const visibleSet = new Set(layout.order);
+      const hiddenSet = new Set(layout.hidden);
+
+      const ordered = layout.order.map((id) => map.get(id)).filter(Boolean);
+
+      const newWidgets = initialWidgets.filter(
+        (w) => !visibleSet.has(w.id) && !hiddenSet.has(w.id),
+      );
+      setWidgets([...ordered, ...newWidgets]);
+    } catch (e) {
+      console.log(e);
+      // fallback initialize
+      handleResetLayout();
     }
-
-    const map = new Map(initialWidgets.map((w) => [w.id, w]));
-
-    setWidgets([
-      // widgets that exist in saved layout
-      ...savedOrder.map((id) => map.get(id)).filter(Boolean),
-      // new widgets added later (important!)
-      ...initialWidgets.filter((w) => !savedOrder.includes(w.id)),
-    ]);
   }, [initialWidgets]);
 
   return (
@@ -169,6 +246,7 @@ export function PortalPage({ plugins, routeState }: Props) {
       </Box>
 
       {/* Dashboard */}
+
       <DndContext
         collisionDetection={closestCenter}
         onDragEnd={(event) => {
@@ -178,35 +256,46 @@ export function PortalPage({ plugins, routeState }: Props) {
           setWidgets((items) => {
             const oldIndex = items.findIndex((i) => i.id === active.id);
             const newIndex = items.findIndex((i) => i.id === over.id);
+            if (oldIndex === -1 || newIndex === -1) return items;
 
             const newItems = arrayMove(items, oldIndex, newIndex);
 
-            saveLayout(newItems.map((w) => w.id));
+            const current = loadLayout() ?? { order: [], hidden: [] };
+
+            saveLayout({
+              order: newItems.map((w) => w.id),
+              hidden: current.hidden,
+            });
 
             return newItems;
           });
         }}
       >
-        <SortableContext items={widgets.map((w) => w.id)}>
-          <Box
-            sx={{
-              pl: 1,
-              mx: -1, // counteracts Masonry internal spacing
-            }}
-          >
-            <Masonry columns={{ xs: 1, sm: 2, md: 3 }} spacing={2}>
-              {widgets.map((widget) => (
-                <SortableWidget
-                  key={widget.id}
-                  id={widget.id}
-                  title={widget.title}
-                >
-                  <widget.Component />
-                </SortableWidget>
-              ))}
-            </Masonry>
-          </Box>
-        </SortableContext>
+        {widgets ? (
+          <SortableContext items={widgets.map((w) => w.id)}>
+            <Box
+              sx={{
+                pl: 1,
+                mx: -1, // counteracts Masonry internal spacing
+              }}
+            >
+              <Masonry columns={{ xs: 1, sm: 2, md: 3 }} spacing={2}>
+                {widgets.map(({ id, title, props }) => (
+                  <SortableWidget
+                    key={id}
+                    id={id}
+                    title={title}
+                    onRemove={handleRemoveWidget}
+                  >
+                    <DynamicField {...props} />
+                  </SortableWidget>
+                ))}
+              </Masonry>
+            </Box>
+          </SortableContext>
+        ) : (
+          <LoadingSkeleton />
+        )}
       </DndContext>
     </>
   );

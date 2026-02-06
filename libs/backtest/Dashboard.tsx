@@ -267,7 +267,6 @@ function JobRowComponent({
                     <SignalsLogsViewer
                       jobId={job.id}
                       signals={signals}
-                      limit={1}
                       hideHeader
                       sx={{
                         height: 'auto',

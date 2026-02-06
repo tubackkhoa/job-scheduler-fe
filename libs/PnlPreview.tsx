@@ -76,38 +76,61 @@ const THEME = {
   warning: '#ffc107',
 } as const;
 
-function colorSpan(text: string, color: string, bold = false): string {
-  const weight = bold ? 'font-weight:bold;' : '';
-  return `<span style="color:${color};${weight}">${text}</span>`;
+const ColorText: React.FC<{
+  color: string;
+  bold?: boolean;
+  children: React.ReactNode;
+}> = ({ color, bold, children }) => (
+  <Box component="span" sx={{ color, fontWeight: bold ? 700 : 400 }}>
+    {children}
+  </Box>
+);
+
+function fmtPnl(v?: number | null): React.ReactNode {
+  if (v == null || Number.isNaN(v)) return '-';
+
+  const fmt = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 4,
+    maximumFractionDigits: 4,
+  });
+
+  const absFormatted = fmt.format(Math.abs(v));
+
+  const sign = v > 0 ? '+' : v < 0 ? '-' : '';
+  const arrow = v > 0 ? '↗' : v < 0 ? '↘' : '';
+  const color = v > 0 ? THEME.positive : v < 0 ? THEME.negative : THEME.neutral;
+
+  return (
+    <ColorText color={color} bold={v !== 0}>
+      {arrow} {sign}
+      {absFormatted}
+    </ColorText>
+  );
 }
 
-function fmtPnl(v?: number | null): string {
-  if (v == null) return '-';
-
-  if (v > 0) {
-    return colorSpan(`↗ +$${v.toFixed(4)}`, THEME.positive, true);
-  }
-  if (v < 0) {
-    return colorSpan(`↘ $${v.toFixed(4)}`, THEME.negative, true);
-  }
-  return colorSpan('$0.0000', THEME.neutral);
-}
-
-function fmtStatus(status?: { state?: string; label?: string } | null): string {
+function fmtStatus(
+  status?: { state?: string; label?: string } | null,
+): React.ReactNode {
   if (!status) return '-';
 
-  if (status.state === 'active') {
-    return colorSpan(`✓ Active (${status.label})`, THEME.positive);
-  }
-  if (status.state === 'inactive') {
-    return colorSpan(`⏸ Inactive (${status.label})`, THEME.warning);
-  }
-  return colorSpan('⊘ No Job', THEME.neutral);
+  if (status.state === 'active')
+    return (
+      <ColorText color={THEME.positive}>✓ Active ({status.label})</ColorText>
+    );
+
+  if (status.state === 'inactive')
+    return (
+      <ColorText color={THEME.warning}>⏸ Inactive ({status.label})</ColorText>
+    );
+
+  return <ColorText color={THEME.neutral}>⊘ No Job</ColorText>;
 }
 
 function fmtLatest(
   latest?: { symbol: string; direction: string; pnl: number } | null,
-): string {
+): React.ReactNode {
   if (!latest) return '-';
 
   const color =
@@ -115,10 +138,17 @@ function fmtLatest(
       ? THEME.positive
       : THEME.negative;
 
-  return `${colorSpan(latest.symbol, color, true)} ${fmtPnl(latest.pnl)}`;
+  return (
+    <>
+      <ColorText color={color} bold>
+        {latest.symbol}
+      </ColorText>{' '}
+      {fmtPnl(latest.pnl)}
+    </>
+  );
 }
 
-function fmtWinrate(winrate?: number | null): string {
+function fmtWinrate(winrate?: number | null): React.ReactNode {
   if (winrate == null) return '-';
 
   const pct = winrate * 100;
@@ -127,35 +157,38 @@ function fmtWinrate(winrate?: number | null): string {
   if (pct >= 50) color = THEME.positive;
   else if (pct >= 40) color = THEME.neutral;
 
-  return colorSpan(`${pct.toFixed(1)}%`, color, true);
+  return (
+    <ColorText color={color} bold>
+      {pct.toFixed(1)}%
+    </ColorText>
+  );
 }
 
-function fmtDrawdown(drawdown?: number | null): string {
-  if (!drawdown) return '-';
+const renderCell = (key: string, value: any) => {
+  switch (key) {
+    case 'Total PNL':
+    case 'PNL 1H':
+    case 'PNL 4H':
+    case 'PNL 1D':
+      return fmtPnl(value);
 
-  const pct = Math.abs(drawdown) * 100;
-  let color: string = THEME.neutral;
+    case 'Winrate':
+      return fmtWinrate(value);
 
-  if (pct > 20) color = THEME.negative;
-  else if (pct > 10) color = THEME.warning;
+    case 'Status':
+      return fmtStatus(value);
 
-  return colorSpan(`-${pct.toFixed(1)}%`, color, true);
-}
+    case 'Latest Position':
+      return fmtLatest(value);
 
-function formatUtcTime(value?: string): string {
-  if (!value) return '-';
+    case 'Started':
+    case 'Latest Position Time':
+      return Utils.formatUtcTime(value);
 
-  const date = new Date(value);
-  if (isNaN(date.getTime())) return '-';
-
-  const yyyy = date.getUTCFullYear();
-  const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const dd = String(date.getUTCDate()).padStart(2, '0');
-  const hh = String(date.getUTCHours()).padStart(2, '0');
-  const min = String(date.getUTCMinutes()).padStart(2, '0');
-
-  return `${yyyy}-${mm}-${dd} ${hh}:${min} UTC`;
-}
+    default:
+      return value;
+  }
+};
 
 type AnyDict = Record<string, any>;
 
@@ -238,22 +271,23 @@ function buildStatsTable(
     rows.push({
       Identity: identity,
       Model: stat.modelName,
-      'Total PNL': fmtPnl(pnl),
-      'PNL 1H': fmtPnl(stat.pnlDelta1h ?? 0),
-      'PNL 4H': fmtPnl(stat.pnlDelta4h ?? 0),
-      'PNL 1D': fmtPnl(stat.pnlDelta1d ?? 0),
-      Winrate: fmtWinrate(stat.winrate),
+
+      // STORE RAW VALUES (no JSX)
+      'Total PNL': pnl,
+      'PNL 1H': stat.pnlDelta1h ?? 0,
+      'PNL 4H': stat.pnlDelta4h ?? 0,
+      'PNL 1D': stat.pnlDelta1d ?? 0,
+
+      Winrate: stat.winrate ?? null,
       'Max Drawdown': stat.maxDrawdown,
-      'Latest Position': fmtLatest(lastPosFormatted),
+
+      'Latest Position': lastPosFormatted,
       'Latest Position Time': lastPosTime,
 
-      Status: fmtStatus(item),
-      Published: publishedModels.includes(identity)
-        ? colorSpan('Yes', THEME.positive, true)
-        : '-',
+      Status: item,
       'Hide Status': item?.state ?? '',
-      'Hide Job': item?.job,
-      Started: formatUtcTime(stat.startedAt ?? ''),
+
+      Started: stat.startedAt ?? '',
       'Total Positions': positions,
       'Total Runtime': stat.totalRunningTime ?? '-',
     });
@@ -289,7 +323,6 @@ const ChartTooltip: React.FC<ChartTooltipProps> = React.memo(
           color: '#fff',
           px: 1.5,
           py: 1,
-          borderRadius: 1,
           fontSize: 12,
           pointerEvents: 'none',
           zIndex: 10,
@@ -355,14 +388,13 @@ const ChartTooltip: React.FC<ChartTooltipProps> = React.memo(
 
 function parseNumber(value: any): number {
   if (typeof value === 'number') return value;
+
   if (typeof value === 'string') {
-    // Remove HTML tags
-    const text = value.replace(/<[^>]*>/g, '');
-    // Remove symbols like $, ↘, ↗, , and whitespace
-    const clean = text.replace(/[^\d.-]/g, '');
+    const clean = value.replace(/[^\d.-]/g, '');
     const num = parseFloat(clean);
     return isNaN(num) ? 0 : num;
   }
+
   return 0;
 }
 
@@ -440,8 +472,6 @@ const ConfigModal = ({
   onSave,
   saving,
 }: ConfigModalProps) => {
-  if (!editingRow) return null;
-
   const [internalValues, setInternalValues] = useState(initialValues || {});
 
   useEffect(() => {
@@ -458,6 +488,8 @@ const ConfigModal = ({
   const handleSave = () => {
     onSave(internalValues);
   };
+
+  if (!editingRow) return null;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -746,15 +778,11 @@ const EquityChartModal = ({
         {/* Legend */}
         <Box sx={{ display: 'flex', gap: 3, mb: 2, justifyContent: 'center' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box
-              sx={{ width: 20, height: 3, bgcolor: '#FF6B00', borderRadius: 1 }}
-            />
+            <Box sx={{ width: 20, height: 3, bgcolor: '#FF6B00' }} />
             <Typography variant="body2">PnL (Individual Trade)</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box
-              sx={{ width: 20, height: 3, bgcolor: '#2962FF', borderRadius: 1 }}
-            />
+            <Box sx={{ width: 20, height: 3, bgcolor: '#2962FF' }} />
             <Typography variant="body2">Accumulated PnL</Typography>
           </Box>
         </Box>
@@ -1251,7 +1279,7 @@ export default ({ formData, registry }: FieldProps) => {
       </Stack>
 
       {/* Table */}
-      <TableContainer component={Paper} variant="outlined">
+      <TableContainer>
         <Table size="small">
           <TableHead>
             <TableRow sx={{ bgcolor: 'action.hover' }}>
@@ -1273,7 +1301,7 @@ export default ({ formData, registry }: FieldProps) => {
 
           <TableBody>
             {pagedRows.map((row, index) => (
-              <TableRow key={`${row.Identity || index}-${index}`} hover>
+              <TableRow key={`${row.Identity || index}`} hover>
                 <TableCell padding="none" align="center">
                   <IconButton
                     size="small"
@@ -1287,21 +1315,8 @@ export default ({ formData, registry }: FieldProps) => {
                   </IconButton>
                 </TableCell>
                 {activeColumns.map((key) => {
-                  const cellValue = row[key];
-                  const isHtml =
-                    typeof cellValue === 'string' &&
-                    /<\/?[a-z][\s\S]*>/i.test(cellValue);
-
                   return (
-                    <TableCell key={key}>
-                      {isHtml ? (
-                        <div dangerouslySetInnerHTML={{ __html: cellValue }} />
-                      ) : Utils?.formatUtcTime ? (
-                        Utils.formatUtcTime(cellValue)
-                      ) : (
-                        <div>{cellValue}</div>
-                      )}
-                    </TableCell>
+                    <TableCell key={key}>{renderCell(key, row[key])}</TableCell>
                   );
                 })}
                 <TableCell>
