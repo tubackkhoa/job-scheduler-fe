@@ -207,8 +207,49 @@ declare global {
     offset: number;
   }
 
+  interface EnvDoc {
+    filters: Record<string, unknown>;
+    globals: Record<string, unknown>;
+    tests: string[];
+    tags: string[];
+  }
+
+  interface ConfigFormContext<T> {
+    formData: T;
+    pluginPackage: string;
+    env: EnvDoc;
+    sessionId: number;
+  }
+
+  type ConfigFieldProps<T = any, S = any> = FieldProps<
+    T,
+    S,
+    ConfigFormContext<T>
+  >;
+
   interface Window {
     ctx: { user: User };
     // or: ctx?: YourType
+  }
+}
+
+// extend declaration
+declare module '@mui/material/styles' {
+  interface ChartPalette {
+    background: string;
+    textColor: string;
+    grid: string;
+    crosshair: string;
+    border: string;
+  }
+
+  // This extends the theme config type: createTheme({ palette: { chart: ... } })
+
+  interface Palette {
+    chart: ChartPalette;
+  }
+
+  interface PaletteOptions {
+    chart?: ChartPalette;
   }
 }

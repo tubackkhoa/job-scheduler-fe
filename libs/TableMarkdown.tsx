@@ -1,4 +1,3 @@
-import { FieldProps } from '@rjsf/utils';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Table,
@@ -10,8 +9,6 @@ import {
   TableSortLabel,
   TablePagination,
   Box,
-  TextField,
-  Chip,
   Button,
   Popover,
   FormControlLabel,
@@ -98,33 +95,6 @@ function floorToMinuteUtc(input) {
 }
 
 const positionsCache = {};
-async function fetchPositions(
-  baseUrl: string,
-  apiKey: string,
-  startTime?: string,
-): Promise<Position[]> {
-  const url = new URL(`${baseUrl}/api/test-system/models/positions`);
-
-  if (startTime) {
-    url.searchParams.set('startTime', startTime);
-  }
-
-  const res = await fetch(url.toString(), {
-    method: 'GET',
-    headers: {
-      'test-system-api-key': apiKey,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!res.ok) {
-    throw new Error(`fetchPositions failed: ${res.status} ${res.statusText}`);
-  }
-
-  const data = await res.json();
-
-  return Array.isArray(data?.positions) ? data.positions : [];
-}
 
 function buildPnlMap(positions: Position[]): Map<string, number> {
   const pnlMap = new Map<string, number>();
@@ -245,8 +215,7 @@ function parseTableMessage(message: string): ParsedTable | null {
 }
 
 async function buildSignalComparison(
-  baseUrl: string,
-  apiKey: string,
+  pluginPackage: string,
   modelKeys: string[],
   messages: Message[],
 ): Promise<Output> {
@@ -327,12 +296,16 @@ async function buildSignalComparison(
   const minTime = new Date(
     Math.min(...flatRows.map((r) => r.pred_time.getTime())),
   );
-  const startTimeIso = minTime.toISOString();
+  const startTime = minTime.toISOString();
 
   const positions =
-    positionsCache[startTimeIso] ??
-    (await fetchPositions(baseUrl, apiKey, startTimeIso));
-  positionsCache[startTimeIso] = positions;
+    positionsCache[startTime] ??
+    (await Utils.jinjaEvaluate(
+      pluginPackage,
+      '{{fetch_positions(startTime=startTime) | tojson }}',
+      { startTime },
+    ));
+  positionsCache[startTime] = positions;
 
   const pnlMap = buildPnlMap(positions);
 
@@ -417,7 +390,7 @@ function getComparator<Key extends keyof any>(order: Order, orderBy: Key) {
 export default function SignalComparisonTable({
   formData,
   registry,
-}: FieldProps<string>) {
+}: ConfigFieldProps<string>) {
   const [order, setOrder] = useState<Order>('desc');
   const [orderBy, setOrderBy] = useState<'time' | 'symbol'>('time');
   const [page, setPage] = useState(0);
@@ -441,11 +414,8 @@ export default function SignalComparisonTable({
       try {
         const { messages, modelKeys } = Utils.convertByType(formData, 'object');
 
-        const { webhook_url, webhook_api_key } = registry.formContext.formData;
-
         const result = await buildSignalComparison(
-          webhook_url,
-          webhook_api_key,
+          registry.formContext.pluginPackage,
           modelKeys,
           messages,
         );
@@ -457,7 +427,7 @@ export default function SignalComparisonTable({
     }
 
     run();
-  }, [formData, registry.formContext.formData]);
+  }, [formData]);
 
   const rows = data?.rows;
   const models = data?.columns ?? [];
@@ -484,6 +454,19 @@ export default function SignalComparisonTable({
   };
 
   const activeModels = models.filter((m) => visibleColumns[m]);
+
+  /* ---------- Sorting ---------- */
+
+  const handleRequestSort = (property: 'time' | 'symbol') => {
+    setOrder((prevOrder) => {
+      const isSameColumn = orderBy === property;
+      if (isSameColumn) {
+        return prevOrder === 'asc' ? 'desc' : 'asc';
+      }
+      return 'asc';
+    });
+    setOrderBy(property);
+  };
 
   /* ---------- Filtering ---------- */
 
@@ -572,7 +555,7 @@ export default function SignalComparisonTable({
                 <TableSortLabel
                   active={orderBy === 'time'}
                   direction={order}
-                  onClick={() => setOrderBy('time')}
+                  onClick={() => handleRequestSort('time')}
                 >
                   Time
                 </TableSortLabel>
@@ -582,7 +565,7 @@ export default function SignalComparisonTable({
                 <TableSortLabel
                   active={orderBy === 'symbol'}
                   direction={order}
-                  onClick={() => setOrderBy('symbol')}
+                  onClick={() => handleRequestSort('symbol')}
                 >
                   Symbol
                 </TableSortLabel>

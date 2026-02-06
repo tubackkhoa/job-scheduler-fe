@@ -13,13 +13,12 @@ import {
   Tooltip,
   Typography,
   ListItemText,
-  Alert,
 } from '@mui/material';
 import Masonry from '@mui/lab/Masonry';
 import { Card, CardHeader, CardContent } from '@mui/material';
 import React, { useMemo, useEffect, useState } from 'react';
 
-import { Clear, DeleteOutline, Settings } from '@mui/icons-material';
+import { Clear, Settings } from '@mui/icons-material';
 import DynamicField from './fields/DynamicField';
 import { FieldProps } from '@rjsf/utils';
 import { LoadingSkeleton } from './Loading';
