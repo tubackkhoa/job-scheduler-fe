@@ -11,7 +11,6 @@ import {
   Menu,
   MenuItem,
   Tooltip,
-  Typography,
   ListItemText,
 } from '@mui/material';
 import Masonry from '@mui/lab/Masonry';
@@ -110,13 +109,15 @@ export function SortableWidget({
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id, animateLayoutChanges: defaultAnimateLayoutChanges });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
   return (
-    <Card ref={setNodeRef} style={style} {...attributes}>
+    <Card
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
+      {...attributes}
+    >
       <CardHeader
         title={
           <Box
@@ -220,31 +221,22 @@ export function PortalPage({ plugins, routeState }: Props) {
   }, [initialWidgets]);
 
   return (
-    <>
-      {/* Header / Actions */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          px: 1,
-          mb: 2,
-        }}
+    <Box
+      sx={{
+        position: 'relative',
+        px: 2,
+        mt: 4,
+      }}
+    >
+      <Button
+        variant="outlined"
+        size="small"
+        sx={{ position: 'absolute', right: 20, mt: -7 }}
+        startIcon={<RestartAltIcon />}
+        onClick={handleResetLayout}
       >
-        <Typography variant="h5" fontWeight={600} gutterBottom>
-          Portal
-        </Typography>
-
-        <Button
-          variant="outlined"
-          size="small"
-          startIcon={<RestartAltIcon />}
-          onClick={handleResetLayout}
-        >
-          Reset layout
-        </Button>
-      </Box>
-
-      {/* Dashboard */}
+        Reset layout
+      </Button>
 
       <DndContext
         collisionDetection={closestCenter}
@@ -296,6 +288,6 @@ export function PortalPage({ plugins, routeState }: Props) {
           <LoadingSkeleton />
         )}
       </DndContext>
-    </>
+    </Box>
   );
 }
