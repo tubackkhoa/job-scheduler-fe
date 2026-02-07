@@ -458,7 +458,7 @@ export const jinjaLinter = (
 };
 
 declare module 'esbuild-wasm' {
-  const initialized: boolean;
+  let initialized: boolean;
 }
 const initEsBuild: Promise<typeof esbuild> = (async () => {
   if (!esbuild.initialized) {
