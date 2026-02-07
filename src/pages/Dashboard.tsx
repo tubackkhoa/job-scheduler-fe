@@ -69,14 +69,14 @@ export default function Dashboard({ setLoading, setError }) {
   }, []);
   return (
     <Box>
-      <Box sx={{ mt: 4 }}>
+      <Box sx={{ my: 3, mx: 1 }}>
         <Typography variant="h5" fontWeight={600} gutterBottom>
           Portal
         </Typography>
         {plugins && <PortalPage plugins={plugins} routeState={routeState} />}
       </Box>
 
-      <Box sx={{ mt: 4 }}>
+      <Box sx={{ my: 3, mx: 1 }}>
         <Typography variant="h5" fontWeight={600} gutterBottom>
           Site map
         </Typography>
@@ -88,7 +88,7 @@ export default function Dashboard({ setLoading, setError }) {
           />
         )}
       </Box>
-      <Box sx={{ mt: 4 }}>
+      <Box sx={{ my: 3, mx: 1 }}>
         <Typography variant="h5" fontWeight={600} gutterBottom>
           User Role Management
         </Typography>

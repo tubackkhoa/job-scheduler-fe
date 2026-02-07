@@ -227,14 +227,12 @@ export function PortalPage({ plugins, routeState }: Props) {
     <Box
       sx={{
         position: 'relative',
-        mt: 4,
-        pl: 2,
       }}
     >
       <Button
         variant="outlined"
         size="small"
-        sx={{ position: 'absolute', right: 15, mt: -7 }}
+        sx={{ position: 'absolute', right: 0, mt: -5 }}
         startIcon={<RestartAltIcon />}
         onClick={handleResetLayout}
       >
@@ -270,7 +268,7 @@ export function PortalPage({ plugins, routeState }: Props) {
             <Masonry
               columns={{ xs: 1, sm: 2, md: 3 }}
               spacing={2}
-              sx={{ overflow: 'hidden' }}
+              sx={{ overflow: 'hidden', m: 0, width: '100%' }}
             >
               {widgets.map(({ id, title, props }) => (
                 <SortableWidget
