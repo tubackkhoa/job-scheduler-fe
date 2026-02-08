@@ -457,13 +457,10 @@ export const jinjaLinter = (
   });
 };
 
-declare module 'esbuild-wasm' {
-  let initialized: boolean;
-}
 const initEsBuild: Promise<typeof esbuild> = (async () => {
-  if (!esbuild.initialized) {
+  if (!globalThis.__esbuild_init__) {
     // @ts-ignore
-    esbuild.initialized = true;
+    globalThis.__esbuild_init__ = true;
     await esbuild.initialize({
       wasmURL: wasmUrl,
       worker: true,

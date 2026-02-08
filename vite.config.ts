@@ -16,24 +16,33 @@ export default defineConfig(({ mode }) => {
   const enableProxy = env.VITE_PROXY === 'true';
 
   return {
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) return 'vendor';
+          },
+        },
+      },
+    },
     plugins: [react({ babel: { plugins: ['babel-plugin-react-compiler'] } })],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, 'src')
-      }
+        '@': path.resolve(__dirname, 'src'),
+      },
     },
     preview: {
-      allowedHosts
+      allowedHosts,
     },
     server: {
       ...(enableProxy && {
         proxy: {
           '^/(api|auth|health)': {
             target: env.VITE_API_BASE_URL,
-            changeOrigin: true
-          }
-        }
-      })
-    }
+            changeOrigin: true,
+          },
+        },
+      }),
+    },
   };
 });
