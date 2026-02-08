@@ -8,7 +8,6 @@ import {
   ListItemIcon,
   Tooltip,
 } from '@mui/material';
-import { Edit, Extension, Route } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { LoadingSkeleton } from './Loading';
 
@@ -34,7 +33,7 @@ export function PluginSitemap({ plugins, routeState, loadRoutes }: Props) {
             <Box key={plugin.id}>
               <ListItemButton onClick={() => loadRoutes(plugin.id)}>
                 <ListItemIcon sx={{ minWidth: 36 }}>
-                  <Extension fontSize="small" />
+                  <AppIcon.Extension fontSize="small" />
                 </ListItemIcon>
 
                 <ListItemText
@@ -60,7 +59,7 @@ export function PluginSitemap({ plugins, routeState, loadRoutes }: Props) {
                     to={`/plugins/${plugin.id}`}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <Edit fontSize="small" />
+                    <AppIcon.Edit fontSize="small" />
                   </IconButton>
                 </Tooltip>
               </ListItemButton>
@@ -79,7 +78,7 @@ export function PluginSitemap({ plugins, routeState, loadRoutes }: Props) {
                         }
                       >
                         <ListItemIcon sx={{ minWidth: 32 }}>
-                          <Route fontSize="small" />
+                          <AppIcon.Route fontSize="small" />
                         </ListItemIcon>
                         <ListItemText
                           primary={route}

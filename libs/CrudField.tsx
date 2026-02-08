@@ -14,7 +14,6 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
-import { Delete, Add, Refresh } from '@mui/icons-material';
 
 const { ConfirmationDialog } = Components;
 const { _, buildJinjaContext } = Utils;
@@ -295,14 +294,14 @@ export default function ({
           />
 
           <IconButton size="small" onClick={refreshList} disabled={loading}>
-            <Refresh />
+            <AppIcon.Refresh />
           </IconButton>
 
           {createSchema && schema['model:expr']?.['create'] && (
             <Button
               variant="contained"
               size="small"
-              startIcon={<Add />}
+              startIcon={<AppIcon.Add />}
               onClick={handleOpenCreateDialog}
               sx={{ minWidth: 100 }}
             >
@@ -318,7 +317,7 @@ export default function ({
               disabled={deleting}
               title="Deactivate"
             >
-              <Delete />
+              <AppIcon.Delete />
             </IconButton>
           )}
         </Stack>

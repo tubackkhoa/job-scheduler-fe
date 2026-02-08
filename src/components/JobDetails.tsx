@@ -14,19 +14,6 @@ import {
   Divider,
 } from '@mui/material';
 import { ConfirmationDialog } from './ConfirmationDialog';
-import {
-  PlayArrow,
-  Pause,
-  Settings,
-  Terminal,
-  Delete,
-  Save,
-  AddCircleOutline,
-  SignalCellularAlt,
-  SettingsApplications,
-  Code,
-} from '@mui/icons-material';
-
 import { ConfigForm } from './ConfigForm';
 import LogViewer from './LogViewer';
 import SignalsLogsViewer from './SignalsLogsViewer';
@@ -182,9 +169,9 @@ export function JobDetails({
                   isToggling ? (
                     <CircularProgress size={16} color="inherit" />
                   ) : isActive ? (
-                    <Pause />
+                    <AppIcon.Pause />
                   ) : (
-                    <PlayArrow />
+                    <AppIcon.PlayArrow />
                   )
                 }
                 onClick={async () => {
@@ -262,20 +249,20 @@ export function JobDetails({
             >
               <Tab
                 value={0}
-                icon={<Settings sx={{ fontSize: 18 }} />}
+                icon={<AppIcon.Settings sx={{ fontSize: 18 }} />}
                 iconPosition="start"
                 label="Config Form"
               />
               <Tab
                 value={1}
-                icon={<SettingsApplications sx={{ fontSize: 18 }} />}
+                icon={<AppIcon.SettingsApplications sx={{ fontSize: 18 }} />}
                 iconPosition="start"
                 label="Environment"
               />
 
               <Tab
                 value={2}
-                icon={<Terminal sx={{ fontSize: 18 }} />}
+                icon={<AppIcon.Terminal sx={{ fontSize: 18 }} />}
                 iconPosition="start"
                 label="Live Logs"
               />
@@ -283,7 +270,7 @@ export function JobDetails({
               {schema.keyword && (
                 <Tab
                   value={3}
-                  icon={<SignalCellularAlt sx={{ fontSize: 18 }} />}
+                  icon={<AppIcon.SignalCellularAlt sx={{ fontSize: 18 }} />}
                   iconPosition="start"
                   label="Signals Logs"
                 />
@@ -292,7 +279,7 @@ export function JobDetails({
               {isUserPlugin && (
                 <Tab
                   value={4}
-                  icon={<Code sx={{ fontSize: 18 }} />}
+                  icon={<AppIcon.Code sx={{ fontSize: 18 }} />}
                   iconPosition="start"
                   label="Code"
                 />
@@ -367,7 +354,7 @@ export function JobDetails({
           >
             <Button
               variant="contained"
-              startIcon={<Save />}
+              startIcon={<AppIcon.Save />}
               onClick={() => {
                 if (typeof pluginId === 'string') {
                   return onSave(localFormData);
@@ -382,7 +369,7 @@ export function JobDetails({
             {jobId > 0 && (
               <Button
                 variant="outlined"
-                startIcon={<AddCircleOutline />}
+                startIcon={<AppIcon.AddCircleOutline />}
                 onClick={() => openConfirmDialog('saveAsNew')}
                 disabled={isSubmitting}
               >
@@ -394,7 +381,7 @@ export function JobDetails({
               <Button
                 variant="outlined"
                 color="error"
-                startIcon={<Delete />}
+                startIcon={<AppIcon.Delete />}
                 onClick={() => openConfirmDialog('delete')}
                 disabled={isSubmitting}
               >

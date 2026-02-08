@@ -16,7 +16,6 @@ import {
   TextField,
   Autocomplete,
 } from '@mui/material';
-import { Refresh, Person, Add } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
 export function ContextPanel({
@@ -60,7 +59,7 @@ export function ContextPanel({
               height: 44,
             }}
           >
-            <Person />
+            <AppIcon.Person />
           </Avatar>
           <Box>
             {ctx?.user && (
@@ -144,7 +143,7 @@ export function ContextPanel({
                                   },
                                 }}
                               >
-                                <Refresh
+                                <AppIcon.Refresh
                                   sx={{
                                     animation: isLoading
                                       ? 'spin 1s linear infinite'
@@ -197,7 +196,7 @@ export function ContextPanel({
           {/* Create plugin */}
           <Button
             variant="outlined"
-            startIcon={<Add />}
+            startIcon={<AppIcon.Add />}
             onClick={onCreatePlugin}
             disabled={isLoading}
             fullWidth

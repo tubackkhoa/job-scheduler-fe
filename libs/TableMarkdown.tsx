@@ -15,7 +15,6 @@ import {
   Checkbox,
   Stack,
 } from '@mui/material';
-import { ViewColumn } from '@mui/icons-material';
 
 type Direction = 'LONG' | 'SHORT' | 'NONE';
 const COLOR_LONG = '#24fc03';
@@ -469,7 +468,7 @@ const SignalComparisonTable = memo(function SignalComparisonTable({
     <>
       <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
         <Button
-          startIcon={<ViewColumn />}
+          startIcon={<AppIcon.ViewColumn />}
           onClick={(e) => setAnchorEl(e.currentTarget)}
           variant="outlined"
           size="small"

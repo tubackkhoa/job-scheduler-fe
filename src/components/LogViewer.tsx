@@ -12,7 +12,6 @@ import {
   List,
   ListItem,
 } from '@mui/material';
-import { Terminal, Delete, Search, Refresh } from '@mui/icons-material';
 import api from '@/api';
 import { formatMessage, getLevelColor } from '@/utils';
 
@@ -227,7 +226,7 @@ export default function LogViewer({
       {/* Header */}
       <Stack direction="row" justifyContent="space-between">
         <Stack direction="row" spacing={1}>
-          <Terminal fontSize="small" />
+          <AppIcon.Terminal fontSize="small" />
           <Typography variant="body2">Logs for {description}</Typography>
         </Stack>
 
@@ -250,7 +249,7 @@ export default function LogViewer({
               size="small"
               disabled={isLoading}
             >
-              <Refresh fontSize="small" />
+              <AppIcon.Refresh fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title="Clear logs">
@@ -266,7 +265,7 @@ export default function LogViewer({
               }}
               size="small"
             >
-              <Delete fontSize="small" />
+              <AppIcon.Delete fontSize="small" />
             </IconButton>
           </Tooltip>
         </Stack>
@@ -291,7 +290,7 @@ export default function LogViewer({
         }}
         slotProps={{
           input: {
-            startAdornment: <Search fontSize="small" sx={{ mr: 1 }} />,
+            startAdornment: <AppIcon.Search fontSize="small" sx={{ mr: 1 }} />,
           },
         }}
       />
@@ -371,7 +370,7 @@ export default function LogViewer({
               },
             }}
           >
-            <Refresh fontSize="small" />
+            <AppIcon.Refresh fontSize="small" />
           </IconButton>
         </Tooltip>
       </Box>

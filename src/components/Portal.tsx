@@ -1,6 +1,5 @@
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, arrayMove, useSortable } from '@dnd-kit/sortable';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import {
   Box,
   Button,
@@ -15,8 +14,6 @@ import {
 import Masonry from '@mui/lab/Masonry';
 import { Card, CardHeader, CardContent } from '@mui/material';
 import React, { useMemo, useEffect, useState } from 'react';
-
-import { Clear, Settings } from '@mui/icons-material';
 import DynamicField from './fields/DynamicField';
 import { FieldProps } from '@rjsf/utils';
 
@@ -70,7 +67,7 @@ function WidgetSettingsButton({ onRemove }) {
           onClick={handleOpen}
           sx={{ color: 'text.secondary' }}
         >
-          <Settings fontSize="small" />
+          <AppIcon.Settings fontSize="small" />
         </IconButton>
       </Tooltip>
 
@@ -84,7 +81,7 @@ function WidgetSettingsButton({ onRemove }) {
       >
         <MenuItem onClick={handleRemove}>
           <ListItemIcon>
-            <Clear fontSize="small" />
+            <AppIcon.Clear fontSize="small" />
           </ListItemIcon>
           <ListItemText>Remove</ListItemText>
         </MenuItem>
@@ -243,7 +240,7 @@ export function PortalPage({ plugins, routeState }: Props) {
         <Button
           variant="outlined"
           size="small"
-          startIcon={<RestartAltIcon />}
+          startIcon={<AppIcon.RestartAlt />}
           onClick={handleResetLayout}
         >
           Reset layout

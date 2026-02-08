@@ -11,8 +11,6 @@ import {
   InputAdornment,
   Button,
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import SearchIcon from '@mui/icons-material/Search';
 import { useMemo, useDeferredValue } from 'react';
 import { jinjaEvaluate } from '@/utils';
 
@@ -144,7 +142,7 @@ const DocItemAccordion = memo(function DocItemAccordion({
         },
       }}
     >
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+      <AccordionSummary expandIcon={<AppIcon.ExpandMore />}>
         <Box
           display="flex"
           alignItems="center"
@@ -401,7 +399,7 @@ export default function JinjaEnvDocs({ data, pluginPackage, params }: Props) {
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon fontSize="small" />
+                <AppIcon.Search fontSize="small" />
               </InputAdornment>
             ),
           },

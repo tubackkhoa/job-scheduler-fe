@@ -2,17 +2,22 @@ import { FieldProps, RJSFSchema } from '@rjsf/utils';
 import dayjs from 'dayjs';
 import * as UtilsNS from './utils';
 import _ from 'lodash';
+import AppIconNS from './components/AppIcon';
 import ComponentsNS from './components';
 import ApiNS from './api';
 import ReactNS from 'react';
+import { loadPyodide as loadPyodideNS } from 'pyodide';
 
 declare global {
+  const AppIcon: typeof AppIconNS;
   const Components: typeof ComponentsNS;
   const api: typeof ApiNS;
   const Utils: typeof UtilsNS & {
     _: typeof _;
     dayjs: typeof dayjs;
   };
+
+  const loadPyodide: typeof loadPyodideNS;
 
   type Order = 'asc' | 'desc';
 

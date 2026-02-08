@@ -26,23 +26,8 @@ import {
   TableSortLabel,
   Card,
   Autocomplete,
+  Icon,
 } from '@mui/material';
-import {
-  KeyboardArrowDown,
-  KeyboardArrowUp,
-  Memory,
-  Storage,
-  AccessTime,
-  SignalCellularAlt,
-  Edit,
-  FirstPage,
-  LastPage,
-  ChevronLeft,
-  ChevronRight,
-  Search,
-  FilterList,
-  Clear,
-} from '@mui/icons-material';
 import { useState, Fragment, useEffect, useCallback } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 
@@ -102,7 +87,7 @@ function JobRowComponent({
       >
         <TableCell sx={{ width: 50 }}>
           <IconButton size="small">
-            {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+            {open ? <AppIcon.KeyboardArrowUp /> : <AppIcon.KeyboardArrowDown />}
           </IconButton>
         </TableCell>
         <TableCell>
@@ -151,7 +136,7 @@ function JobRowComponent({
         </TableCell>
         <TableCell>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Memory sx={{ fontSize: 16, color: 'text.secondary' }} />
+            <AppIcon.Memory sx={{ fontSize: 16, color: 'text.secondary' }} />
             <Typography variant="body2">
               {(configObj as any)?.model_key || (job as any)?.model_key || '-'}
             </Typography>
@@ -159,7 +144,7 @@ function JobRowComponent({
         </TableCell>
         <TableCell>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Storage sx={{ fontSize: 16, color: 'text.secondary' }} />
+            <AppIcon.Storage sx={{ fontSize: 16, color: 'text.secondary' }} />
             <Tooltip title={valueVersion?.name || ''}>
               <Typography variant="body2">
                 {valueVersion?.name || '-'}
@@ -175,7 +160,7 @@ function JobRowComponent({
             alignItems="center"
             sx={{ minWidth: 0 }}
           >
-            <Storage sx={{ fontSize: 16, color: 'text.secondary' }} />
+            <AppIcon.Storage sx={{ fontSize: 16, color: 'text.secondary' }} />
             <Tooltip title={pluginName}>
               <Typography
                 variant="body2"
@@ -193,7 +178,7 @@ function JobRowComponent({
 
         <TableCell>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Storage sx={{ fontSize: 16, color: 'text.secondary' }} />
+            <AppIcon.Storage sx={{ fontSize: 16, color: 'text.secondary' }} />
             <Tooltip title={env}>
               <Typography variant="body2">{env}</Typography>
             </Tooltip>
@@ -203,7 +188,9 @@ function JobRowComponent({
         <TableCell>
           <Tooltip title="Last Signal">
             <Stack direction="row" spacing={1} alignItems="center">
-              <AccessTime sx={{ fontSize: 16, color: 'text.secondary' }} />
+              <AppIcon.AccessTime
+                sx={{ fontSize: 16, color: 'text.secondary' }}
+              />
               <Typography variant="body2">
                 {signals.length
                   ? dayjs(signals[0].captured_at).format('DD:MM:YYYY HH:mm:ss')
@@ -226,7 +213,7 @@ function JobRowComponent({
                 to={`/plugins/${job.plugin_id}/sessions/${job.session_id}/jobs/${job.id}`}
                 component={RouterLink}
               >
-                <Edit fontSize="small" />
+                <AppIcon.Edit fontSize="small" />
               </IconButton>
             </Tooltip>
           </Stack>
@@ -247,9 +234,9 @@ function JobRowComponent({
                     alignItems="center"
                     sx={{ mb: 2 }}
                   >
-                    <SignalCellularAlt
-                      sx={{ fontSize: 18, color: 'secondary.main' }}
-                    />
+                    <Icon sx={{ fontSize: 18, color: 'secondary.main' }}>
+                      signal_cellular_alt
+                    </Icon>
                     <Typography variant="subtitle2" fontWeight={600}>
                       Latest Signals
                     </Typography>
@@ -436,7 +423,11 @@ export default function JobStatsTable({
             onChange={(e) => setSearchText(e.target.value)}
             slotProps={{
               input: {
-                startAdornment: <Search color="action" sx={{ mr: 1 }} />,
+                startAdornment: (
+                  <Icon color="action" sx={{ mr: 1 }}>
+                    search
+                  </Icon>
+                ),
                 sx: { borderRadius: 2, bgcolor: 'background.default' },
               },
             }}
@@ -451,7 +442,7 @@ export default function JobStatsTable({
           >
             {/* Filters label */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <FilterList fontSize="small" color="action" />
+              <AppIcon.FilterList fontSize="small" color="action" />
               <Typography
                 variant="body2"
                 fontWeight={600}
@@ -528,7 +519,7 @@ export default function JobStatsTable({
 
             <Button
               variant="outlined"
-              startIcon={<Clear />}
+              startIcon={<AppIcon.Clear />}
               size="small"
               fullWidth
               sx={{ alignSelf: { md: 'center' } }}
@@ -675,7 +666,7 @@ export default function JobStatsTable({
                 onClick={() => handlePageChange(0)}
                 disabled={page === 0}
               >
-                <FirstPage fontSize="small" />
+                <AppIcon.FirstPage fontSize="small" />
               </IconButton>
             </span>
           </Tooltip>
@@ -687,7 +678,7 @@ export default function JobStatsTable({
                 onClick={() => handlePageChange(page - 1)}
                 disabled={page === 0}
               >
-                <ChevronLeft fontSize="small" />
+                <AppIcon.ChevronLeft fontSize="small" />
               </IconButton>
             </span>
           </Tooltip>
@@ -710,7 +701,7 @@ export default function JobStatsTable({
                 onClick={() => handlePageChange(page + 1)}
                 disabled={page >= totalPages - 1}
               >
-                <ChevronRight fontSize="small" />
+                <AppIcon.ChevronRight fontSize="small" />
               </IconButton>
             </span>
           </Tooltip>
@@ -722,7 +713,7 @@ export default function JobStatsTable({
                 onClick={() => handlePageChange(totalPages - 1)}
                 disabled={page >= totalPages - 1}
               >
-                <LastPage fontSize="small" />
+                <AppIcon.LastPage fontSize="small" />
               </IconButton>
             </span>
           </Tooltip>

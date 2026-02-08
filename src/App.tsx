@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Box, Container, CssBaseline, ThemeProvider } from '@mui/material';
+import './polyfill';
 import { Header } from './components/Header';
 import { LoadingBar } from './components/Loading';
 import { ErrorAlert } from './components/ErrorAlert';
@@ -14,7 +15,6 @@ import Dashboard from './pages/Dashboard';
 import ChatBot from './pages/ChatBot';
 import PageNotFound from './pages/PageNotFound';
 import CustomPluginPage from './pages/CustomPluginPage';
-import './polyfill';
 
 export default function App() {
   // to show loading and error global

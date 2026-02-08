@@ -6,29 +6,29 @@ import {
   Button,
   Typography,
   Box,
-  Stack
+  Stack,
 } from '@mui/material';
-import { Warning, Info, Error } from '@mui/icons-material';
+import AppIcon from './AppIcon';
 
 const SEVERITY_CONFIG = {
   warning: {
-    icon: Warning,
+    icon: AppIcon.Warning,
     color: 'warning.main',
     bgColor: 'rgba(245, 158, 11, 0.1)',
-    confirmColor: 'warning'
+    confirmColor: 'warning',
   },
   info: {
-    icon: Info,
+    icon: AppIcon.Info,
     color: 'info.main',
     bgColor: 'rgba(59, 130, 246, 0.1)',
-    confirmColor: 'primary'
+    confirmColor: 'primary',
   },
   error: {
-    icon: Error,
+    icon: AppIcon.Error,
     color: 'error.main',
     bgColor: 'rgba(239, 68, 68, 0.1)',
-    confirmColor: 'error'
-  }
+    confirmColor: 'error',
+  },
 };
 
 export type ConfirmationSeverity = 'info' | 'success' | 'warning' | 'error';
@@ -56,7 +56,7 @@ export function ConfirmationDialog({
   severity = 'warning',
   confirmText = 'Confirm',
   cancelText = 'Cancel',
-  isLoading = false
+  isLoading = false,
 }: ConfirmationDialogProps) {
   const config = SEVERITY_CONFIG[severity] || SEVERITY_CONFIG.warning;
   const IconComponent = config.icon;
@@ -71,9 +71,9 @@ export function ConfirmationDialog({
         paper: {
           sx: {
             bgcolor: 'background.paper',
-            borderRadius: 2
-          }
-        }
+            borderRadius: 2,
+          },
+        },
       }}
     >
       <DialogTitle>
@@ -86,7 +86,7 @@ export function ConfirmationDialog({
               width: 40,
               height: 40,
               borderRadius: '50%',
-              bgcolor: config.bgColor
+              bgcolor: config.bgColor,
             }}
           >
             <IconComponent sx={{ color: config.color, fontSize: 24 }} />
@@ -109,7 +109,7 @@ export function ConfirmationDialog({
                 border: '1px solid',
                 color: 'text.secondary',
                 whiteSpace: 'pre-line',
-                borderColor: config.color
+                borderColor: config.color,
               }}
             >
               {message}
