@@ -1,5 +1,4 @@
 import { Alert, AlertTitle, IconButton } from '@mui/material';
-import { Close } from '@mui/icons-material';
 
 interface Props {
   message: string;
@@ -18,13 +17,13 @@ export function ErrorAlert({ message, onClose }: Props) {
             size="small"
             onClick={onClose}
           >
-            <Close fontSize="small" />
+            <AppIcon.Close fontSize="small" />
           </IconButton>
         )
       }
       sx={{
         borderRadius: 2,
-        bgcolor: 'rgba(239, 68, 68, 0.08)'
+        bgcolor: 'rgba(239, 68, 68, 0.08)',
       }}
     >
       <AlertTitle>Error</AlertTitle>

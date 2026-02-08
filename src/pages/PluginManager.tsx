@@ -11,7 +11,6 @@ import validator from '@rjsf/validator-ajv8';
 import api from '@/api';
 import { getEnvDoc } from '@/utils';
 import { useParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 
 const PANEL_OPEN_KEY = 'panel_open';
 
@@ -327,7 +326,7 @@ export default function PluginManager({ setLoading, setError }) {
             zIndex: 9999,
           }}
         >
-          {isPanelOpen ? <ChevronLeft /> : <ChevronRight />}
+          {isPanelOpen ? <AppIcon.ChevronLeft /> : <AppIcon.ChevronRight />}
         </IconButton>
       )}
       <Grid container spacing={3} sx={{ mt: 1 }}>

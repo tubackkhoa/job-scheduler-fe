@@ -13,7 +13,6 @@ import {
   Switch,
   CircularProgress,
 } from '@mui/material';
-import { Add, NoteAdd } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
 export function JobsList({
@@ -39,7 +38,7 @@ export function JobsList({
           <Button
             variant="contained"
             size="small"
-            startIcon={<Add />}
+            startIcon={<AppIcon.Add />}
             onClick={onNewJob}
             disabled={disabled}
           >
@@ -75,7 +74,7 @@ export function JobsList({
                 transition: 'all 0.2s ease',
               }}
             >
-              <NoteAdd sx={{ mr: 1.5, color: 'secondary.main' }} />
+              <AppIcon.NoteAdd sx={{ mr: 1.5, color: 'secondary.main' }} />
               <ListItemText
                 primary={
                   <Stack direction="row" alignItems="center" spacing={1}>

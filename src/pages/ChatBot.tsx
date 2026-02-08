@@ -13,8 +13,6 @@ import {
   Grid,
   Chip,
 } from '@mui/material';
-import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
-import EditIcon from '@mui/icons-material/Edit';
 import { LanguageDescription } from '@codemirror/language';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
@@ -161,13 +159,13 @@ export default function ChatBot() {
           <Tab
             value="generate"
             label="Generate"
-            icon={<AutoFixHighIcon />}
+            icon={<AppIcon.AutoFixHigh />}
             iconPosition="start"
           />
           <Tab
             value="edit"
             label="Edit"
-            icon={<EditIcon />}
+            icon={<AppIcon.Edit />}
             iconPosition="start"
           />
         </Tabs>

@@ -7,15 +7,6 @@ import {
   MenuItem,
   ListItemIcon,
 } from '@mui/material';
-
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import MenuIcon from '@mui/icons-material/Menu';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import ExtensionIcon from '@mui/icons-material/Extension';
-import LogoutIcon from '@mui/icons-material/Logout';
-import ChatbotIcon from '@mui/icons-material/ChatBubbleOutline';
-
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { scrollToTop, useAppColorScheme } from '@/utils';
@@ -112,7 +103,7 @@ export function Header({ height }: { height: number }) {
           color="inherit"
           disableRipple
         >
-          {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+          {mode === 'dark' ? <AppIcon.LightMode /> : <AppIcon.DarkMode />}
         </IconButton>
         <IconButton
           color="inherit"
@@ -121,7 +112,7 @@ export function Header({ height }: { height: number }) {
           }}
           size="large"
         >
-          <MenuIcon />
+          <AppIcon.Menu />
         </IconButton>
 
         <Menu
@@ -139,14 +130,14 @@ export function Header({ height }: { height: number }) {
         >
           <MenuItem onClick={() => handleNavigate('/')}>
             <ListItemIcon>
-              <DashboardIcon fontSize="small" />
+              <AppIcon.Dashboard fontSize="small" />
             </ListItemIcon>
             Dashboard
           </MenuItem>
 
           <MenuItem onClick={() => handleNavigate('/plugins')}>
             <ListItemIcon>
-              <ExtensionIcon fontSize="small" />
+              <AppIcon.Extension fontSize="small" />
             </ListItemIcon>
             Plugin Manager
           </MenuItem>
@@ -154,7 +145,7 @@ export function Header({ height }: { height: number }) {
           {import.meta.env.VITE_CHATBOT_ENABLED && (
             <MenuItem onClick={() => handleNavigate('/chatbot')}>
               <ListItemIcon>
-                <ChatbotIcon fontSize="small" />
+                <AppIcon.ChatBubbleOutline fontSize="small" />
               </ListItemIcon>
               Chatbot
             </MenuItem>
@@ -162,7 +153,7 @@ export function Header({ height }: { height: number }) {
 
           <MenuItem onClick={() => logout()}>
             <ListItemIcon>
-              <LogoutIcon fontSize="small" />
+              <AppIcon.Logout fontSize="small" />
             </ListItemIcon>
             Logout
           </MenuItem>

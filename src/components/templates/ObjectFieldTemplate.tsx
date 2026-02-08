@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 import type {
   ObjectFieldTemplatePropertyType,
-  ObjectFieldTemplateProps
+  ObjectFieldTemplateProps,
 } from '@rjsf/utils';
 import _ from 'lodash';
 import {
@@ -10,9 +10,8 @@ import {
   Grid,
   Breakpoint,
   GridSize,
-  Stack
+  Stack,
 } from '@mui/material';
-import { Settings } from '@mui/icons-material';
 
 type UISchema = {
   'ui:field'?: string;
@@ -48,7 +47,7 @@ const fieldWrapperStyle = {
   bgcolor: { xs: 'transparent', sm: 'rgba(99, 102, 241, 0.04)' },
   border: { xs: 'none', sm: 1 },
   borderColor: { xs: 'transparent', sm: 'divider' },
-  borderRadius: { xs: 0, sm: 3 }
+  borderRadius: { xs: 0, sm: 3 },
 };
 
 type FieldsGridProps = {
@@ -81,12 +80,12 @@ const SectionPaper: React.FC<SectionPaperProps> = ({
   title,
   description,
   isRoot,
-  children
+  children,
 }) => {
   return (
     <Paper elevation={0} sx={fieldWrapperStyle}>
       <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 3 }}>
-        {isRoot && <Settings fontSize="small" color="primary" />}
+        {isRoot && <AppIcon.Settings fontSize="small" color="primary" />}
         <Typography variant="subtitle1" fontWeight={600}>
           {title}
         </Typography>
@@ -108,7 +107,7 @@ const SectionPaper: React.FC<SectionPaperProps> = ({
 // ------------------------------------------------------
 
 export const ObjectFieldTemplate: React.FC<ObjectFieldTemplateProps> = (
-  props
+  props,
 ) => {
   const { title, description, properties, uiSchema, fieldPathId } = props;
 

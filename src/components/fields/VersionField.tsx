@@ -15,7 +15,6 @@ import {
   ListItemText,
   ListItemIcon,
 } from '@mui/material';
-import { Save, PublishedWithChanges } from '@mui/icons-material';
 import { buildJinjaContext } from '@/utils';
 import { ConfirmationDialog } from '../ConfirmationDialog';
 import { SESSIONS } from '@/constants';
@@ -397,7 +396,7 @@ export function VersionField({
           <Button
             variant="contained"
             size="small"
-            startIcon={<Save />}
+            startIcon={<AppIcon.Save />}
             onClick={handleSaveClick}
             disabled={
               saving || applying || !versionName.trim() || !localValue().trim()
@@ -423,7 +422,7 @@ export function VersionField({
               variant="contained"
               size="small"
               color="warning"
-              startIcon={<PublishedWithChanges />}
+              startIcon={<AppIcon.PublishedWithChanges />}
               onClick={handleApplyClick}
               disabled={applying || saving}
               sx={{ minWidth: 100 }}

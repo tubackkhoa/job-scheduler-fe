@@ -9,7 +9,6 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import SaveIcon from '@mui/icons-material/Save';
 import { useEffect, useState } from 'react';
 import api from '@/api';
 import useNotifications from '@/hooks/useNotifications/useNotifications';
@@ -129,7 +128,7 @@ export default function UserRoleManagement({ setError, setLoading }) {
                     onClick={() => updateRoles(user.id, user.roles)}
                     disabled={savingUserId === user.id}
                   >
-                    <SaveIcon />
+                    <AppIcon.Save />
                   </IconButton>
                 </TableCell>
               </TableRow>

@@ -13,7 +13,6 @@ import {
   TableRow,
   TextField,
 } from '@mui/material';
-import { SignalCellularAlt, Delete, Refresh } from '@mui/icons-material';
 import api from '@/api';
 import { formatMessage, transformSignals } from '@/utils';
 import { LoadingSkeleton } from './Loading';
@@ -198,7 +197,7 @@ export default function SignalsLogsViewer({
       {!hideHeader && (
         <Stack direction="row" justifyContent="space-between">
           <Stack direction="row" spacing={1}>
-            <SignalCellularAlt fontSize="small" />
+            <AppIcon.SignalCellularAlt fontSize="small" />
             <Typography variant="body2">
               Signals Logs for {description}
             </Typography>
@@ -211,7 +210,7 @@ export default function SignalsLogsViewer({
                 size="small"
                 disabled={isLoading || !!providedSignals}
               >
-                <Refresh fontSize="small" />
+                <AppIcon.Refresh fontSize="small" />
               </IconButton>
             </Tooltip>
 
@@ -230,7 +229,7 @@ export default function SignalsLogsViewer({
                 size="small"
                 disabled={!!providedSignals}
               >
-                <Delete fontSize="small" />
+                <AppIcon.Delete fontSize="small" />
               </IconButton>
             </Tooltip>
           </Stack>
@@ -264,7 +263,7 @@ export default function SignalsLogsViewer({
               setToDate('');
             }}
           >
-            <Refresh fontSize="small" />
+            <AppIcon.Refresh fontSize="small" />
           </IconButton>
         </Tooltip>
       </Stack>

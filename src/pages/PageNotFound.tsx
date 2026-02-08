@@ -1,6 +1,5 @@
 import { Container, Typography, Button, Box } from '@mui/material';
 import { Link } from 'react-router-dom'; // Assuming you use React Router
-import ErrorIcon from '@mui/icons-material/Error';
 
 export default function PageNotFound() {
   return (
@@ -11,10 +10,10 @@ export default function PageNotFound() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          textAlign: 'center'
+          textAlign: 'center',
         }}
       >
-        <ErrorIcon color="error" sx={{ fontSize: 100, mb: 2 }} />
+        <AppIcon.Error color="error" sx={{ fontSize: 100, mb: 2 }} />
         <Typography variant="h1" component="h1" gutterBottom>
           404
         </Typography>

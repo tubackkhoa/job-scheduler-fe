@@ -1,5 +1,4 @@
 import { Card, CardHeader, CardContent, IconButton, Box } from '@mui/material';
-import { CheckCircle, Cancel, Close } from '@mui/icons-material';
 
 export function ResponseCard({ result, onClose }) {
   const isSuccess = result?.success !== false;
@@ -15,12 +14,16 @@ export function ResponseCard({ result, onClose }) {
     >
       <CardHeader
         avatar={
-          isSuccess ? <CheckCircle color="success" /> : <Cancel color="error" />
+          isSuccess ? (
+            <AppIcon.CheckCircle color="success" />
+          ) : (
+            <AppIcon.Cancel color="error" />
+          )
         }
         title="Server Response"
         action={
           <IconButton onClick={onClose} size="small">
-            <Close />
+            <AppIcon.Close />
           </IconButton>
         }
         slotProps={{

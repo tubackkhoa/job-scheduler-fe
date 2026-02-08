@@ -21,12 +21,6 @@ import {
   useAppColorScheme,
 } from '@/utils';
 import _ from 'lodash';
-import {
-  Check,
-  ContentCopySharp,
-  Fullscreen,
-  FullscreenExit,
-} from '@mui/icons-material';
 
 import { FieldProps } from '@rjsf/utils';
 import { getCodeMirrorStyle, getContainerStyle } from '@/theme';
@@ -163,9 +157,9 @@ export function TemplateField({
               size="small"
             >
               {copied ? (
-                <Check color="success" fontSize="small" />
+                <AppIcon.Check color="success" fontSize="small" />
               ) : (
-                <ContentCopySharp fontSize="small" />
+                <AppIcon.ContentCopySharp fontSize="small" />
               )}
             </IconButton>
           </Tooltip>
@@ -179,7 +173,7 @@ export function TemplateField({
               aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
               sx={{ ml: 1 }}
             >
-              {fullscreen ? <FullscreenExit /> : <Fullscreen />}
+              {fullscreen ? <AppIcon.FullscreenExit /> : <AppIcon.Fullscreen />}
             </IconButton>
           </Tooltip>
         </Box>

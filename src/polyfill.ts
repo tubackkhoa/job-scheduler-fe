@@ -2,9 +2,9 @@ import React from 'react';
 import * as Mui from '@mui/material';
 import * as Utils from '@/utils';
 import * as Constants from '@/constants';
-import * as MuiIcon from '@mui/icons-material';
 import * as RouterDom from 'react-router-dom';
 import * as LightweightChart from 'lightweight-charts';
+import AppIcon from './components/AppIcon';
 import _ from 'lodash';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -17,7 +17,7 @@ dayjs.extend(utc);
 Object.assign(globalThis, {
   // some global modules
   React,
-  MuiIcon,
+  AppIcon,
   Mui,
   RouterDom,
   LightweightChart,

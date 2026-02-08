@@ -15,15 +15,6 @@ import {
   UTCTimestamp,
 } from 'lightweight-charts';
 import {
-  ViewColumn,
-  FilterList,
-  Clear,
-  Settings,
-  ShowChart,
-  Storefront,
-} from '@mui/icons-material';
-import { PublishModal } from './PublishModal';
-import {
   Table,
   TableBody,
   TableCell,
@@ -52,6 +43,7 @@ import {
   CircularProgress,
   useTheme,
 } from '@mui/material';
+import { PublishModal } from './PublishModal';
 
 type TooltipData = {
   time: string;
@@ -1234,13 +1226,13 @@ export default ({ formData, registry }: FieldProps) => {
           }}
           InputProps={{
             startAdornment: (
-              <FilterList
+              <AppIcon.FilterList
                 sx={{ color: 'action.active', mr: 1, fontSize: 20 }}
               />
             ),
             endAdornment: filter && (
               <IconButton size="small" onClick={() => setFilter('')}>
-                <Clear fontSize="small" />
+                <AppIcon.Clear fontSize="small" />
               </IconButton>
             ),
           }}
@@ -1288,7 +1280,7 @@ export default ({ formData, registry }: FieldProps) => {
         )}
 
         <Button
-          startIcon={<ViewColumn />}
+          startIcon={<AppIcon.ViewColumn />}
           onClick={(e) => setAnchorEl(e.currentTarget)}
           variant="outlined"
           size="small"
@@ -1365,7 +1357,7 @@ export default ({ formData, registry }: FieldProps) => {
                       '&:hover': { opacity: 1, color: 'error.main' },
                     }}
                   >
-                    <Clear fontSize="small" sx={{ fontSize: 14 }} />
+                    <AppIcon.Clear fontSize="small" sx={{ fontSize: 14 }} />
                   </IconButton>
                 </TableCell>
                 {activeColumns.map((key) => {
@@ -1388,7 +1380,7 @@ export default ({ formData, registry }: FieldProps) => {
                     color="primary"
                     title="Edit Config"
                   >
-                    <Settings fontSize="small" />
+                    <AppIcon.Settings fontSize="small" />
                   </IconButton>
                   <IconButton
                     size="small"
@@ -1396,7 +1388,7 @@ export default ({ formData, registry }: FieldProps) => {
                     color="primary"
                     title="View Equity Curve"
                   >
-                    <ShowChart fontSize="small" />
+                    <AppIcon.ShowChart fontSize="small" />
                   </IconButton>
                 </TableCell>
               </TableRow>

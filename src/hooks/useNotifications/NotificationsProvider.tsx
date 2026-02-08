@@ -7,7 +7,6 @@ import Snackbar from '@mui/material/Snackbar';
 import SnackbarContent from '@mui/material/SnackbarContent';
 import type { SnackbarCloseReason } from '@mui/material/Snackbar';
 import type { CloseReason } from '@mui/material/SpeedDial';
-import CloseIcon from '@mui/icons-material/Close';
 import NotificationsContext from './NotificationsContext';
 
 import type {
@@ -61,7 +60,7 @@ function Notification({
         </Button>
       )}
       <IconButton size="small" color="inherit" onClick={handleClose}>
-        <CloseIcon fontSize="small" />
+        <AppIcon.Close fontSize="small" />
       </IconButton>
     </>
   );

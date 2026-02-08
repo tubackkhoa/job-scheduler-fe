@@ -1,5 +1,4 @@
 import json5 from 'json5';
-import { PyodideAPI } from 'pyodide';
 import { linter, Diagnostic } from '@codemirror/lint';
 import { LanguageDescription, syntaxTree } from '@codemirror/language';
 import _ from 'lodash';
@@ -497,9 +496,8 @@ export async function transpile(code: string): Promise<string> {
   return result.code;
 }
 
-const initPyodide: Promise<PyodideAPI> = (async () => {
-  // @ts-ignore
-  const pyodide: PyodideAPI = await loadPyodide();
+const initPyodide = (async () => {
+  const pyodide = await loadPyodide();
   // Ensure Jinja2 is available
   await pyodide.loadPackage('jinja2');
   await pyodide.runPythonAsync(jinjaPython);
