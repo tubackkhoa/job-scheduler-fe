@@ -70,6 +70,10 @@ declare global {
     globals?: Globals;
   }
 
+  interface PostResponse {
+    success: boolean;
+  }
+
   interface RoutesResponse {
     package: string;
     routes: [string[], CodeSchema];

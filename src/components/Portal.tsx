@@ -10,6 +10,7 @@ import {
   MenuItem,
   Tooltip,
   ListItemText,
+  Typography,
 } from '@mui/material';
 import Masonry from '@mui/lab/Masonry';
 import { Card, CardHeader, CardContent } from '@mui/material';
@@ -223,21 +224,31 @@ export function PortalPage({ plugins, routeState }: Props) {
     }
   }, [initialWidgets]);
 
+  if (!initialWidgets.length) return null;
+
   return (
-    <Box
-      sx={{
-        position: 'relative',
-      }}
-    >
-      <Button
-        variant="outlined"
-        size="small"
-        sx={{ position: 'absolute', right: 0, mt: -5 }}
-        startIcon={<RestartAltIcon />}
-        onClick={handleResetLayout}
+    <Box sx={{ my: 3, mx: 1 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          mb: 1,
+          alignItems: 'flex-start',
+        }}
       >
-        Reset layout
-      </Button>
+        <Typography variant="h5" fontWeight={600} gutterBottom>
+          Portal
+        </Typography>
+
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<RestartAltIcon />}
+          onClick={handleResetLayout}
+        >
+          Reset layout
+        </Button>
+      </Box>
 
       <DndContext
         collisionDetection={closestCenter}

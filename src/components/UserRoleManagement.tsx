@@ -1,4 +1,5 @@
 import {
+  Box,
   IconButton,
   Table,
   TableBody,
@@ -6,6 +7,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Typography,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import { useEffect, useState } from 'react';
@@ -82,54 +84,59 @@ export default function UserRoleManagement({ setError, setLoading }) {
   ];
 
   return (
-    <TableContainer>
-      <RolePolicyTable roleMap={roleMap} />
+    <Box sx={{ my: 3, mx: 1 }}>
+      <Typography variant="h5" fontWeight={600} gutterBottom>
+        User Role Management
+      </Typography>
+      <TableContainer>
+        <RolePolicyTable roleMap={roleMap} />
 
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>User</TableCell>
-            <TableCell>Roles</TableCell>
-            <TableCell align="right">Action</TableCell>
-          </TableRow>
-        </TableHead>
-
-        <TableBody>
-          {users.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>{user.username}</TableCell>
-
-              <TableCell>
-                <SelectField
-                  schema={{
-                    type: 'array',
-                    title: 'Roles',
-                    enum: allRoles,
-                  }}
-                  formData={user.roles}
-                  onChange={(value) =>
-                    setUsers((prev) =>
-                      prev.map((u) =>
-                        u.id === user.id ? { ...u, roles: value } : u,
-                      ),
-                    )
-                  }
-                  {...selectProps}
-                />
-              </TableCell>
-
-              <TableCell align="right">
-                <IconButton
-                  onClick={() => updateRoles(user.id, user.roles)}
-                  disabled={savingUserId === user.id}
-                >
-                  <SaveIcon />
-                </IconButton>
-              </TableCell>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>User</TableCell>
+              <TableCell>Roles</TableCell>
+              <TableCell align="right">Action</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+
+          <TableBody>
+            {users.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell>{user.username}</TableCell>
+
+                <TableCell>
+                  <SelectField
+                    schema={{
+                      type: 'array',
+                      title: 'Roles',
+                      enum: allRoles,
+                    }}
+                    formData={user.roles}
+                    onChange={(value) =>
+                      setUsers((prev) =>
+                        prev.map((u) =>
+                          u.id === user.id ? { ...u, roles: value } : u,
+                        ),
+                      )
+                    }
+                    {...selectProps}
+                  />
+                </TableCell>
+
+                <TableCell align="right">
+                  <IconButton
+                    onClick={() => updateRoles(user.id, user.roles)}
+                    disabled={savingUserId === user.id}
+                  >
+                    <SaveIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 }

@@ -22,76 +22,83 @@ export function PluginSitemap({ plugins, routeState, loadRoutes }: Props) {
   const navigate = useNavigate();
 
   return (
-    <List component="nav" disablePadding>
-      {plugins.map((plugin) => {
-        const state = routeState[plugin.id];
+    <Box sx={{ my: 3, mx: 1 }}>
+      <Typography variant="h5" fontWeight={600} gutterBottom>
+        Site map
+      </Typography>
+      <List component="nav" disablePadding>
+        {plugins.map((plugin) => {
+          const state = routeState[plugin.id];
 
-        return (
-          <Box key={plugin.id}>
-            <ListItemButton onClick={() => loadRoutes(plugin.id)}>
-              <ListItemIcon sx={{ minWidth: 36 }}>
-                <Extension fontSize="small" />
-              </ListItemIcon>
+          return (
+            <Box key={plugin.id}>
+              <ListItemButton onClick={() => loadRoutes(plugin.id)}>
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <Extension fontSize="small" />
+                </ListItemIcon>
 
-              <ListItemText
-                primary={
-                  <Typography
-                    sx={{
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                    fontWeight={500}
-                  >
-                    {state?.routes ? '▾' : '▸'} {plugin.package}
-                  </Typography>
-                }
-                secondary={plugin.description}
-              />
-
-              <Tooltip title="Edit Plugin">
-                <IconButton
-                  size="small"
-                  component={RouterLink}
-                  to={`/plugins/${plugin.id}`}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Edit fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </ListItemButton>
-
-            {state?.loading ? (
-              <LoadingSkeleton />
-            ) : (
-              state?.routes && (
-                <List component="div" disablePadding>
-                  {state.routes.filter(Boolean).map((route) => (
-                    <ListItemButton
-                      key={route}
-                      sx={{ pl: 6 }}
-                      onClick={() => navigate(`/plugins/${plugin.id}/${route}`)}
+                <ListItemText
+                  primary={
+                    <Typography
+                      sx={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                      fontWeight={500}
                     >
-                      <ListItemIcon sx={{ minWidth: 32 }}>
-                        <Route fontSize="small" />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={route}
-                        slotProps={{
-                          primary: {
-                            variant: 'body2',
-                            color: 'text.secondary',
-                          },
-                        }}
-                      />
-                    </ListItemButton>
-                  ))}
-                </List>
-              )
-            )}
-          </Box>
-        );
-      })}
-    </List>
+                      {state?.routes ? '▾' : '▸'} {plugin.package}
+                    </Typography>
+                  }
+                  secondary={plugin.description}
+                />
+
+                <Tooltip title="Edit Plugin">
+                  <IconButton
+                    size="small"
+                    component={RouterLink}
+                    to={`/plugins/${plugin.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Edit fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </ListItemButton>
+
+              {state?.loading ? (
+                <LoadingSkeleton />
+              ) : (
+                state?.routes && (
+                  <List component="div" disablePadding>
+                    {state.routes.filter(Boolean).map((route) => (
+                      <ListItemButton
+                        key={route}
+                        sx={{ pl: 6 }}
+                        onClick={() =>
+                          navigate(`/plugins/${plugin.id}/${route}`)
+                        }
+                      >
+                        <ListItemIcon sx={{ minWidth: 32 }}>
+                          <Route fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={route}
+                          slotProps={{
+                            primary: {
+                              variant: 'body2',
+                              color: 'text.secondary',
+                            },
+                          }}
+                        />
+                      </ListItemButton>
+                    ))}
+                  </List>
+                )
+              )}
+            </Box>
+          );
+        })}
+      </List>
+    </Box>
   );
 }

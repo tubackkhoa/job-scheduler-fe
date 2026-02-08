@@ -133,6 +133,12 @@ export default {
     return request(`/api/plugins/routes`);
   },
 
+  downloadModule(name: string, version: string): Promise<PostResponse> {
+    return postJson(`/download/${name}`, {
+      version,
+    });
+  },
+
   fetchRouteSchema(pluginId: number, route: string): Promise<CodeSchema> {
     const query = buildQuery({
       route,
@@ -155,11 +161,17 @@ export default {
     return request(`/api/templates/user/code/${pluginPath}`);
   },
 
-  updateTemplatePluginCode(pluginPath: string, payload: unknown) {
+  updateTemplatePluginCode(
+    pluginPath: string,
+    payload: unknown,
+  ): Promise<PostResponse> {
     return postJson(`/api/templates/user/code/${pluginPath}`, payload);
   },
 
-  updateTemplatePlugin(pluginPath: string, payload: unknown) {
+  updateTemplatePlugin(
+    pluginPath: string,
+    payload: unknown,
+  ): Promise<PostResponse> {
     return postJson(`/api/templates/user/${pluginPath}`, payload);
   },
 
@@ -189,23 +201,20 @@ export default {
     });
   },
 
-  activateJob(
-    jobId: number,
-    activation: boolean,
-  ): Promise<{ success: boolean }> {
+  activateJob(jobId: number, activation: boolean): Promise<PostResponse> {
     return postJson(
       `/api/jobs/${jobId}/${activation ? 'activate' : 'deactivate'}`,
     );
   },
 
-  deleteJob(jobId: number) {
+  deleteJob(jobId: number): Promise<PostResponse> {
     return request(`/api/jobs/${jobId}`, {
       method: 'DELETE',
       headers: JSON_HEADERS,
     });
   },
 
-  reloadPlugin(pkg: string) {
+  reloadPlugin(pkg: string): Promise<PostResponse> {
     return postJson(`/api/plugins/reload/${pkg}`);
   },
 

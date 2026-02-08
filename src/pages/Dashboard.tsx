@@ -1,9 +1,10 @@
 import api from '@/api';
 import UserRoleManagement from '@/components/UserRoleManagement';
-import { Box, Typography } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { PluginSitemap } from '@/components/PluginSitemap';
 import { PortalPage } from '@/components/Portal';
+import DownloadModuleForm from '@/components/DownloadModuleForm';
 
 export default function Dashboard({ setLoading, setError }) {
   const [plugins, setPlugins] = useState<PluginData[]>();
@@ -69,31 +70,24 @@ export default function Dashboard({ setLoading, setError }) {
   }, []);
   return (
     <Box>
-      <Box sx={{ my: 3, mx: 1 }}>
-        <Typography variant="h5" fontWeight={600} gutterBottom>
-          Portal
-        </Typography>
-        {plugins && <PortalPage plugins={plugins} routeState={routeState} />}
-      </Box>
+      {plugins && <PortalPage plugins={plugins} routeState={routeState} />}
 
-      <Box sx={{ my: 3, mx: 1 }}>
-        <Typography variant="h5" fontWeight={600} gutterBottom>
-          Site map
-        </Typography>
+      <Grid container spacing={3}>
         {plugins && (
-          <PluginSitemap
-            plugins={plugins}
-            routeState={routeState}
-            loadRoutes={loadRoutes}
-          />
+          <Grid size={{ xs: 12, md: 8 }}>
+            <PluginSitemap
+              plugins={plugins}
+              routeState={routeState}
+              loadRoutes={loadRoutes}
+            />
+          </Grid>
         )}
-      </Box>
-      <Box sx={{ my: 3, mx: 1 }}>
-        <Typography variant="h5" fontWeight={600} gutterBottom>
-          User Role Management
-        </Typography>
-        <UserRoleManagement setError={setError} setLoading={setLoading} />
-      </Box>
+
+        <Grid size={{ xs: 12, md: 4 }}>
+          <DownloadModuleForm />
+        </Grid>
+      </Grid>
+      <UserRoleManagement setError={setError} setLoading={setLoading} />
     </Box>
   );
 }
