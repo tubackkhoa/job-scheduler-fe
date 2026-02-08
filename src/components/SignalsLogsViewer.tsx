@@ -12,6 +12,8 @@ import {
   TableHead,
   TableRow,
   TextField,
+  SxProps,
+  Theme,
 } from '@mui/material';
 import api from '@/api';
 import { formatMessage, transformSignals } from '@/utils';
@@ -88,6 +90,7 @@ export default function SignalsLogsViewer({
   setError,
   signals: providedSignals,
   hideHeader = false,
+  hideFilter = false,
   sx,
 }: {
   limit?: number;
@@ -97,7 +100,8 @@ export default function SignalsLogsViewer({
   setError?: (msg: string) => void;
   signals?: any[];
   hideHeader?: boolean;
-  sx?: any;
+  hideFilter?: boolean;
+  sx?: SxProps<Theme>;
 }) {
   const [groups, setGroups] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -193,7 +197,7 @@ export default function SignalsLogsViewer({
   /* -------------------------------- Render -------------------------------- */
 
   return (
-    <Stack spacing={2} sx={{ height: 'auto' }}>
+    <Stack spacing={2}>
       {!hideHeader && (
         <Stack direction="row" justifyContent="space-between">
           <Stack direction="row" spacing={1}>
@@ -236,38 +240,6 @@ export default function SignalsLogsViewer({
         </Stack>
       )}
 
-      {/* Native date-time filters */}
-      <Stack direction="row" gap={1}>
-        <TextField
-          label="From"
-          type="datetime-local"
-          size="small"
-          value={fromDate}
-          onChange={(e) => setFromDate(e.target.value)}
-          slotProps={{ inputLabel: { shrink: true } }}
-        />
-        <TextField
-          label="To"
-          type="datetime-local"
-          size="small"
-          value={toDate}
-          onChange={(e) => setToDate(e.target.value)}
-          slotProps={{ inputLabel: { shrink: true } }}
-        />
-        <Tooltip title="Clear filter">
-          <IconButton
-            disableRipple
-            size="small"
-            onClick={() => {
-              setFromDate('');
-              setToDate('');
-            }}
-          >
-            <AppIcon.Refresh fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      </Stack>
-
       <Box
         sx={{
           fontFamily: '"JetBrains Mono", monospace',
@@ -275,6 +247,40 @@ export default function SignalsLogsViewer({
           ...sx,
         }}
       >
+        {/* Native date-time filters */}
+        {!hideFilter && (
+          <Stack direction="row" gap={1}>
+            <TextField
+              label="From"
+              type="datetime-local"
+              size="small"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+            />
+            <TextField
+              label="To"
+              type="datetime-local"
+              size="small"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+            />
+            <Tooltip title="Clear filter">
+              <IconButton
+                disableRipple
+                size="small"
+                onClick={() => {
+                  setFromDate('');
+                  setToDate('');
+                }}
+              >
+                <AppIcon.Refresh fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        )}
+
         {isLoading ? (
           <LoadingSkeleton />
         ) : !groupedTable ? (
@@ -290,7 +296,7 @@ export default function SignalsLogsViewer({
             No tabular signals found
           </Box>
         ) : (
-          <TableContainer sx={{ overflow: 'auto', height: 600 }}>
+          <TableContainer sx={{ overflow: 'auto', maxHeight: 600 }}>
             <Table stickyHeader size="small">
               <TableHead>
                 <TableRow>
@@ -309,7 +315,6 @@ export default function SignalsLogsViewer({
                       <TableCell
                         colSpan={totalColumns}
                         sx={{
-                          bgcolor: 'divider',
                           fontWeight: 700,
                         }}
                       >

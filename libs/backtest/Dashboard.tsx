@@ -26,7 +26,6 @@ import {
   TableSortLabel,
   Card,
   Autocomplete,
-  Icon,
 } from '@mui/material';
 import { useState, Fragment, useEffect, useCallback } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
@@ -222,7 +221,7 @@ function JobRowComponent({
 
       {/* Expanded content */}
       <TableRow>
-        <TableCell colSpan={8} sx={{ py: 0, bgcolor: 'rgba(0,0,0,0.2)' }}>
+        <TableCell colSpan={9} sx={{ py: 0, bgcolor: 'rgba(0,0,0,0.2)' }}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ py: 3, px: 2 }}>
               <Stack direction="column" spacing={3}>
@@ -234,9 +233,9 @@ function JobRowComponent({
                     alignItems="center"
                     sx={{ mb: 2 }}
                   >
-                    <Icon sx={{ fontSize: 18, color: 'secondary.main' }}>
-                      signal_cellular_alt
-                    </Icon>
+                    <AppIcon.SignalCellularAlt
+                      sx={{ fontSize: 18, color: 'secondary.main' }}
+                    />
                     <Typography variant="subtitle2" fontWeight={600}>
                       Latest Signals
                     </Typography>
@@ -255,9 +254,9 @@ function JobRowComponent({
                       jobId={job.id}
                       signals={signals}
                       hideHeader
+                      hideFilter
                       sx={{
-                        height: 'auto',
-                        maxHeight: '100%',
+                        p: 2,
                         bgcolor: 'transparent',
                         boxShadow: 'none',
                       }}
@@ -424,9 +423,7 @@ export default function JobStatsTable({
             slotProps={{
               input: {
                 startAdornment: (
-                  <Icon color="action" sx={{ mr: 1 }}>
-                    search
-                  </Icon>
+                  <AppIcon.Search color="action" sx={{ mr: 1 }} />
                 ),
                 sx: { borderRadius: 2, bgcolor: 'background.default' },
               },
