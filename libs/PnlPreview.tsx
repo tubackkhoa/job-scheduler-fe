@@ -596,7 +596,7 @@ const EquityChartModal = ({
       const end = formatToISO(endTime);
 
       const result = await render(
-        '{{ get_equity_curve_forward_test(identity, startTime, endTime) }}',
+        '{{ get_equity_curve_forward_test(identity, startTime, endTime) | tojson }}',
         { identity, startTime: start, endTime: end },
       );
 
