@@ -23,9 +23,14 @@ export default function CustomPluginPage({ setLoading, setError }) {
         for (const route of routes.routes[0]) {
           const matched = matchPath(route, `/${restPath}`);
           if (matched) {
-            const schema = await api.fetchRouteSchema(Number(plugin_id), route);
+            const pluginId = Number(plugin_id);
+            const schema = await api.fetchRouteSchema(pluginId, route);
             data = {
-              formData: { ...matched.params, ...routes },
+              formData: {
+                ...matched.params,
+                ...routes,
+                pluginId,
+              } as PluginPageData,
               registry: { formContext: { pluginPackage: routes.package } },
               schema,
             };

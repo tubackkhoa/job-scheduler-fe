@@ -83,6 +83,10 @@ declare global {
     routes: [string[], CodeSchema];
   }
 
+  interface PluginPageData extends RoutesResponse {
+    pluginId: number;
+  }
+
   type AllRoutesResponse = Record<string, [string[], CodeSchema]>;
 
   interface PluginUserCodeResponse {
