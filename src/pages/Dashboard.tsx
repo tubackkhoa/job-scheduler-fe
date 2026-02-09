@@ -53,7 +53,14 @@ export default function Dashboard({ setLoading, setError }) {
               .filter((p) => routesMap[p.package])
               .map((p) => {
                 const [routes, portal] = routesMap[p.package];
-                return [p.id, { loading: false, routes, portal }];
+                return [
+                  p.id,
+                  {
+                    loading: false,
+                    routes: routes.filter((r) => !r.includes(':')),
+                    portal,
+                  },
+                ];
               }),
           ),
         );

@@ -1,15 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Button, Container, Divider, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { Post } from './type';
 
 const { ReactMarkdown } = Components;
-
-interface Post {
-  id: number;
-  title: string;
-  description: string;
-  content: string;
-}
 
 export default function Blog({
   formData,

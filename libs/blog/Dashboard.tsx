@@ -12,15 +12,9 @@ import {
   Paper,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
+import { Post } from './type';
 
 const { CodeMirror } = Components;
-
-interface Post {
-  id: number;
-  title: string;
-  description: string;
-  content: string;
-}
 
 export default function Dashboard({
   formData: { pluginId },
@@ -95,6 +89,21 @@ export default function Dashboard({
     setContent(post.content || '');
   };
 
+  const deletePost = async (id: number) => {
+    if (!confirm('Delete this post?')) return;
+
+    await Utils.jinjaEvaluate(pluginPackage, `{{ delete_post(post_id) }}`, {
+      post_id: id,
+    });
+
+    // If deleting the one being edited, reset form
+    if (editingId === id) {
+      resetForm();
+    }
+
+    loadPosts();
+  };
+
   useEffect(() => {
     loadPosts();
   }, []);
@@ -164,21 +173,58 @@ export default function Dashboard({
                 component={RouterLink}
                 to={`/plugins/${pluginId}/blog/${p.id}`}
                 divider
-                sx={{ textDecoration: 'none', color: 'inherit' }}
+                sx={{
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  pr: 16, // reserve room for action buttons
+                  alignItems: 'flex-start',
+                }}
                 secondaryAction={
-                  <IconButton
-                    edge="end"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      startEdit(p.id);
-                    }}
-                  >
-                    <AppIcon.Edit />
-                  </IconButton>
+                  <Stack direction="row" spacing={1}>
+                    <IconButton
+                      edge="end"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        startEdit(p.id);
+                      }}
+                    >
+                      <AppIcon.Edit />
+                    </IconButton>
+
+                    <IconButton
+                      edge="end"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        deletePost(p.id);
+                      }}
+                    >
+                      <AppIcon.Clear />
+                    </IconButton>
+                  </Stack>
                 }
               >
-                <ListItemText primary={p.title} secondary={p.description} />
+                <ListItemText
+                  primary={p.title}
+                  secondary={p.description}
+                  sx={{
+                    minWidth: 0, // IMPORTANT: allows ellipsis to work inside flex
+                  }}
+                  slotProps={{
+                    primary: {
+                      noWrap: true,
+                      sx: { fontWeight: 500 },
+                    },
+                    secondary: {
+                      noWrap: true,
+                      sx: {
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      },
+                    },
+                  }}
+                />
               </ListItem>
             ))}
           </List>

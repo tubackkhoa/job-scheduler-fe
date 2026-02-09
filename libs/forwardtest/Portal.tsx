@@ -27,7 +27,6 @@ let ind = 0;
 
 export default function RandomPnlChart({ formData }: FieldProps<PluginData>) {
   const chartRef = useRef<HTMLDivElement | null>(null);
-  const chartHeightRef = useRef(160 + Math.round(200 * Math.random()));
 
   const token = TOKENS[ind];
   ind = (ind + 1) % TOKENS.length;
@@ -36,7 +35,7 @@ export default function RandomPnlChart({ formData }: FieldProps<PluginData>) {
     if (!chartRef.current) return;
 
     const chart = createChart(chartRef.current, {
-      height: chartHeightRef.current,
+      height: 200,
       layout: {
         background: { type: ColorType.Solid, color: 'transparent' },
         textColor: '#6b7280',
