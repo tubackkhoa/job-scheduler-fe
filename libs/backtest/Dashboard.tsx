@@ -7,14 +7,12 @@ import {
   TableCell,
   TableBody,
   TableContainer,
-  Collapse,
   IconButton,
   Typography,
   Chip,
   Stack,
   Switch,
   Tooltip,
-  Paper,
   Divider,
   LinearProgress,
   Select,
@@ -78,9 +76,6 @@ function JobRowComponent({
         hover
         sx={{
           cursor: 'pointer',
-          '& > *': { borderBottom: 'unset' },
-          bgcolor: open ? 'rgba(99, 102, 241, 0.05)' : 'transparent',
-          transition: 'background-color 0.2s',
         }}
         onClick={() => setOpen(!open)}
       >
@@ -220,54 +215,41 @@ function JobRowComponent({
       </TableRow>
 
       {/* Expanded content */}
-      <TableRow>
-        <TableCell colSpan={9} sx={{ py: 0, bgcolor: 'rgba(0,0,0,0.2)' }}>
-          <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box sx={{ py: 3, px: 2 }}>
-              <Stack direction="column" spacing={3}>
-                {/* Latest Signals */}
-                <Box sx={{ flex: 1 }}>
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    alignItems="center"
-                    sx={{ mb: 2 }}
-                  >
-                    <AppIcon.SignalCellularAlt
-                      sx={{ fontSize: 18, color: 'secondary.main' }}
-                    />
-                    <Typography variant="subtitle2" fontWeight={600}>
-                      Latest Signals
-                    </Typography>
-                  </Stack>
-                  <Paper
-                    variant="outlined"
-                    sx={{
-                      bgcolor: 'rgba(0, 0, 0, 0.3)',
-                      maxHeight: 400,
-                      overflow: 'hidden',
-                      display: 'flex',
-                      flexDirection: 'column',
-                    }}
-                  >
-                    <SignalsLogsViewer
-                      jobId={job.id}
-                      signals={signals}
-                      hideHeader
-                      hideFilter
-                      sx={{
-                        p: 2,
-                        bgcolor: 'transparent',
-                        boxShadow: 'none',
-                      }}
-                    />
-                  </Paper>
-                </Box>
-              </Stack>
-            </Box>
-          </Collapse>
-        </TableCell>
-      </TableRow>
+      {open && (
+        <TableRow>
+          <TableCell colSpan={9}>
+            <Stack direction="column" spacing={3} sx={{ py: 2 }}>
+              {/* Latest Signals */}
+              <Box sx={{ flex: 1 }}>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                  sx={{ mb: 2 }}
+                >
+                  <AppIcon.SignalCellularAlt
+                    sx={{ fontSize: 18, color: 'secondary.main' }}
+                  />
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    Latest Signals
+                  </Typography>
+                </Stack>
+
+                <SignalsLogsViewer
+                  jobId={job.id}
+                  signals={signals}
+                  hideHeader
+                  hideFilter
+                  sx={{
+                    p: 2,
+                    boxShadow: 'none',
+                  }}
+                />
+              </Box>
+            </Stack>
+          </TableCell>
+        </TableRow>
+      )}
     </Fragment>
   );
 }
@@ -407,11 +389,9 @@ export default function JobStatsTable({
   const endRow = Math.min((page + 1) * rowsPerPage, total);
 
   return (
-    <Card sx={{ bgcolor: 'background.paper', borderRadius: 2, my: 4 }}>
+    <Card sx={{ bgcolor: 'background.paper', my: 4 }}>
       {/* Search & Filter Bar */}
-      <Box
-        sx={{ p: { xs: 1.5, sm: 2 }, borderBottom: 1, borderColor: 'divider' }}
-      >
+      <Box sx={{ p: { xs: 1.5, sm: 2 } }}>
         <Stack spacing={2}>
           {/* Search */}
           <TextField
