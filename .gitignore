@@ -60,3 +60,6 @@ libs/*
 
 !libs/forwardtest/
 !libs/forwardtest/**
+
+!libs/blog/
+!libs/blog/**
