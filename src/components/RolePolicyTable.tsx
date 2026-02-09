@@ -5,7 +5,7 @@ import {
   TableBody,
   TableCell,
   TableHead,
-  TableRow
+  TableRow,
 } from '@mui/material';
 
 interface RolePolicyProps {
@@ -14,7 +14,7 @@ interface RolePolicyProps {
 
 export function RolePolicyTable({ roleMap }: RolePolicyProps) {
   return (
-    <Table size="small">
+    <Table>
       <TableHead>
         <TableRow>
           <TableCell>Role</TableCell>
