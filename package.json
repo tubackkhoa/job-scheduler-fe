@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "VITE_PROXY=true VITE_API_BASE_URL=http://localhost:8000 vite",
     "build": "vite build",
-    "preview": "vite preview",
     "postinstall": "patch-package"
   },
   "dependencies": {

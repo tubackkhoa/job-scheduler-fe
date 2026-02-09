@@ -5,14 +5,6 @@ import path from 'path';
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const allowedHostsEnv = env.VITE_PREVIEW_ALLOWED_HOSTS;
-  const allowedHosts = allowedHostsEnv
-    ? allowedHostsEnv
-        .split(',')
-        .map((host) => host.trim())
-        .filter(Boolean)
-    : [''];
-
   const enableProxy = env.VITE_PROXY === 'true';
 
   return {
@@ -31,9 +23,7 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, 'src'),
       },
     },
-    preview: {
-      allowedHosts,
-    },
+
     server: {
       ...(enableProxy && {
         proxy: {
