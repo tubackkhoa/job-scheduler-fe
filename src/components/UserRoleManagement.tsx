@@ -90,7 +90,7 @@ export default function UserRoleManagement({ setError, setLoading }) {
       <TableContainer>
         <RolePolicyTable roleMap={roleMap} />
 
-        <Table size="small">
+        <Table>
           <TableHead>
             <TableRow>
               <TableCell>User</TableCell>
