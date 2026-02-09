@@ -14,13 +14,6 @@ import {
   Chip,
   Divider,
 } from '@mui/material';
-import {
-  CheckCircle,
-  CloudUpload,
-  Delete,
-  Info,
-  Warning,
-} from '@mui/icons-material';
 
 const { ConfigForm } = Components;
 const { SESSIONS } = Constants;
@@ -290,7 +283,7 @@ export function PublishModal({
             {isRegistered ? (
               // ----- UNPUBLISH VIEW -----
               <Stack spacing={3} alignItems="center" py={4}>
-                <CheckCircle color="success" sx={{ fontSize: 64 }} />
+                <AppIcon.CheckCircle color="success" sx={{ fontSize: 64 }} />
                 <Typography variant="h5">Model Published</Typography>
 
                 <Box
@@ -356,7 +349,7 @@ export function PublishModal({
 
                 <Alert
                   severity="warning"
-                  icon={<Warning />}
+                  icon={<AppIcon.Warning />}
                   sx={{ maxWidth: 500, width: '100%' }}
                 >
                   Unpublishing will deactivate the model in the marketplace and
@@ -366,7 +359,7 @@ export function PublishModal({
                 <Button
                   variant="contained"
                   color="error"
-                  startIcon={<Delete />}
+                  startIcon={<AppIcon.Delete />}
                   onClick={handleUnsubscribe}
                   disabled={actionLoading}
                   size="large"
@@ -377,7 +370,7 @@ export function PublishModal({
             ) : (
               // ----- PUBLISH VIEW -----
               <Stack spacing={4}>
-                <Alert severity="info" icon={<Info />}>
+                <Alert severity="info" icon={<AppIcon.Info />}>
                   Subscribe this model to the Marketplace. This will register
                   the model and automatically create a production job using the
                   configuration from the Monitor plugin.
@@ -462,7 +455,7 @@ export function PublishModal({
                   <Button
                     variant="contained"
                     color="primary"
-                    startIcon={<CloudUpload />}
+                    startIcon={<AppIcon.CloudUpload />}
                     onClick={handleSubscribe}
                     disabled={actionLoading || !userPluginId}
                     size="large"

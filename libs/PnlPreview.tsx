@@ -1372,7 +1372,7 @@ export default ({ formData, registry }: FieldProps) => {
                     color="warning"
                     title="Publish to Marketplace"
                   >
-                    <Storefront fontSize="small" />
+                    <AppIcon.Storefront fontSize="small" />
                   </IconButton>
                   <IconButton
                     size="small"
