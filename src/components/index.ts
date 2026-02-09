@@ -5,9 +5,9 @@ import { LoadingSkeleton } from './Loading';
 import { ConfigForm } from './ConfigForm';
 
 export default {
+  ConfigForm,
   ConfirmationDialog,
   SignalsLogsViewer,
   CodeMirror,
   LoadingSkeleton,
-  ConfigForm,
 };

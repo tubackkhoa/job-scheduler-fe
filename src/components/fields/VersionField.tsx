@@ -625,7 +625,7 @@ const ApplyMessage = ({ render, onToggle, selectedJobIds, onSelectAll }) => {
       setLoading(true);
       const results = {};
       const jobs: Job[] = await render(
-        `{{ dao.get_jobs_by_plugin_and_session(plugin_id) | list | pick("id", "description") }}`,
+        `{{ dao.get_jobs_by_plugin_and_session(plugin_id) | list | pick("id", "description", "session_id") }}`,
       );
       SESSIONS.map((session) => {
         try {

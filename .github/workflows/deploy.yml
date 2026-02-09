@@ -320,7 +320,7 @@ jobs:
     if: github.ref_type == 'branch' && github.ref_name == 'master'
     needs:
       - build_docker
-    runs-on: [self-hosted, "5116117430"]
+    runs-on: [self-hosted, "1523521951"]
     env:
       ENV_NAME: staging
       COMPOSE_PATH: /opt/deploy/job-scheduler-fe
@@ -337,7 +337,7 @@ jobs:
     if: github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
     needs:
       - build_docker
-    runs-on: [self-hosted, "5116117430"]
+    runs-on: [self-hosted, "1523521951"]
     env:
       ENV_NAME: production
       COMPOSE_PATH: /opt/deploy/job-scheduler-fe
@@ -345,6 +345,7 @@ jobs:
       - *set_short_commit
       - *run_deploy_vm_prod
       - *notify_single_prod
+
 
 
 

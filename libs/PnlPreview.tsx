@@ -43,6 +43,7 @@ import {
   CircularProgress,
   useTheme,
 } from '@mui/material';
+import { PublishModal } from './PublishModal';
 
 type TooltipData = {
   time: string;
@@ -119,6 +120,18 @@ function fmtStatus(
   return <ColorText color={THEME.neutral}>⊘ No Job</ColorText>;
 }
 
+function fmtMarketplaceStatus(status?: string | null): React.ReactNode {
+  if (!status) return '-';
+
+  if (status === 'Published')
+    return <ColorText color={THEME.positive}>✓ Published</ColorText>;
+
+  if (status === 'Unpublished')
+    return <ColorText color={THEME.neutral}>Unpublished</ColorText>;
+
+  return status;
+}
+
 function fmtLatest(
   latest?: { symbol: string; direction: string; pnl: number } | null,
 ): React.ReactNode {
@@ -166,8 +179,10 @@ const renderCell = (key: string, value: any) => {
     case 'Winrate':
       return fmtWinrate(value);
 
-    case 'Status':
+    case 'Mornitor status':
       return fmtStatus(value);
+    case 'Marketplace Status':
+      return fmtMarketplaceStatus(value);
 
     case 'Latest Position':
       return fmtLatest(value);
@@ -183,11 +198,12 @@ const renderCell = (key: string, value: any) => {
 
 type AnyDict = Record<string, any>;
 
-type IdentityState = { state: 'active' | 'inactive'; label: string };
+type IdentityState = { state: 'active' | 'inactive'; label: string; job?: any };
 
 function buildStatsTable(
   stats: AnyDict[],
   jobs: AnyDict[],
+  publishedModels: string[] = [],
 ): {
   rows: AnyDict[];
   totals: {
@@ -226,6 +242,7 @@ function buildStatsTable(
       identityJob[modelKey] = {
         state: job.active ? 'active' : 'inactive',
         label: job.description || 'No description',
+        job,
       };
     }
   }
@@ -273,7 +290,10 @@ function buildStatsTable(
       'Latest Position': lastPosFormatted,
       'Latest Position Time': lastPosTime,
 
-      Status: item,
+      'Mornitor status': item,
+      'Marketplace Status': publishedModels.includes(identity)
+        ? 'Published'
+        : 'Unpublished',
       'Hide Status': item?.state ?? '',
 
       Started: stat.startedAt ?? '',
@@ -850,6 +870,7 @@ export default ({ formData, registry }: FieldProps) => {
   const [orderBy, setOrderBy] = useState<string>('');
   const [filter, setFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [marketplaceStatusFilter, setMarketplaceStatusFilter] = useState('All');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -871,6 +892,50 @@ export default ({ formData, registry }: FieldProps) => {
 
   const [tableData, setTableData] = useState<any[]>([]);
 
+  // Publish Modal State
+  const [publishModalOpen, setPublishModalOpen] = useState(false);
+  const [publishModel, setPublishModel] = useState<{
+    identity: string;
+  } | null>(null);
+
+  const handlePublish = (row: any) => {
+    setPublishModel({
+      identity: row.Identity,
+    });
+    setPublishModalOpen(true);
+  };
+
+  const [publishedModels, setPublishedModels] = useState<string[]>([]);
+
+  const fetchPublishedModels = async () => {
+    try {
+      const render = Utils.buildJinjaContext(
+        'alpha_miner.plugins.LiveTradeForUserPlugin',
+        {},
+        true,
+      );
+      const result = await render(
+        `{{ list_trade_models(env, url, apikey) }}`, // list_trade_models(env, url, apikey)
+        { env: 'production', url: null, apikey: null },
+      );
+      const models = (
+        typeof result === 'string'
+          ? JSON.parse(result.replace(/'/g, '"'))
+          : result
+      )['versions'];
+
+      if (Array.isArray(models)) {
+        setPublishedModels(models.map((m: any) => m.id));
+      }
+    } catch (e) {
+      console.warn('Failed to fetch published models', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchPublishedModels();
+  }, [publishModalOpen]); // Refresh when modal closes
+
   useEffect(() => {
     if (!formData) {
       return;
@@ -880,7 +945,7 @@ export default ({ formData, registry }: FieldProps) => {
         formData,
         'object',
       );
-      const { rows } = buildStatsTable(stats, jobList);
+      const { rows } = buildStatsTable(stats, jobList, publishedModels);
       const cfg = Object.fromEntries(
         models.map((m) => [m.identity, m.currentConfig]),
       );
@@ -889,12 +954,11 @@ export default ({ formData, registry }: FieldProps) => {
         ...r,
         'Hide currentConfig': cfg[r.Identity],
       }));
-
       setTableData(parsed);
     } catch (e) {
       console.error(e);
     }
-  }, [formData]);
+  }, [formData, publishedModels]);
 
   // Discover columns from the first filtered row or first row
   const allColumns = useMemo(() => {
@@ -942,7 +1006,7 @@ export default ({ formData, registry }: FieldProps) => {
       );
     }
 
-    // 3. Status Filter
+    // 3. Monitor Status Filter
     if (statusFilter !== 'All') {
       r = r.filter((row) => {
         const val = String(row['Hide Status']).toLowerCase();
@@ -951,8 +1015,17 @@ export default ({ formData, registry }: FieldProps) => {
       });
     }
 
+    // 4. Marketplace Status Filter
+    if (marketplaceStatusFilter !== 'All') {
+      if (marketplaceStatusFilter === 'Published') {
+        r = r.filter((row) => row['Marketplace Status'] === 'Published');
+      } else if (marketplaceStatusFilter === 'Unpublished') {
+        r = r.filter((row) => row['Marketplace Status'] === 'Unpublished');
+      }
+    }
+
     return r;
-  }, [tableData, filter, hiddenRowIds, statusFilter]);
+  }, [tableData, filter, hiddenRowIds, statusFilter, marketplaceStatusFilter]);
 
   const sortedRows = useMemo(() => {
     if (!orderBy) return filteredRows;
@@ -1029,10 +1102,13 @@ export default ({ formData, registry }: FieldProps) => {
       const payload = { ...newValues };
       const identity = editingRow['Identity'];
 
-      await render('{{ update_model_config(identity, payload) }}', {
-        identity,
-        payload,
-      });
+      await render(
+        '{{ update_model_config(webhook_url, webhook_api_key,identity, payload) }}',
+        {
+          identity,
+          payload,
+        },
+      );
 
       // Optimistic Update: Update table data immediately
       setTableData((prev) =>
@@ -1166,7 +1242,7 @@ export default ({ formData, registry }: FieldProps) => {
         <TextField
           select
           size="small"
-          label="Status"
+          label="Monitor Status"
           value={statusFilter}
           onChange={(e) => {
             setStatusFilter(e.target.value);
@@ -1177,6 +1253,22 @@ export default ({ formData, registry }: FieldProps) => {
           <MenuItem value="All">All</MenuItem>
           <MenuItem value="active">Active</MenuItem>
           <MenuItem value="inactive">Inactive</MenuItem>
+        </TextField>
+
+        <TextField
+          select
+          size="small"
+          label="Marketplace"
+          value={marketplaceStatusFilter}
+          onChange={(e) => {
+            setMarketplaceStatusFilter(e.target.value);
+            setPage(0);
+          }}
+          sx={{ maxWidth: 150 }}
+        >
+          <MenuItem value="All">All</MenuItem>
+          <MenuItem value="Published">Published</MenuItem>
+          <MenuItem value="Unpublished">Unpublished</MenuItem>
         </TextField>
 
         <Box sx={{ flexGrow: 1 }} />
@@ -1276,6 +1368,14 @@ export default ({ formData, registry }: FieldProps) => {
                 <TableCell>
                   <IconButton
                     size="small"
+                    onClick={() => handlePublish(row)}
+                    color="warning"
+                    title="Publish to Marketplace"
+                  >
+                    <AppIcon.Storefront fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
                     onClick={() => handleEditConfig(row)}
                     color="primary"
                     title="Edit Config"
@@ -1335,6 +1435,11 @@ export default ({ formData, registry }: FieldProps) => {
         onClose={() => setChartOpen(false)}
         row={chartRow}
         registry={registry}
+      />
+      <PublishModal
+        open={publishModalOpen}
+        onClose={() => setPublishModalOpen(false)}
+        modelIdentity={publishModel?.identity}
       />
     </Box>
   );
