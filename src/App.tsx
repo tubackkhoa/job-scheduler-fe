@@ -15,11 +15,13 @@ import Dashboard from './pages/Dashboard';
 import ChatBot from './pages/ChatBot';
 import PageNotFound from './pages/PageNotFound';
 import CustomPluginPage from './pages/CustomPluginPage';
+import { useAuth } from './hooks/useAuth';
 
 export default function App() {
   // to show loading and error global
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { logout, isAuthenticated } = useAuth();
 
   const pluginElement = (
     <PluginManager setLoading={setLoading} setError={setError} />
@@ -33,9 +35,13 @@ export default function App() {
 
         <Container
           maxWidth={false}
-          sx={{ pt: '140px', pb: 3, px: { xs: 2, sm: 3, md: 4 } }}
+          sx={{
+            pt: isAuthenticated ? '140px' : 3,
+            pb: 3,
+            px: { xs: 2, sm: 3, md: 4 },
+          }}
         >
-          <Header height={120} />
+          {isAuthenticated && <Header onLogout={logout} height={120} />}
 
           {error && (
             <Box sx={{ my: 3 }}>

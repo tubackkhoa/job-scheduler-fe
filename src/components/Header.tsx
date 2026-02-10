@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -8,22 +8,22 @@ import {
   ListItemIcon,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
 import { scrollToTop, useAppColorScheme } from '@/utils';
 import { useScroll } from '@/hooks/useScroll';
 
-export function Header({ height }: { height: number }) {
+export function Header({
+  height,
+  onLogout,
+}: {
+  height: number;
+  onLogout: () => void;
+}) {
   // 🌗 theme mode
   const offset = useScroll(height);
   const [mode, setMode] = useAppColorScheme();
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
-  const { logout, isAuthenticated } = useAuth();
-
-  useEffect(() => {
-    setAnchorEl(null);
-  }, [isAuthenticated]);
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -33,8 +33,6 @@ export function Header({ height }: { height: number }) {
     navigate(path);
     handleClose();
   };
-
-  if (!isAuthenticated) return null;
 
   return (
     <Box
@@ -151,7 +149,7 @@ export function Header({ height }: { height: number }) {
             </MenuItem>
           )}
 
-          <MenuItem onClick={() => logout()}>
+          <MenuItem onClick={onLogout}>
             <ListItemIcon>
               <AppIcon.Logout fontSize="small" />
             </ListItemIcon>
