@@ -246,6 +246,9 @@ declare global {
     ConfigFormContext<T>
   >;
 
+  // for development
+  var __esbuild_init__: Promise<typeof import('esbuild-wasm')> | undefined;
+
   interface Window {
     ctx: { user: User };
     // or: ctx?: YourType

@@ -12,8 +12,6 @@ import { yaml } from '@codemirror/lang-yaml';
 import { PostgreSQL, sql } from '@codemirror/lang-sql';
 import { markdown } from '@codemirror/lang-markdown';
 import { jinja, JinjaCompletionConfig } from '@codemirror/lang-jinja';
-import * as esbuild from 'esbuild-wasm';
-import wasmUrl from 'esbuild-wasm/esbuild.wasm?url';
 import jinjaPython from './jinja.py?raw';
 import dayjs from 'dayjs';
 import { RJSFSchema } from '@rjsf/utils';
@@ -456,22 +454,31 @@ export const jinjaLinter = (
   });
 };
 
-const initEsBuild: Promise<typeof esbuild> = (async () => {
+// trigger for development
+if (import.meta.env.DEV) {
   if (!globalThis.__esbuild_init__) {
-    // @ts-ignore
-    globalThis.__esbuild_init__ = true;
-    await esbuild.initialize({
-      wasmURL: wasmUrl,
-      worker: true,
-    });
-    console.log('ESBuild initialized');
-  }
-  return esbuild;
-})();
+    globalThis.__esbuild_init__ = (async () => {
+      const esbuild = await import('esbuild-wasm');
+      const wasmUrl = (await import('esbuild-wasm/esbuild.wasm?url')).default;
 
-initEsBuild;
+      await esbuild.initialize({
+        wasmURL: wasmUrl,
+        worker: true,
+      });
+
+      console.log('ESBuild initialized');
+
+      return esbuild;
+    })();
+  }
+}
+
 export async function transpile(code: string): Promise<string> {
-  const esbuild = await initEsBuild;
+  // do not transpile for production
+  if (!import.meta.env.DEV) {
+    return code;
+  }
+  const esbuild = await globalThis.__esbuild_init__;
 
   // 2️⃣ Compile with strict constraints
   const result = await esbuild.transform(code, {
