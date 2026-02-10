@@ -66,20 +66,26 @@ export default function Dashboard({
 
   const updatePost = async () => {
     if (!editingId) return;
+    try {
+      await Utils.jinjaEvaluate(
+        pluginPackage,
+        `{{ update_post(post_id, title, description, content) }}`,
+        {
+          post_id: editingId,
+          title,
+          description,
+          content,
+        },
+      );
 
-    await Utils.jinjaEvaluate(
-      pluginPackage,
-      `{{ update_post(post_id, title, description, content) }}`,
-      {
-        post_id: editingId,
-        title,
-        description,
-        content,
-      },
-    );
-
-    resetForm();
-    loadPosts();
+      resetForm();
+      loadPosts();
+      notifications.show('Update post succeeded', {
+        severity: 'success',
+      });
+    } catch (ex) {
+      notifications.show(ex.message, { severity: 'error' });
+    }
   };
 
   const startEdit = async (id: number) => {
