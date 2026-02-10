@@ -35,7 +35,7 @@ export default function Dashboard({
   const loadPosts = async () => {
     const res = await Utils.jinjaEvaluate(
       pluginPackage,
-      `{{ get_posts() | pick('id' ,'title', 'description') }}`,
+      `{{ get_posts() | pick('id' ,'title', 'description') | tojson }}`,
     );
     setPosts(res);
   };
