@@ -29,7 +29,7 @@ export default function Portal({
         <ListItem
           key={p.id}
           component={RouterLink}
-          to={`/plugins/${pluginId}/blog/${p.id}`}
+          to={`/${pluginId}/blog/${p.id}`}
           divider
           sx={{ textDecoration: 'none', color: 'inherit' }}
         >

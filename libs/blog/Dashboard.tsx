@@ -185,7 +185,7 @@ export default function Dashboard({
               <ListItem
                 key={p.id}
                 component={RouterLink}
-                to={`/plugins/${pluginId}/blog/${p.id}`}
+                to={`/${pluginId}/blog/${p.id}`}
                 divider
                 sx={{
                   textDecoration: 'none',
