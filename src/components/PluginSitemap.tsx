@@ -73,9 +73,7 @@ export function PluginSitemap({ plugins, routeState, loadRoutes }: Props) {
                       <ListItemButton
                         key={route}
                         sx={{ pl: 6 }}
-                        onClick={() =>
-                          navigate(`/plugins/${plugin.id}/${route}`)
-                        }
+                        onClick={() => navigate(`/${plugin.id}/${route}`)}
                       >
                         <ListItemIcon sx={{ minWidth: 32 }}>
                           <AppIcon.Route fontSize="small" />
