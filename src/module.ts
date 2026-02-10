@@ -17,7 +17,7 @@ export const getModule = async ({
   const loader = code
     ? loadModule(
         Utils.createUrlFromString(
-          /^\s*import\s+/.test(code) ? await Utils.transpile(code) : code,
+          /^\s*import\b/.test(code) ? await Utils.transpile(code) : code,
         ),
       )
     : (libModules[`../libs/${url}`]?.() ?? loadModule(url));
