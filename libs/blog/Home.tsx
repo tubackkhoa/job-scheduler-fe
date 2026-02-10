@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Box, List, ListItem, ListItemText, Typography } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link, Link as RouterLink } from 'react-router-dom';
 import { Post } from './type';
+import { Header } from './common';
 
 export default function Portal({
   formData: { pluginId },
@@ -25,13 +26,7 @@ export default function Portal({
 
   return (
     <Box>
-      <Typography
-        variant="h5"
-        fontWeight={600}
-        sx={{ mb: 2, textAlign: 'center' }}
-      >
-        Blog Plugin
-      </Typography>
+      <Header link={`/${pluginId}/blog`} />
       <List>
         {posts.map((p) => (
           <ListItem

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Alert, Button, Container, Divider, Typography } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Alert, Box, Container, Divider, Typography } from '@mui/material';
+import { Link, useNavigate } from 'react-router-dom';
 import { Post } from './type';
+import { Header } from './common';
 
 const { ReactMarkdown } = Components;
 
@@ -42,14 +43,14 @@ export default function Blog({
   if (!post) return null;
 
   return (
-    <Container>
-      <Typography variant="h5">{post.title}</Typography>
-      <Typography variant="body1">{post.description}</Typography>
-      <Divider sx={{ mt: 4 }} />
-      <ReactMarkdown>{post.content}</ReactMarkdown>
-      <Button variant="contained" onClick={() => navigate(`/${pluginId}/blog`)}>
-        Home
-      </Button>
-    </Container>
+    <Box>
+      <Header link={`/${pluginId}/blog`} />
+      <Container>
+        <Typography variant="h5">{post.title}</Typography>
+        <Typography variant="body1">{post.description}</Typography>
+        <Divider sx={{ mt: 4 }} />
+        <ReactMarkdown>{post.content}</ReactMarkdown>
+      </Container>
+    </Box>
   );
 }
