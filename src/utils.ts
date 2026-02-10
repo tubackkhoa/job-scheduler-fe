@@ -512,9 +512,6 @@ const initPyodide = (async () => {
   return pyodide;
 })();
 
-// pre-init at background for faster load
-initPyodide;
-
 const envDocPromise: Promise<EnvDoc> = (async () => {
   const pyodide = await initPyodide;
   const envDoc = JSON.parse(pyodide.globals.get('doc_json'));

@@ -46,8 +46,6 @@ export function PublishModal({
 
   // Schema & Config state
   const [userPluginId, setUserPluginId] = useState<number | null>(null);
-  const [userSchema, setUserSchema] = useState<any>(null);
-  const [env, setEnv] = useState<any>(null);
   const [formData, setFormData] = useState<any>({});
 
   // Job state
@@ -95,8 +93,6 @@ export function PublishModal({
       // 1. Fetch User Plugin Schema & Env
       const userSessionId = PRODUCTION_SESSION_ID; // Use production session for user plugin
       const userResponse = await api.fetchSchema(userSessionId, userPlugin.id);
-      setUserSchema(userResponse.schema);
-      setEnv(await Utils.getEnvDoc(userResponse.globals || {}));
 
       // 2. Fetch Monitor Plugin Job for Defaults
       let combinedConfig = {};
