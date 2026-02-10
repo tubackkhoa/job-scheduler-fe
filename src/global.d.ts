@@ -10,6 +10,7 @@ import ReactNS from 'react';
 import * as ConstantsNS from './constants';
 import { loadPyodide as loadPyodideNS } from 'pyodide';
 import { Params } from 'react-router-dom';
+import { PyodideInterface } from 'pyodide';
 
 declare global {
   const AppIcon: typeof AppIconNS;
@@ -246,8 +247,9 @@ declare global {
     ConfigFormContext<T>
   >;
 
-  // for development
+  // for lazy init
   var __ESBUILD_PROMISE__: Promise<typeof import('esbuild-wasm')> | undefined;
+  var __PYODIDE_PROMISE__: Promise<PyodideInterface> | undefined;
 
   interface Window {
     ctx: { user: User };

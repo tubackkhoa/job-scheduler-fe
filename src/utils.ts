@@ -500,24 +500,26 @@ export async function transpile(code: string): Promise<string> {
   return result.code;
 }
 
-const initPyodide = (async () => {
-  const pyodide = await loadPyodide();
-  // Ensure Jinja2 is available
-  await pyodide.loadPackage('jinja2');
-  await pyodide.runPythonAsync(jinjaPython);
-  console.log('Pyodide initialized');
-  return pyodide;
-})();
-
-const envDocPromise: Promise<EnvDoc> = (async () => {
-  const pyodide = await initPyodide;
-  const envDoc = JSON.parse(pyodide.globals.get('doc_json'));
-  return Object.freeze(envDoc);
-})();
+const getPyodide = () => {
+  if (!globalThis.__PYODIDE_PROMISE__) {
+    globalThis.__PYODIDE_PROMISE__ = (async () => {
+      const pyodide = await loadPyodide();
+      // Ensure Jinja2 is available
+      await pyodide.loadPackage('jinja2');
+      await pyodide.runPythonAsync(jinjaPython);
+      console.log('Pyodide initialized');
+      return pyodide;
+    })();
+  }
+  return globalThis.__PYODIDE_PROMISE__;
+};
 
 export const getEnvDoc = async (globals: Record<string, unknown>) => {
-  const envDoc = await envDocPromise;
-  return { ...envDoc, globals: { ...envDoc.globals, ...globals } };
+  const pyodide = await getPyodide();
+  const envDoc = JSON.parse(pyodide.globals.get('doc_json'));
+  // update globals recursively
+  _.merge(envDoc.globals, globals);
+  return envDoc;
 };
 
 const extractUndeclaredVariables = async (
@@ -526,7 +528,7 @@ const extractUndeclaredVariables = async (
     [key: string]: any;
   },
 ): Promise<string[] | string> => {
-  const pyodide = await initPyodide;
+  const pyodide = await getPyodide();
   const renderFn = pyodide.globals.get('render');
   const params = renderFn(
     tpl,
