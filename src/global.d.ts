@@ -4,6 +4,7 @@ import * as UtilsNS from './utils';
 import _ from 'lodash';
 import AppIconNS from './components/AppIcon';
 import ComponentsNS from './components';
+import HooksNS from './hooks';
 import ApiNS from './api';
 import ReactNS from 'react';
 import * as ConstantsNS from './constants';
@@ -13,6 +14,7 @@ declare global {
   const AppIcon: typeof AppIconNS;
   const Components: typeof ComponentsNS;
   const Constants: typeof ConstantsNS;
+  const Hooks: typeof HooksNS;
   const api: typeof ApiNS;
   const Utils: typeof UtilsNS & {
     _: typeof _;

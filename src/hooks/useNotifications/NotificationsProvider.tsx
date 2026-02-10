@@ -65,8 +65,7 @@ function Notification({
     </>
   );
 
-  const { anchorOrigin = { vertical: 'bottom', horizontal: 'right' } } =
-    options;
+  const { anchorOrigin = { vertical: 'top', horizontal: 'right' } } = options;
 
   return (
     <Snackbar

@@ -10,6 +10,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import api from './api';
 import Components from './components';
+import Hooks from './hooks';
 
 dayjs.extend(utc);
 
@@ -23,6 +24,7 @@ Object.assign(globalThis, {
   LightweightChart,
   // now the extended with typescript support
   Components,
+  Hooks,
   api,
   Utils: { ...Utils, _, dayjs },
   Constants,

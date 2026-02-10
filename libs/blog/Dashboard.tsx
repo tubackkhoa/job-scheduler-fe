@@ -24,6 +24,7 @@ export default function Dashboard({
 }: ConfigFieldProps<PluginPageData>) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [mode] = Utils.useAppColorScheme();
+  const notifications = Hooks.useNotifications();
 
   const [editingId, setEditingId] = useState<number | null>(null);
 
@@ -47,13 +48,20 @@ export default function Dashboard({
   };
 
   const createPost = async () => {
-    await Utils.jinjaEvaluate(
-      pluginPackage,
-      `{{ create_post(title, description, content) }}`,
-      { title, description, content },
-    );
-    resetForm();
-    loadPosts();
+    try {
+      await Utils.jinjaEvaluate(
+        pluginPackage,
+        `{{ create_post(title, description, content) }}`,
+        { title, description, content },
+      );
+      resetForm();
+      loadPosts();
+      notifications.show('Create post succeeded', {
+        severity: 'success',
+      });
+    } catch (ex) {
+      notifications.show(ex.message, { severity: 'error' });
+    }
   };
 
   const updatePost = async () => {
