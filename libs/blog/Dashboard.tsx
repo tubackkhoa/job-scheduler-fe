@@ -33,9 +33,12 @@ export default function Dashboard({
   const [content, setContent] = useState('');
 
   const loadPosts = async () => {
-    const res = await Utils.jinjaEvaluate(
-      pluginPackage,
-      `{{ get_posts() | pick('id' ,'title', 'description') | tojson }}`,
+    const res = JSON.parse(
+      await api.renderTemplate(
+        pluginPackage,
+        `{{ get_posts() | pick('id' ,'title', 'description') | tojson }}`,
+        {},
+      ),
     );
     setPosts(res);
   };
@@ -49,7 +52,7 @@ export default function Dashboard({
 
   const createPost = async () => {
     try {
-      await Utils.jinjaEvaluate(
+      await api.renderTemplate(
         pluginPackage,
         `{{ create_post(title, description, content) }}`,
         { title, description, content },
@@ -67,7 +70,7 @@ export default function Dashboard({
   const updatePost = async () => {
     if (!editingId) return;
     try {
-      await Utils.jinjaEvaluate(
+      await api.renderTemplate(
         pluginPackage,
         `{{ update_post(post_id, title, description, content) }}`,
         {
@@ -89,10 +92,8 @@ export default function Dashboard({
   };
 
   const startEdit = async (id: number) => {
-    const post = await Utils.jinjaEvaluate(
-      pluginPackage,
-      `{{ get_post(id) }}`,
-      { id },
+    const post = JSON.parse(
+      await api.renderTemplate(pluginPackage, `{{ get_post(id) }}`, { id }),
     );
 
     if (!post) return;
@@ -106,7 +107,7 @@ export default function Dashboard({
   const deletePost = async (id: number) => {
     if (!confirm('Delete this post?')) return;
 
-    await Utils.jinjaEvaluate(pluginPackage, `{{ delete_post(post_id) }}`, {
+    await api.renderTemplate(pluginPackage, `{{ delete_post(post_id) }}`, {
       post_id: id,
     });
 

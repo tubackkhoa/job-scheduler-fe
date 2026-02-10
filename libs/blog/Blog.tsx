@@ -18,10 +18,12 @@ export default function Blog({
 
   const loadPost = async () => {
     try {
-      const res = await Utils.jinjaEvaluate(
-        pluginPackage,
-        `{{ get_post(blog_id) | tojson }}`,
-        { blog_id },
+      const res = JSON.parse(
+        await api.renderTemplate(
+          pluginPackage,
+          `{{ get_post(blog_id) | tojson }}`,
+          { blog_id },
+        ),
       );
       setPost(res);
     } catch (ex) {

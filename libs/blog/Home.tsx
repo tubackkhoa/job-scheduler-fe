@@ -1,13 +1,6 @@
 import { useEffect, useState } from 'react';
-import {
-  Box,
-  Container,
-  List,
-  ListItem,
-  ListItemText,
-  Typography,
-} from '@mui/material';
-import { Link, Link as RouterLink } from 'react-router-dom';
+import { Box, Container, List, ListItem, ListItemText } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import { Post } from './type';
 import { Header } from './common';
 
@@ -20,9 +13,13 @@ export default function Portal({
   const [posts, setPosts] = useState<Post[]>([]);
 
   const loadPosts = async () => {
-    const res = await Utils.jinjaEvaluate(
-      pluginPackage,
-      `{{ get_posts() | pick('id' ,'title', 'description') | tojson }}`,
+    // if we know render server and return true JSON, this is fastest way
+    const res = JSON.parse(
+      await api.renderTemplate(
+        pluginPackage,
+        `{{ get_posts() | pick('id' ,'title', 'description') | tojson }}`,
+        {},
+      ),
     );
     setPosts(res);
   };

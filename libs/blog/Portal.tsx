@@ -12,9 +12,12 @@ export default function Portal({
   const [posts, setPosts] = useState<Post[]>([]);
 
   const loadPosts = async () => {
-    const res = await Utils.jinjaEvaluate(
-      pluginPackage,
-      `{{ get_posts(5) | pick('id' ,'title', 'description') | tojson }}`,
+    const res = JSON.parse(
+      await api.renderTemplate(
+        pluginPackage,
+        `{{ get_posts(5) | pick('id' ,'title', 'description') | tojson }}`,
+        {},
+      ),
     );
     setPosts(res);
   };
