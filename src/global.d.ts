@@ -9,6 +9,7 @@ import ApiNS from './api';
 import ReactNS from 'react';
 import * as ConstantsNS from './constants';
 import { loadPyodide as loadPyodideNS } from 'pyodide';
+import { Params } from 'react-router-dom';
 
 declare global {
   const AppIcon: typeof AppIconNS;
@@ -82,16 +83,18 @@ declare global {
     success: boolean;
   }
 
+  type RoutesItem = [string[], CodeSchema];
+
   interface RoutesResponse {
     package: string;
-    routes: [string[], CodeSchema];
+    routes: RoutesItem;
   }
 
-  interface PluginPageData extends RoutesResponse {
+  type PluginPageData = RoutesResponse & {
     pluginId: number;
-  }
+  } & Params<string>;
 
-  type AllRoutesResponse = Record<string, [string[], CodeSchema]>;
+  type AllRoutesResponse = Record<string, RoutesItem>;
 
   interface PluginUserCodeResponse {
     form: string;

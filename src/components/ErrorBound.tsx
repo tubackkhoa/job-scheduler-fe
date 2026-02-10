@@ -8,7 +8,7 @@ interface ErrorBoundaryProps {
 }
 
 interface ErrorBoundaryState {
-  error: Error | null;
+  error?: string;
 }
 
 export class ErrorBoundary extends React.Component<
@@ -18,7 +18,7 @@ export class ErrorBoundary extends React.Component<
   state: ErrorBoundaryState = { error: null };
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { error };
+    return { error: error.message };
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
@@ -41,7 +41,7 @@ export class ErrorBoundary extends React.Component<
       return (
         this.props.fallback ?? (
           <Alert variant="outlined" severity="error" sx={{ mb: 4 }}>
-            {error.message || String(error)}
+            {error}
           </Alert>
         )
       );

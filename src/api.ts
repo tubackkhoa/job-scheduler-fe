@@ -1,4 +1,4 @@
-import { getToken, clearToken, setToken } from '@/auth/tokenStorage';
+import { getToken, clearToken, setToken } from './auth/tokenStorage';
 
 const { VITE_PROXY, VITE_API_BASE_URL } = import.meta.env;
 

@@ -75,8 +75,17 @@ export default function App() {
                   {import.meta.env.VITE_CHATBOT_ENABLED && (
                     <Route path="chatbot" element={<ChatBot />} />
                   )}
-                  <Route path="*" element={<PageNotFound />} />
                 </Route>
+                <Route
+                  path="/:plugin_id/*"
+                  element={
+                    <CustomPluginPage
+                      setError={setError}
+                      setLoading={setLoading}
+                    />
+                  }
+                />
+                <Route path="*" element={<PageNotFound />} />
               </Routes>
             </DialogsProvider>
           </NotificationsProvider>

@@ -6,6 +6,15 @@ import { PluginSitemap } from '@/components/PluginSitemap';
 import { PortalPage } from '@/components/Portal';
 import DownloadModuleForm from '@/components/DownloadModuleForm';
 
+const convertToRouteStateItem = (item: RoutesItem): RouteStateItem => {
+  const [routes, portal] = item;
+  return {
+    loading: false,
+    routes: routes.filter((r) => !r.includes(':')),
+    portal,
+  };
+};
+
 export default function Dashboard({ setLoading, setError }) {
   const [plugins, setPlugins] = useState<PluginData[]>();
   const [routeState, setRouteState] = useState<RouteState>({});
@@ -19,23 +28,18 @@ export default function Dashboard({ setLoading, setError }) {
         ...prev,
         [pluginId]: { loading: true },
       }));
-      let routes: string[];
-      let portal: CodeSchema;
+      let newState: RouteStateItem;
       try {
         const data = await api.fetchRoutes(pluginId);
-        portal = data.routes[1];
-        routes = data.routes[0].filter((r) => !r.includes(':'));
+        newState = convertToRouteStateItem(data.routes);
       } catch (err) {
         setError(err.message);
+        newState = { loading: false };
       } finally {
         // in case return
         setRouteState((prev) => ({
           ...prev,
-          [pluginId]: {
-            loading: false,
-            routes,
-            portal,
-          },
+          [pluginId]: newState,
         }));
       }
     },
@@ -52,15 +56,8 @@ export default function Dashboard({ setLoading, setError }) {
             plugins
               .filter((p) => routesMap[p.package])
               .map((p) => {
-                const [routes, portal] = routesMap[p.package];
-                return [
-                  p.id,
-                  {
-                    loading: false,
-                    routes: routes.filter((r) => !r.includes(':')),
-                    portal,
-                  },
-                ];
+                const newState = convertToRouteStateItem(routesMap[p.package]);
+                return [p.id, newState];
               }),
           ),
         );
