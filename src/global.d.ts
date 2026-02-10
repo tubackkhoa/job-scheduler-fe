@@ -247,7 +247,7 @@ declare global {
   >;
 
   // for development
-  var __esbuild_init__: Promise<typeof import('esbuild-wasm')> | undefined;
+  var __ESBUILD_PROMISE__: Promise<typeof import('esbuild-wasm')> | undefined;
 
   interface Window {
     ctx: { user: User };

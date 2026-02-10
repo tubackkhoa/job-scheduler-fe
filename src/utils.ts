@@ -454,10 +454,10 @@ export const jinjaLinter = (
   });
 };
 
-// trigger for development
-if (import.meta.env.DEV) {
-  if (!globalThis.__esbuild_init__) {
-    globalThis.__esbuild_init__ = (async () => {
+// lazy init, because it is not required to build, unlike pyodide
+const getEsbuild = () => {
+  if (!globalThis.__ESBUILD_PROMISE__) {
+    globalThis.__ESBUILD_PROMISE__ = (async () => {
       const esbuild = await import('esbuild-wasm');
       const wasmUrl = (await import('esbuild-wasm/esbuild.wasm?url')).default;
 
@@ -471,14 +471,11 @@ if (import.meta.env.DEV) {
       return esbuild;
     })();
   }
-}
+  return globalThis.__ESBUILD_PROMISE__;
+};
 
 export async function transpile(code: string): Promise<string> {
-  // do not transpile for production
-  if (!import.meta.env.DEV) {
-    return code;
-  }
-  const esbuild = await globalThis.__esbuild_init__;
+  const esbuild = await getEsbuild();
 
   // 2️⃣ Compile with strict constraints
   const result = await esbuild.transform(code, {
@@ -599,7 +596,8 @@ export const transformSignals = (signals: Signal[]) => {
 
 const blobCache = new Map<string, string>();
 export const createUrlFromString = (code: string) => {
-  const hash = getCodeHash(code);
+  // hash from trimmed string
+  const hash = getCodeHash(code.trim());
 
   let url = blobCache.get(hash);
   if (url) return url;
