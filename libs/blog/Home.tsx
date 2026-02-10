@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Box, List, ListItem, ListItemText, Typography } from '@mui/material';
+import {
+  Box,
+  Container,
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+} from '@mui/material';
 import { Link, Link as RouterLink } from 'react-router-dom';
 import { Post } from './type';
 import { Header } from './common';
@@ -27,19 +34,21 @@ export default function Portal({
   return (
     <Box>
       <Header link={`/${pluginId}/blog`} />
-      <List>
-        {posts.map((p) => (
-          <ListItem
-            key={p.id}
-            component={RouterLink}
-            to={`/${pluginId}/blog/${p.id}`}
-            divider
-            sx={{ textDecoration: 'none', color: 'inherit' }}
-          >
-            <ListItemText primary={p.title} secondary={p.description} />
-          </ListItem>
-        ))}
-      </List>
+      <Container>
+        <List>
+          {posts.map((p) => (
+            <ListItem
+              key={p.id}
+              component={RouterLink}
+              to={`/${pluginId}/blog/${p.id}`}
+              divider
+              sx={{ textDecoration: 'none', color: 'inherit' }}
+            >
+              <ListItemText primary={p.title} secondary={p.description} />
+            </ListItem>
+          ))}
+        </List>
+      </Container>
     </Box>
   );
 }
