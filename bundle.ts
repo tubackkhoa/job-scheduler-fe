@@ -1,5 +1,5 @@
-import { build } from 'esbuild';
-import type { Plugin } from 'esbuild';
+import { context } from 'esbuild';
+import type { Plugin, BuildOptions } from 'esbuild';
 import { Project } from 'ts-morph';
 import fs from 'fs/promises';
 
@@ -15,7 +15,7 @@ const project = new Project({
   skipAddingFilesFromTsConfig: true,
 });
 
-export const rewriteImportsPlugin: Plugin = {
+const rewriteImportsPlugin: Plugin = {
   name: 'rewrite-imports-to-global',
   setup(build) {
     build.onLoad({ filter: /\.[tj]sx?$/ }, async (args) => {
@@ -51,34 +51,74 @@ export const rewriteImportsPlugin: Plugin = {
   },
 };
 
-const [input, output] = process.argv
-  .slice(2)
-  .filter((a) => !a.startsWith('--'));
+const watchLoggerPlugin = (input: string, output: string): Plugin => {
+  return {
+    name: 'watch-logger',
+    setup(build) {
+      build.onEnd((result) => {
+        if (result.errors.length) {
+          console.error(`[build] ${input} fail`, result.errors);
+        } else {
+          console.log(`[build] ${input} -> ${output}`);
+        }
+      });
+    },
+  };
+};
 
-const result = await build({
-  plugins: [rewriteImportsPlugin],
-  entryPoints: [input],
-  outfile: output,
-  bundle: true,
-  minify: true,
-  legalComments: 'none',
-  format: 'esm',
-  target: 'es2020',
-  loader: {
-    '.tsx': 'tsx',
-    '.py': 'text',
-  },
-  jsx: 'transform',
-  jsxFactory: 'React.createElement',
-  write: output !== undefined,
-});
+function baseOptions(
+  input: string,
+  output: string,
+  plugins: Plugin[],
+): BuildOptions {
+  return {
+    plugins: [rewriteImportsPlugin, ...plugins],
+    entryPoints: [input],
+    outfile: output,
+    bundle: true,
+    minify: true,
+    legalComments: 'none',
+    format: 'esm',
+    target: 'es2020',
+    loader: {
+      '.tsx': 'tsx',
+      '.py': 'text',
+    },
+    jsx: 'transform',
+    jsxFactory: 'React.createElement',
+  };
+}
 
-const jsCode = output
-  ? await fs.readFile(output)
-  : result.outputFiles![0].contents;
+async function runBuild(input: string, output: string, watch = false) {
+  const plugins = watch ? [watchLoggerPlugin(input, output)] : [];
+  const ctx = await context(baseOptions(input, output, plugins));
+  if (watch) {
+    await ctx.watch();
+    return;
+  }
+  await ctx.rebuild();
+  await ctx.dispose();
+  console.log(`[build] ${input} -> ${output}`);
+}
 
-if (output) {
-  await fs.writeFile(output, jsCode);
+async function watchFromConfig(configPath: string) {
+  const map: Record<string, string> = JSON.parse(
+    await fs.readFile(configPath, 'utf8'),
+  );
+
+  await Promise.all(
+    Object.entries(map).map(([input, output]) => runBuild(input, output, true)),
+  );
+}
+
+const args = process.argv.slice(2);
+const [input, output] = args.filter((a) => !a.startsWith('--'));
+if (args.includes('--watch')) {
+  if (!input) {
+    console.error('Usage: --watch build.json');
+    process.exit(1);
+  }
+  await watchFromConfig(input);
 } else {
-  process.stdout.write(jsCode);
+  await runBuild(input, output, false);
 }

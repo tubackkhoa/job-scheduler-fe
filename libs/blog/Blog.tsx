@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Alert, Box, Container, Divider, Typography } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
 import { Post } from './type';
 import { Header } from './common';
 
@@ -14,7 +13,6 @@ export default function Blog({
 }: ConfigFieldProps<PluginPageData>) {
   const [post, setPost] = useState<Post>();
   const [error, setError] = useState();
-  const navigate = useNavigate();
 
   const loadPost = async () => {
     try {
