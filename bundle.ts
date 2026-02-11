@@ -1,7 +1,9 @@
-import { context } from 'esbuild';
+import { build, context } from 'esbuild';
 import type { Plugin, BuildOptions } from 'esbuild';
 import { Project } from 'ts-morph';
+import crypto from 'crypto';
 import fs from 'fs/promises';
+import path from 'path';
 
 const IMPORT_REWRITE_MAP: Record<string, string> = {
   react: 'React',
@@ -20,9 +22,14 @@ const rewriteImportsPlugin: Plugin = {
   setup(build) {
     build.onLoad({ filter: /\.[tj]sx?$/ }, async (args) => {
       const source = await fs.readFile(args.path, 'utf8');
-      const sf = project.createSourceFile(args.path, source, {
-        overwrite: true,
-      });
+
+      // re-use args.path
+      let sf = project.getSourceFile(args.path);
+      if (sf) {
+        sf.replaceWithText(source);
+      } else {
+        sf = project.createSourceFile(args.path, source);
+      }
 
       sf.getImportDeclarations().forEach((imp) => {
         const moduleName = imp.getModuleSpecifierValue();
@@ -51,30 +58,38 @@ const rewriteImportsPlugin: Plugin = {
   },
 };
 
-const watchLoggerPlugin = (input: string, output: string): Plugin => {
+const watchPlugin = (): Plugin => {
+  const lastHash = new Map<string, string>();
   return {
     name: 'watch-logger',
     setup(build) {
-      build.onEnd((result) => {
+      build.onEnd(async (result) => {
         if (result.errors.length) {
-          console.error(`[build] ${input} fail`, result.errors);
-        } else {
-          console.log(`[build] ${input} -> ${output}`);
+          console.error('[build] failed', result.errors);
+          return;
+        }
+
+        const outputs = result.metafile?.outputs ?? {};
+
+        for (const [output, meta] of Object.entries(outputs)) {
+          if (!meta.entryPoint) continue;
+
+          const buf = await fs.readFile(output);
+          const hash = crypto.createHash('sha1').update(buf).digest('hex');
+
+          if (lastHash.get(output) !== hash) {
+            lastHash.set(output, hash);
+            console.log(`[build] ${meta.entryPoint} -> ${output}`);
+          }
         }
       });
     },
   };
 };
 
-function baseOptions(
-  input: string,
-  output: string,
-  plugins: Plugin[],
-): BuildOptions {
+function baseOptions(plugins: Plugin[]): BuildOptions {
   return {
     plugins: [rewriteImportsPlugin, ...plugins],
-    entryPoints: [input],
-    outfile: output,
     bundle: true,
     minify: true,
     legalComments: 'none',
@@ -89,28 +104,6 @@ function baseOptions(
   };
 }
 
-async function runBuild(input: string, output: string, watch = false) {
-  const plugins = watch ? [watchLoggerPlugin(input, output)] : [];
-  const ctx = await context(baseOptions(input, output, plugins));
-  if (watch) {
-    await ctx.watch();
-    return;
-  }
-  await ctx.rebuild();
-  await ctx.dispose();
-  console.log(`[build] ${input} -> ${output}`);
-}
-
-async function watchFromConfig(configPath: string) {
-  const map: Record<string, string> = JSON.parse(
-    await fs.readFile(configPath, 'utf8'),
-  );
-
-  await Promise.all(
-    Object.entries(map).map(([input, output]) => runBuild(input, output, true)),
-  );
-}
-
 const args = process.argv.slice(2);
 const [input, output] = args.filter((a) => !a.startsWith('--'));
 if (args.includes('--watch')) {
@@ -118,7 +111,42 @@ if (args.includes('--watch')) {
     console.error('Usage: --watch build.json');
     process.exit(1);
   }
-  await watchFromConfig(input);
+  const map: Record<string, string> = JSON.parse(
+    await fs.readFile(input, 'utf8'),
+  );
+  // Convert: input -> output.js
+  // into:   output(no .js) -> input
+  const entryPoints: Record<string, string> = {};
+
+  for (const [input, output] of Object.entries(map)) {
+    const outNoExt = path.resolve(output.replace(/\.[^.]+$/, ''));
+    entryPoints[outNoExt] = input;
+  }
+
+  const ctx = await context({
+    ...baseOptions([watchPlugin()]),
+    metafile: true,
+    entryPoints,
+    outdir: '/',
+  });
+
+  await ctx.watch();
 } else {
-  await runBuild(input, output, false);
+  const result = await build({
+    ...baseOptions([]),
+    entryPoints: [input],
+    outfile: output,
+    write: output !== undefined,
+  });
+
+  const jsCode = output
+    ? await fs.readFile(output)
+    : result.outputFiles![0].contents;
+
+  if (output) {
+    console.log(`[build] ${input} -> ${output}`);
+    await fs.writeFile(output, jsCode);
+  } else {
+    process.stdout.write(jsCode);
+  }
 }
