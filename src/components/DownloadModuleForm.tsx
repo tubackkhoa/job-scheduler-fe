@@ -1,5 +1,12 @@
-import { Paper, TextField, Typography, Alert, Stack, Box } from '@mui/material';
-import { LoadingButton } from '@mui/lab';
+import {
+  Paper,
+  Button,
+  TextField,
+  Typography,
+  Alert,
+  Stack,
+  Box,
+} from '@mui/material';
 import { useState } from 'react';
 
 export default function DownloadModuleForm() {
@@ -51,14 +58,14 @@ export default function DownloadModuleForm() {
             fullWidth
           />
 
-          <LoadingButton
+          <Button
             type="submit"
             variant="contained"
             loading={loading}
             disabled={!name}
           >
             Download
-          </LoadingButton>
+          </Button>
 
           {result && (
             <Alert severity={result.success ? 'success' : 'warning'}>

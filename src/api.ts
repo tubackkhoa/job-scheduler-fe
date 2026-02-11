@@ -56,6 +56,27 @@ async function parseJson(res: Response) {
   return res.json();
 }
 
+async function readTextStream(
+  body: ReadableStream,
+  onToken: (text: string) => void,
+): Promise<string> {
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+
+  let text = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    const chunk = decoder.decode(value, { stream: true });
+    text += chunk;
+    onToken(text);
+  }
+
+  return text;
+}
+
 async function request<T = unknown>(
   path: string,
   options: RequestInit = {},
@@ -302,20 +323,6 @@ export default {
       throw new Error('No response body');
     }
 
-    const reader = body.getReader();
-    const decoder = new TextDecoder();
-
-    let text = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value, { stream: true });
-      text += chunk;
-      onToken(text);
-    }
-
-    return text;
+    return readTextStream(body, onToken);
   },
 };
