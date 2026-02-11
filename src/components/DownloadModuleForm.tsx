@@ -11,9 +11,7 @@ import { useState } from 'react';
 
 export default function DownloadModuleForm() {
   const [name, setName] = useState('');
-  const [version, setVersion] = useState(
-    'git+https://github.com/user/repo@branch',
-  );
+  const [version, setVersion] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PostResponse>(null);
   const [error, setError] = useState('');
