@@ -74,13 +74,15 @@ const watchPlugin = (): Plugin => {
         for (const [output, meta] of Object.entries(outputs)) {
           if (!meta.entryPoint) continue;
 
-          const buf = await fs.readFile(output);
-          const hash = crypto.createHash('sha1').update(buf).digest('hex');
+          try {
+            const buf = await fs.readFile(output);
+            const hash = crypto.createHash('sha1').update(buf).digest('hex');
 
-          if (lastHash.get(output) !== hash) {
-            lastHash.set(output, hash);
-            console.log(`[build] ${meta.entryPoint} -> ${output}`);
-          }
+            if (lastHash.get(output) !== hash) {
+              lastHash.set(output, hash);
+              console.log(`[build] ${meta.entryPoint} -> ${output}`);
+            }
+          } catch {}
         }
       });
     },
@@ -145,7 +147,6 @@ if (args.includes('--watch')) {
 
   if (output) {
     console.log(`[build] ${input} -> ${output}`);
-    await fs.writeFile(output, jsCode);
   } else {
     process.stdout.write(jsCode);
   }
