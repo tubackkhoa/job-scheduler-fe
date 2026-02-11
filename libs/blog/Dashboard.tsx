@@ -93,7 +93,9 @@ export default function Dashboard({
 
   const startEdit = async (id: number) => {
     const post = JSON.parse(
-      await api.renderTemplate(pluginPackage, `{{ get_post(id) }}`, { id }),
+      await api.renderTemplate(pluginPackage, `{{ get_post(id) | tojson }}`, {
+        id,
+      }),
     );
 
     if (!post) return;
