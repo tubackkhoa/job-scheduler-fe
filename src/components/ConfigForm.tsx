@@ -1,6 +1,5 @@
 import { useEffect, useRef, useMemo, useState } from 'react';
 import _ from 'lodash';
-import { Box } from '@mui/material';
 import Form from '@rjsf/mui';
 import validator from '@rjsf/validator-ajv8';
 import { extractUiSchema, buildUiSchemaWithExpr } from '@/utils';
@@ -9,6 +8,17 @@ import widgets from './widgets';
 import { ErrorBoundary } from './ErrorBound';
 import { ObjectFieldTemplate } from './templates/ObjectFieldTemplate';
 import { IChangeEvent } from '@rjsf/core';
+import { RJSFSchema } from '@rjsf/utils';
+
+interface Props {
+  schema: RJSFSchema;
+  env: EnvDoc;
+  sessionId: number;
+  formData: any;
+  onChange: (data: any) => void;
+  pluginPackage: string;
+  pluginId: number;
+}
 
 export const ConfigForm = ({
   schema,
@@ -18,7 +28,7 @@ export const ConfigForm = ({
   onChange,
   pluginPackage,
   pluginId,
-}) => {
+}: Props) => {
   const [localSchema, setLocalSchema] = useState(schema);
   const [extraErrors, setExtraErrors] = useState({});
   const changedFieldId = useRef(null);
@@ -53,35 +63,24 @@ export const ConfigForm = ({
   }
 
   return (
-    <Box
-      sx={{
-        width: '100%',
-        '& .rjsf': {
-          '& .form-group': { mb: 0 },
-          '& .field': { mb: 0 },
-          '& .control-label': { mb: 1 },
-        },
-      }}
-    >
-      <ErrorBoundary>
-        <Form
-          extraErrors={extraErrors}
-          schema={localSchema}
-          uiSchema={uiSchema}
-          formContext={{ formData, pluginPackage, env, sessionId }}
-          idPrefix={localSchema.pluginId ?? pluginId}
-          idSeparator="."
-          fields={fields}
-          widgets={widgets}
-          formData={formData}
-          validator={validator}
-          onChange={handleChange}
-          liveValidate={false}
-          templates={{
-            ObjectFieldTemplate,
-          }}
-        />
-      </ErrorBoundary>
-    </Box>
+    <ErrorBoundary>
+      <Form
+        extraErrors={extraErrors}
+        schema={localSchema}
+        uiSchema={uiSchema}
+        formContext={{ formData, pluginPackage, env, sessionId }}
+        idPrefix={localSchema.pluginId ?? pluginId}
+        idSeparator="."
+        fields={fields}
+        widgets={widgets}
+        formData={formData}
+        validator={validator}
+        onChange={handleChange}
+        liveValidate={false}
+        templates={{
+          ObjectFieldTemplate,
+        }}
+      />
+    </ErrorBoundary>
   );
 };
