@@ -459,10 +459,9 @@ const getEsbuild = () => {
   if (!globalThis.__ESBUILD_PROMISE__) {
     globalThis.__ESBUILD_PROMISE__ = (async () => {
       const esbuild = await import('esbuild-wasm');
-      const wasmUrl = (await import('esbuild-wasm/esbuild.wasm?url')).default;
 
       await esbuild.initialize({
-        wasmURL: wasmUrl,
+        wasmURL: 'https://unpkg.com/esbuild-wasm@0.27.2/esbuild.wasm',
         worker: true,
       });
 

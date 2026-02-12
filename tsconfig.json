@@ -2,6 +2,7 @@
     "compilerOptions": {
         "target": "ESNext",
         "module": "ESNext",
+        "useDefineForClassFields": true,
         "moduleResolution": "Bundler", // or "Node" if not using Vite 4+
         "types": [
             "vite/client"

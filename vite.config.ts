@@ -9,6 +9,8 @@ export default defineConfig(({ mode }) => {
 
   return {
     build: {
+      target: 'esnext',
+      chunkSizeWarningLimit: 3000,
       rollupOptions: {
         output: {
           manualChunks(id) {
