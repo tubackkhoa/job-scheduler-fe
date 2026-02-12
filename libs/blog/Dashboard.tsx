@@ -23,7 +23,7 @@ export default function Dashboard({
   },
 }: ConfigFieldProps<PluginPageData>) {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [mode] = Utils.useAppColorScheme();
+  const [mode] = Hooks.useAppColorScheme();
   const notifications = Hooks.useNotifications();
 
   const [editingId, setEditingId] = useState<number | null>(null);

@@ -15,7 +15,7 @@ import { jinja, JinjaCompletionConfig } from '@codemirror/lang-jinja';
 import jinjaPython from './jinja.py?raw';
 import dayjs from 'dayjs';
 import { RJSFSchema } from '@rjsf/utils';
-import { PaletteMode, useColorScheme } from '@mui/material';
+import { PaletteMode } from '@mui/material';
 
 export const scrollToTop = () => {
   window.scrollTo({
@@ -185,15 +185,6 @@ export const getSystemTheme = (): PaletteMode =>
   window.matchMedia?.('(prefers-color-scheme: dark)').matches
     ? 'dark'
     : 'light';
-
-export function useAppColorScheme(): [
-  PaletteMode,
-  (mode: PaletteMode) => void,
-] {
-  const { mode, setMode } = useColorScheme();
-  const paletteMode = !mode || mode === 'system' ? getSystemTheme() : mode;
-  return [paletteMode, setMode];
-}
 
 /* ================================
  * Message Formatting

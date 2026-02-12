@@ -9,7 +9,7 @@ export default function ({
   formData,
   fieldPathId,
 }: FieldProps<string>) {
-  const [mode] = Utils.useAppColorScheme();
+  const [mode] = Hooks.useAppColorScheme();
   const [input, setInput] = useState(formData);
   const handleRun = async () => {
     onChange(input, fieldPathId.path);

@@ -14,7 +14,7 @@ import type {
   ShowNotification,
   ShowNotificationOptions,
 } from './useNotifications';
-import { useAppColorScheme } from '@/utils';
+import { useAppColorScheme } from '../useAppColorSchema';
 
 const RootPropsContext = React.createContext<NotificationsProviderProps | null>(
   null,

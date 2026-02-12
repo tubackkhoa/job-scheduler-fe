@@ -1,10 +1,6 @@
 import api from '@/api';
-import {
-  JinjaCompletionBuilder,
-  jinjaLinter,
-  useAppColorScheme,
-  yamlLangWithJs,
-} from '@/utils';
+import { useAppColorScheme } from '@/hooks/useAppColorSchema';
+import { JinjaCompletionBuilder, jinjaLinter, yamlLangWithJs } from '@/utils';
 import { jinja } from '@codemirror/lang-jinja';
 import { Paper, Stack, Typography } from '@mui/material';
 import ReactCodeMirror from '@uiw/react-codemirror';

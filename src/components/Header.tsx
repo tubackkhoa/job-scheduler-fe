@@ -8,8 +8,9 @@ import {
   ListItemIcon,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { scrollToTop, useAppColorScheme } from '@/utils';
+import { scrollToTop } from '@/utils';
 import { useScroll } from '@/hooks/useScroll';
+import { useAppColorScheme } from '@/hooks/useAppColorSchema';
 
 export function Header({
   height,

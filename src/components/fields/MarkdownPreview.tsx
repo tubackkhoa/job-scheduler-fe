@@ -6,7 +6,8 @@ import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { useMemo } from 'react';
 import { SortableTable } from '../SortableTable';
-import { mdCodeLanguages, useAppColorScheme } from '@/utils';
+import { mdCodeLanguages } from '@/utils';
+import { useAppColorScheme } from '@/hooks/useAppColorSchema';
 
 interface Props {
   text: string;

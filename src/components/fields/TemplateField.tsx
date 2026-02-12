@@ -18,13 +18,13 @@ import {
   jinjaLinter,
   jinjaEvaluate,
   resolveLanguageExtension,
-  useAppColorScheme,
 } from '@/utils';
 import _ from 'lodash';
 
 import { FieldProps } from '@rjsf/utils';
 import { getCodeMirrorStyle, getContainerStyle } from '@/theme';
 import { LoadingSkeleton } from '../Loading';
+import { useAppColorScheme } from '@/hooks/useAppColorSchema';
 
 export function TemplateField({
   formData,

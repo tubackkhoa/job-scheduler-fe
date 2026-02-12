@@ -17,7 +17,8 @@ import { LanguageDescription } from '@codemirror/language';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import api from '@/api';
-import { jinjaLang, useAppColorScheme, yamlLangWithJs } from '@/utils';
+import { jinjaLang, yamlLangWithJs } from '@/utils';
+import { useAppColorScheme } from '@/hooks/useAppColorSchema';
 
 const GENERATE_SAMPLES = [
   {

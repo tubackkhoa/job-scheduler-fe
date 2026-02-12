@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 
 export const Header = ({
@@ -8,9 +8,15 @@ export const Header = ({
   link: string;
   title?: string;
 }) => {
+  const [mode, setMode] = Hooks.useAppColorScheme();
   return (
     <Box
-      sx={{ mb: 2, justifyContent: 'center', width: '100%', display: 'flex' }}
+      sx={{
+        mb: 2,
+        justifyContent: 'center',
+        width: '100%',
+        display: 'flex',
+      }}
     >
       <Typography
         component={Link}
@@ -24,6 +30,14 @@ export const Header = ({
       >
         {title}
       </Typography>
+      <IconButton
+        size="small"
+        onClick={() => setMode(mode === 'light' ? 'dark' : 'light')}
+        color="inherit"
+        disableRipple
+      >
+        {mode === 'dark' ? <AppIcon.LightMode /> : <AppIcon.DarkMode />}
+      </IconButton>
     </Box>
   );
 };

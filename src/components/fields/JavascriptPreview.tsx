@@ -2,7 +2,7 @@ import { Console } from 'console-feed';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { Box, Paper, Typography, Stack, Divider } from '@mui/material';
-import { useAppColorScheme } from '@/utils';
+import { useAppColorScheme } from '@/hooks/useAppColorSchema';
 
 interface Props {
   text: string;
