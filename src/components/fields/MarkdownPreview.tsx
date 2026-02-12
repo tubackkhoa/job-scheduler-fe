@@ -105,13 +105,7 @@ export const MarkdownPreview = ({
               case 'module':
                 // get name of the node as name
                 const rest: any = { registry, schema, fieldPathId };
-                return (
-                  <DynamicField
-                    name={String(node.properties.name)}
-                    formData={children}
-                    {...rest}
-                  />
-                );
+                return <DynamicField formData={children} {...rest} />;
               case 'json':
               case 'yml':
               case 'yaml':

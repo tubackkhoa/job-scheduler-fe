@@ -49,9 +49,5 @@ export default function CustomPluginPage({ setLoading, setError }) {
 
   if (pageProps === null) return null;
 
-  return pageProps ? (
-    <DynamicField name={plugin_id} {...pageProps} />
-  ) : (
-    <PageNotFound />
-  );
+  return pageProps ? <DynamicField {...pageProps} /> : <PageNotFound />;
 }
