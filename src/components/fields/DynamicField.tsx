@@ -2,6 +2,7 @@ import { FieldProps } from '@rjsf/utils';
 import { getLazyModule } from '@/module';
 import _ from 'lodash';
 import { ErrorBoundary } from '../ErrorBound';
+import { Suspense } from 'react';
 
 export default function DynamicField(props: FieldProps) {
   const { url, code } = props.schema;
@@ -11,7 +12,9 @@ export default function DynamicField(props: FieldProps) {
 
   return (
     <ErrorBoundary resetKey={key}>
-      <Component {...props} />
+      <Suspense fallback={null}>
+        <Component {...props} />
+      </Suspense>
     </ErrorBoundary>
   );
 }
