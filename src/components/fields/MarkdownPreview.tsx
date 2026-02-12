@@ -6,16 +6,12 @@ import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { useMemo } from 'react';
 import { SortableTable } from '../SortableTable';
-import { FieldPathId, FieldProps, RJSFSchema } from '@rjsf/utils';
 import { mdCodeLanguages, useAppColorScheme } from '@/utils';
-import DynamicField from './DynamicField';
 
 interface Props {
   text: string;
   maxHeight: string | number;
-  schema: RJSFSchema;
-  fieldPathId: FieldPathId;
-  registry: FieldProps['registry'];
+  renderModule?: (children: React.ReactNode) => React.ReactElement;
 }
 
 const sanitizeSchema = {
@@ -34,21 +30,15 @@ const sanitizeSchema = {
   ],
   attributes: {
     ...defaultSchema.attributes,
-    table: ['className', 'style'],
-    th: ['className', 'style', 'colspan', 'rowspan'],
-    td: ['className', 'style', 'colspan', 'rowspan'],
-    div: ['className', 'style'],
-    span: ['className', 'style'],
+    table: ['class', 'style'],
+    th: ['class', 'style', 'colspan', 'rowspan'],
+    td: ['class', 'style', 'colspan', 'rowspan'],
+    div: ['class', 'style'],
+    span: ['class', 'style'],
   },
 };
 
-export const MarkdownPreview = ({
-  text = '',
-  fieldPathId,
-  maxHeight,
-  schema,
-  registry,
-}: Props) => {
+export const MarkdownPreview = ({ text, maxHeight, renderModule }: Props) => {
   const [mode] = useAppColorScheme();
   const styles = useMemo(
     () => ({
@@ -90,7 +80,7 @@ export const MarkdownPreview = ({
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}
         components={{
-          code({ className, children, node }) {
+          code({ className, children }) {
             const lang = className?.replace('language-', '');
 
             switch (lang) {
@@ -104,8 +94,7 @@ export const MarkdownPreview = ({
                 );
               case 'module':
                 // get name of the node as name
-                const rest: any = { registry, schema, fieldPathId };
-                return <DynamicField formData={children} {...rest} />;
+                return renderModule?.(children);
               case 'json':
               case 'yml':
               case 'yaml':
@@ -130,7 +119,6 @@ export const MarkdownPreview = ({
                 return <code className={className}>{children}</code>;
             }
           },
-
           table({ children, className }) {
             return (
               <SortableTable className={className}>{children}</SortableTable>
@@ -154,6 +142,27 @@ export const MarkdownPreview = ({
           },
           td({ children }) {
             return <TableCell>{children}</TableCell>;
+          },
+          img({ src, alt }) {
+            return (
+              <Box
+                component="img"
+                src={src}
+                alt={alt}
+                sx={{
+                  maxWidth: {
+                    xs: '100%',
+                    sm: 600,
+                    md: 800,
+                  },
+                  width: '100%',
+                  height: 'auto',
+                  display: 'block',
+                  mx: 'auto',
+                  my: 2,
+                }}
+              />
+            );
           },
         }}
       >

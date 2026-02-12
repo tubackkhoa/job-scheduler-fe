@@ -3,7 +3,7 @@ import { Alert, Box, Container, Divider, Typography } from '@mui/material';
 import { Post } from './type';
 import { Header } from './common';
 
-const { ReactMarkdown } = Components;
+const { MarkdownPreview } = Components;
 
 export default function Blog({
   formData: { pluginId, blog_id },
@@ -49,7 +49,7 @@ export default function Blog({
         <Typography variant="h5">{post.title}</Typography>
         <Typography variant="body1">{post.description}</Typography>
         <Divider sx={{ mt: 4 }} />
-        <ReactMarkdown>{post.content}</ReactMarkdown>
+        <MarkdownPreview text={post.content} maxHeight="auto" />
       </Container>
     </Box>
   );
