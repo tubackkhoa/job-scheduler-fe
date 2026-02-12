@@ -237,11 +237,11 @@ declare global {
   interface ConfigFormContext<T> {
     formData: T;
     pluginPackage: string;
-    env: EnvDoc;
-    sessionId: number;
+    env?: EnvDoc;
+    sessionId?: number;
   }
 
-  type ConfigFieldProps<T = any, S = CodeSchema> = FieldProps<
+  type ConfigFieldProps<T = any, S = CodeSchema & RJSFSchema> = FieldProps<
     T,
     S,
     ConfigFormContext<T>
