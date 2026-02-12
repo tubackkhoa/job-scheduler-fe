@@ -152,7 +152,7 @@ function SortableWidget({
 interface PortalWidget {
   id: number;
   title: string;
-  props: FieldProps;
+  props: ConfigFieldProps;
 }
 
 interface Props {
@@ -173,7 +173,7 @@ export function PortalPage({ plugins, routeState }: Props) {
             formData: plugin,
             registry: { formContext: { pluginPackage: plugin.package } },
             schema: routeState.portal,
-          } as FieldProps,
+          } as ConfigFieldProps,
         };
       });
   }, [plugins, routeState]);

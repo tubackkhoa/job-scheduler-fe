@@ -241,7 +241,7 @@ declare global {
     sessionId: number;
   }
 
-  type ConfigFieldProps<T = any, S = any> = FieldProps<
+  type ConfigFieldProps<T = any, S = CodeSchema> = FieldProps<
     T,
     S,
     ConfigFormContext<T>
