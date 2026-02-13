@@ -27,55 +27,59 @@ Create a TypeScript React component that receives injected dependencies
 and returns a valid RJSF `Field`.
 
 ```tsx
-import React from 'react';
-import * as Mui from '@mui/material';
-import * as Utils from './src/utils';
-import { FieldProps } from '@rjsf/utils';
+import { useEffect, useState } from 'react';
+import { Alert, Box, Container, Divider, Typography } from '@mui/material';
+import { Post } from './type';
+import { Header } from './common';
 
-interface Plugin {
-  id: number;
-  package: string;
-  interval: number;
-  description?: string | null;
-}
+const { MarkdownPreview } = Components;
 
-export default function (
-  { useCallback, useState, useEffect }: typeof React,
-  { List, ListItemText }: typeof Mui,
-  { buildJinjaContext }: typeof Utils,
-) {
-  const DynamicField: React.FC<FieldProps> = ({ registry }) => {
-    const render = useCallback(
-      buildJinjaContext(
-        registry.formContext.pluginPackage,
-        registry.formContext.formData,
-      ),
-      [registry.formContext],
-    );
+export default function Blog({
+  formData: { pluginId, blog_id },
+  registry: {
+    formContext: { pluginPackage },
+  },
+}: ConfigFieldProps<PluginPageData>) {
+  const [post, setPost] = useState<Post>();
+  const [error, setError] = useState();
 
-    const [plugins, setPlugins] = useState<Plugin[]>([]);
-
-    useEffect(() => {
-      render(`{{ get_all_plugins() | list | tojson }}`, {}).then((plugins) => {
-        console.log(plugins);
-        setPlugins(plugins);
-      });
-    }, []);
-
-    return (
-      <List disablePadding>
-        {plugins.map((plugin) => (
-          <ListItemText
-            key={plugin.id}
-            primary={plugin.package}
-            secondary={plugin.description}
-          />
-        ))}
-      </List>
-    );
+  const loadPost = async () => {
+    try {
+      const res = await Utils.jinjaEvaluate(
+        pluginPackage,
+        `{{ get_post(blog_id) | tojson }}`,
+        { blog_id },
+      );
+      setPost(res);
+    } catch (ex) {
+      setError(ex.message);
+    }
   };
 
-  return DynamicField;
+  useEffect(() => {
+    loadPost();
+  }, []);
+
+  if (error)
+    return (
+      <Alert variant="outlined" severity="error" sx={{ mb: 4 }}>
+        {error}
+      </Alert>
+    );
+
+  if (!post) return null;
+
+  return (
+    <Box>
+      <Header link={`/${pluginId}/blog`} />
+      <Container>
+        <Typography variant="h5">{post.title}</Typography>
+        <Typography variant="body1">{post.description}</Typography>
+        <Divider sx={{ mt: 4 }} />
+        <MarkdownPreview text={post.content} maxHeight="auto" />
+      </Container>
+    </Box>
+  );
 }
 ```
 
