@@ -1,16 +1,18 @@
 input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
-/* Chrome, Safari, Edge, Opera */
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+/* Remove arrows/spinners from number inputs (all modern browsers) */
+input[type="number"] {
+  appearance: textfield;        /* Standard */
+  -moz-appearance: textfield;   /* Firefox fallback */
 }
 
-/* Firefox */
-input[type=number] {
-  -moz-appearance: textfield;
+/* WebKit browsers: Chrome, Safari, Edge, Opera */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  appearance: none;      /* Standard */
+  -webkit-appearance: none; /* Older WebKit */
+  margin: 0;
 }
 
 .config-field {
