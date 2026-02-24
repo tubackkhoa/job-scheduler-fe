@@ -15,7 +15,6 @@ import Masonry from '@mui/lab/Masonry';
 import { Card, CardHeader, CardContent } from '@mui/material';
 import React, { useMemo, useEffect, useState } from 'react';
 import DynamicField from './fields/DynamicField';
-import { FieldProps } from '@rjsf/utils';
 
 const LAYOUT_KEY = 'portal-layout';
 
