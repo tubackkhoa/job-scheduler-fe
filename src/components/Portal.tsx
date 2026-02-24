@@ -126,6 +126,7 @@ function SortableWidget({
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
+              touchAction: 'none',
             }}
           >
             {title}
