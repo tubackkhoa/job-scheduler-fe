@@ -26,7 +26,6 @@
     "@rjsf/utils": "^6.1.2",
     "@rjsf/validator-ajv8": "^6.1.2",
     "@uiw/react-codemirror": "^4.25.4",
-    "console-feed": "^3.8.0",
     "dayjs": "^1.11.19",
     "esbuild-wasm": "^0.27.2",
     "json5": "^2.2.3",
@@ -54,7 +53,7 @@
     "patch-package": "^8.0.1",
     "pyodide": "0.25.1",
     "ts-morph": "^27.0.2",
-    "vite": "^7.2.4"
+    "vite": "^8.0.0-beta.15"
   },
   "resolutions": {
     "@codemirror/view": "^6.39.11"

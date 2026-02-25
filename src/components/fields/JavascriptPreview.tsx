@@ -1,4 +1,4 @@
-import { Console } from 'console-feed';
+import { Console } from '@/components/Console';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { Box, Paper, Typography, Stack, Divider } from '@mui/material';
