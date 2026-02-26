@@ -1,6 +1,6 @@
 {
-    "extends": "./tsconfig.build.json",
+    "extends": "./tsconfig.vite.json",
     "compilerOptions": {
-        "jsx": "react-jsx"
+        "jsx": "react-jsx",
     }
 }

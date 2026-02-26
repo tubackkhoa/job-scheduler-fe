@@ -1,9 +1,6 @@
 import { getToken, clearToken, setToken } from './auth/tokenStorage';
 
-const { VITE_PROXY, VITE_API_BASE_URL } = import.meta.env;
-
-export const API_BASE_URL =
-  VITE_PROXY === 'true' ? '' : (VITE_API_BASE_URL ?? '');
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 const apiUrl = (path: string) => `${API_BASE_URL}${path}`;
 
