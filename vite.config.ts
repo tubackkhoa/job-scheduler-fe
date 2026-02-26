@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv } from 'vite';
+import preact from '@preact/preset-vite';
 import path from 'path';
 
 // https://vite.dev/config/
@@ -7,6 +8,7 @@ export default defineConfig(({ mode }) => {
   const enableProxy = env.VITE_PROXY === 'true';
 
   return {
+    plugins: [preact()],
     esbuild: {
       tsconfigRaw: 'tsconfig.build.json',
     },
@@ -23,9 +25,6 @@ export default defineConfig(({ mode }) => {
     },
     resolve: {
       alias: {
-        react: 'preact/compat',
-        'react-dom': 'preact/compat',
-        'react/jsx-runtime': 'preact/jsx-runtime',
         '@': path.resolve(__dirname, 'src'),
       },
     },
