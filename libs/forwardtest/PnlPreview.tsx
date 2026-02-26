@@ -43,7 +43,7 @@ import {
   CircularProgress,
   useTheme,
 } from '@mui/material';
-import { PublishModal } from './PublishModal';
+import { PublishModal } from '../PublishModal';
 
 type TooltipData = {
   time: string;

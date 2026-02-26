@@ -12,6 +12,8 @@ import { loadPyodide as loadPyodideNS } from 'pyodide';
 import { Params } from 'react-router-dom';
 import { PyodideInterface } from 'pyodide';
 
+declare const React: typeof import('react');
+
 declare global {
   const AppIcon: typeof AppIconNS;
   const Components: typeof ComponentsNS;

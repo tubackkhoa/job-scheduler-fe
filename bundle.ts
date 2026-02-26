@@ -7,6 +7,7 @@ import path from 'path';
 
 const IMPORT_REWRITE_MAP: Record<string, string> = {
   react: 'React',
+  'react/jsx-runtime': 'React',
   'react-router-dom': 'RouterDom',
   '@mui/material': 'Mui',
   'lightweight-charts': 'LightweightChart',
@@ -60,27 +61,45 @@ const rewriteImportsPlugin: Plugin = {
 
 const watchPlugin = (): Plugin => {
   const lastHash = new Map<string, string>();
+  let startTime = 0;
+
   return {
     name: 'watch-logger',
     setup(build) {
+      build.onStart(() => {
+        startTime = Date.now();
+      });
+
       build.onEnd(async (result) => {
+        const duration = Date.now() - startTime;
+
         if (result.errors.length) {
-          console.error('[build] failed', result.errors);
+          console.error(`❌ build failed in ${duration}ms`);
           return;
         }
 
-        const outputs = result.metafile?.outputs ?? {};
+        const outputs = result.metafile?.outputs ?? [];
 
         for (const [output, meta] of Object.entries(outputs)) {
           if (!meta.entryPoint) continue;
 
           try {
             const buf = await fs.readFile(output);
-            const hash = crypto.createHash('sha1').update(buf).digest('hex');
+
+            const hash = crypto
+              .createHash('sha1')
+              .update(buf)
+              .digest('hex')
+              .slice(0, 8);
+
+            const sizeKB = (buf.length / 1024).toFixed(2);
 
             if (lastHash.get(output) !== hash) {
               lastHash.set(output, hash);
-              console.log(`[build] ${meta.entryPoint} -> ${output}`);
+
+              console.log(
+                `✅ ${meta.entryPoint} → ${output} (${sizeKB} kb, ${duration} ms)`,
+              );
             }
           } catch {}
         }
@@ -103,6 +122,8 @@ function baseOptions(plugins: Plugin[]): BuildOptions {
     },
     jsx: 'transform',
     jsxFactory: 'React.createElement',
+    jsxFragment: 'React.Fragment',
+    external: Object.keys(IMPORT_REWRITE_MAP),
   };
 }
 
@@ -134,19 +155,22 @@ if (args.includes('--watch')) {
 
   await ctx.watch();
 } else {
+  const startTime = Date.now();
   const result = await build({
     ...baseOptions([]),
     entryPoints: [input],
     outfile: output,
     write: output !== undefined,
   });
+  const duration = Date.now() - startTime;
 
   const jsCode = output
     ? await fs.readFile(output)
     : result.outputFiles![0].contents;
 
   if (output) {
-    console.log(`[build] ${input} -> ${output}`);
+    const sizeKB = (output.length / 1024).toFixed(2);
+    console.log(`✅ ${input} -> ${output} (${sizeKB} kb, ${duration} ms)`);
   } else {
     process.stdout.write(jsCode);
   }
