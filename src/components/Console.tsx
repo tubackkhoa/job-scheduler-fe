@@ -1,5 +1,7 @@
-import React, { useEffect, useRef } from 'react';
-import { Box, Typography } from '@mui/material';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { Box, PaletteMode, Typography } from '@mui/material';
+import CodeMirror from '@uiw/react-codemirror';
+import { json } from '@codemirror/lang-json';
 
 export interface ConsoleLog {
   method: string;
@@ -9,10 +11,10 @@ export interface ConsoleLog {
 
 interface ConsoleProps {
   logs: ConsoleLog[];
-  variant?: 'light' | 'dark';
+  variant?: PaletteMode;
 }
 
-const getColor = (method: string, themeMode: 'light' | 'dark') => {
+const getColor = (method: string, themeMode: PaletteMode) => {
   switch (method) {
     case 'error':
       return '#ff6b6b';
@@ -27,7 +29,7 @@ const getColor = (method: string, themeMode: 'light' | 'dark') => {
   }
 };
 
-const formatArg = (arg: any) => {
+const stringifySafe = (arg: any) => {
   if (typeof arg === 'string') return arg;
 
   if (
@@ -35,10 +37,13 @@ const formatArg = (arg: any) => {
     typeof arg === 'boolean' ||
     arg === null ||
     arg === undefined
-  )
+  ) {
     return String(arg);
+  }
 
-  if (arg instanceof Error) return arg.stack || arg.message;
+  if (arg instanceof Error) {
+    return arg.stack || arg.message;
+  }
 
   try {
     return JSON.stringify(arg, null, 2);
@@ -47,7 +52,7 @@ const formatArg = (arg: any) => {
   }
 };
 
-export const Console: React.FC<ConsoleProps> = ({ logs, variant = 'dark' }) => {
+export const Console: React.FC<ConsoleProps> = ({ logs, variant }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -57,60 +62,72 @@ export const Console: React.FC<ConsoleProps> = ({ logs, variant = 'dark' }) => {
     });
   }, [logs]);
 
+  if (logs.length === 0) {
+    return (
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ px: 1, py: 0.5 }}
+      >
+        No output
+      </Typography>
+    );
+  }
+
   return (
     <Box>
-      {logs.length === 0 && (
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ px: 1, py: 0.5 }}
-        >
-          No output
-        </Typography>
-      )}
-
       {logs.map((log, index) => {
         const args = log.data || log.args || [];
+
+        const formatted = useMemo(
+          () => args.map(stringifySafe).join('\n'),
+          [args],
+        );
+
+        const isObjectLike = args.some(
+          (a) => typeof a === 'object' && a !== null,
+        );
 
         return (
           <Box
             key={index}
             sx={{
               display: 'flex',
-              gap: 1,
+              flexDirection: 'column',
               px: 1,
-              py: 0.25,
-              fontFamily: 'Roboto Mono, monospace',
-              fontSize: 13,
+              py: 0.5,
               borderBottom: '1px solid',
               borderColor: 'divider',
             }}
           >
-            <Typography
-              sx={{
-                minWidth: 55,
-                fontWeight: 600,
-                color: getColor(log.method, variant),
-                textTransform: 'lowercase',
-              }}
-            >
-              {log.method}
-            </Typography>
-
-            <Box
-              sx={{
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
-                color: getColor(log.method, variant),
-              }}
-            >
-              {args.map((arg, i) => (
-                <span key={i}>
-                  {formatArg(arg)}
-                  {i < args.length - 1 ? ' ' : ''}
-                </span>
-              ))}
-            </Box>
+            {isObjectLike ? (
+              <CodeMirror
+                value={formatted}
+                editable={false}
+                height="auto"
+                theme={variant}
+                extensions={[json()]}
+                basicSetup={{
+                  lineNumbers: false,
+                  foldGutter: true,
+                }}
+                style={{
+                  fontSize: 13,
+                  borderRadius: 4,
+                }}
+              />
+            ) : (
+              <Typography
+                sx={{
+                  fontFamily: 'Roboto Mono, monospace',
+                  fontSize: 13,
+                  whiteSpace: 'pre-wrap',
+                  color: getColor(log.method, variant),
+                }}
+              >
+                {formatted}
+              </Typography>
+            )}
           </Box>
         );
       })}
