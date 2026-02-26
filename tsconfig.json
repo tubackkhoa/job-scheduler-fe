@@ -1,27 +1,6 @@
 {
+    "extends": "./tsconfig.build.json",
     "compilerOptions": {
-        "target": "ESNext",
-        "module": "ESNext",
-        "allowUmdGlobalAccess": true,
-        "useDefineForClassFields": true,
-        "moduleResolution": "Bundler", // or "Node" if not using Vite 4+
-        "types": [
-            "vite/client"
-        ],
-        "allowImportingTsExtensions": true,
-        "resolveJsonModule": true,
-        "isolatedModules": true,
-        "noEmit": true,
-        "jsx": "react",
-        "baseUrl": ".",
-        "paths": {
-            "@/*": [
-                "src/*"
-            ]
-        }
-    },
-    "include": [
-        "src",
-        "libs"
-    ]
+        "jsx": "react-jsx"
+    }
 }

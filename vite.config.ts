@@ -7,6 +7,9 @@ export default defineConfig(({ mode }) => {
   const enableProxy = env.VITE_PROXY === 'true';
 
   return {
+    esbuild: {
+      tsconfigRaw: 'tsconfig.build.json',
+    },
     build: {
       target: 'esnext',
       chunkSizeWarningLimit: 5000,
