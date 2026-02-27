@@ -5,11 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "VITE_API_BASE_URL=http://localhost:8000 vite",
-    "build": "vite build",
-    "postinstall": "patch-package"
+    "build": "vite build"
   },
   "dependencies": {
-    "@codemirror/lang-jinja": "6.0.0",
+    "@codemirror/lang-jinja": "^6.0.0",
     "@codemirror/lang-json": "^6.0.2",
     "@codemirror/lang-markdown": "^6.5.0",
     "@codemirror/lang-sql": "^6.10.0",
