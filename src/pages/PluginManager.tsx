@@ -137,9 +137,9 @@ export default function PluginManager({ setLoading, setError }) {
    * Job helpers
    * ------------------------------------- */
   const handleChangeJob = useCallback(
-    async (newJobId: number, sourceJobs?: any[]) => {
-      // check if config is undefined then lazy load config
-      const job = jobs.find((j) => j.id === newJobId);
+    async (newJobId: number, sourceJobs: Job[]) => {
+      // check if config is undefined then lazy load config, make sure job found, other let crash
+      const job = sourceJobs.find((j) => j.id === newJobId);
       if (!job.config) {
         job.config = JSON.parse(
           await api.renderTemplate(
@@ -148,14 +148,12 @@ export default function PluginManager({ setLoading, setError }) {
             { job_id: newJobId },
           ),
         );
+        setJobs(sourceJobs);
       }
 
       setJobId(newJobId);
       setIsNewJobMode(false);
-
-      const list = sourceJobs ?? jobs;
-      const found = list.find((j) => j.id === newJobId);
-      setJobDesc(found?.description ?? '');
+      setJobDesc(job.description ?? '');
     },
     [jobs],
   );
