@@ -390,7 +390,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/lang-jinja@npm:^6.0.0":
+"@codemirror/lang-jinja@npm:6.0.0":
   version: 6.0.0
   resolution: "@codemirror/lang-jinja@npm:6.0.0"
   dependencies:
@@ -3197,7 +3197,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "job-scheduler-ui@workspace:."
   dependencies:
-    "@codemirror/lang-jinja": "npm:^6.0.0"
+    "@codemirror/lang-jinja": "npm:6.0.0"
     "@codemirror/lang-json": "npm:^6.0.2"
     "@codemirror/lang-markdown": "npm:^6.5.0"
     "@codemirror/lang-sql": "npm:^6.10.0"

@@ -9,7 +9,7 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
-    "@codemirror/lang-jinja": "^6.0.0",
+    "@codemirror/lang-jinja": "6.0.0",
     "@codemirror/lang-json": "^6.0.2",
     "@codemirror/lang-markdown": "^6.5.0",
     "@codemirror/lang-sql": "^6.10.0",
