@@ -133,29 +133,44 @@ export default function PluginManager({ setLoading, setError }) {
     }
   };
 
+  const pluginInfo = useMemo(
+    () =>
+      typeof pluginId === 'number'
+        ? plugins.find((p) => p.id === pluginId)
+        : { package: pluginId, interval: 0 },
+    [pluginId, plugins],
+  );
+
   /* ----------------------------------------
    * Job helpers
    * ------------------------------------- */
   const handleChangeJob = useCallback(
     async (newJobId: number, sourceJobs: Job[]) => {
-      // check if config is undefined then lazy load config, make sure job found, other let crash
+      if (!pluginInfo) return;
       const job = sourceJobs.find((j) => j.id === newJobId);
+      if (!job) throw new Error('Job not found');
+
+      let finalJob = job;
+
       if (!job.config) {
-        job.config = JSON.parse(
+        const config = JSON.parse(
           await api.renderTemplate(
             pluginInfo.package,
             `{{ util.get_config(job_id) | tojson }}`,
             { job_id: newJobId },
           ),
         );
-        setJobs(sourceJobs);
+
+        finalJob = { ...job, config };
+
+        setJobs((prev) => prev.map((j) => (j.id === newJobId ? finalJob : j)));
       }
 
       setJobId(newJobId);
       setIsNewJobMode(false);
-      setJobDesc(job.description ?? '');
+      setJobDesc(finalJob.description ?? '');
     },
-    [jobs],
+    [pluginInfo],
   );
 
   const handleNewJob = useCallback(() => {
@@ -282,13 +297,6 @@ export default function PluginManager({ setLoading, setError }) {
   /* ----------------------------------------
    * Memoized derived state
    * ------------------------------------- */
-  const pluginInfo = useMemo(
-    () =>
-      typeof pluginId === 'number'
-        ? plugins.find((p) => p.id === pluginId)
-        : { package: pluginId, interval: 0 },
-    [pluginId, plugins],
-  );
 
   const currentJob = jobs.find((j) => j.id === jobId);
 
