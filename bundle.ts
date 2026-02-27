@@ -110,7 +110,7 @@ const watchPlugin = (): Plugin => {
 
 function baseOptions(plugins: Plugin[]): BuildOptions {
   return {
-    tsconfig: 'tsconfig.build.json',
+    tsconfig: 'tsconfig.vite.json',
     plugins: [rewriteImportsPlugin, ...plugins],
     bundle: true,
     minify: true,
