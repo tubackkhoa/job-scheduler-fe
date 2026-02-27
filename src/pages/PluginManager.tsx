@@ -137,7 +137,19 @@ export default function PluginManager({ setLoading, setError }) {
    * Job helpers
    * ------------------------------------- */
   const handleChangeJob = useCallback(
-    (newJobId: number, sourceJobs?: any[]) => {
+    async (newJobId: number, sourceJobs?: any[]) => {
+      // check if config is undefined then lazy load config
+      const job = jobs.find((j) => j.id === newJobId);
+      if (!job.config) {
+        job.config = JSON.parse(
+          await api.renderTemplate(
+            pluginInfo.package,
+            `{{ util.get_config(job_id) | tojson }}`,
+            { job_id: newJobId },
+          ),
+        );
+      }
+
       setJobId(newJobId);
       setIsNewJobMode(false);
 
@@ -280,10 +292,7 @@ export default function PluginManager({ setLoading, setError }) {
     [pluginId, plugins],
   );
 
-  const currentJob = useMemo(
-    () => jobs.find((j) => j.id === jobId),
-    [jobs, jobId],
-  );
+  const currentJob = jobs.find((j) => j.id === jobId);
 
   const formData = useMemo(() => {
     if (!schema) return undefined;
