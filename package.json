@@ -56,5 +56,6 @@
   },
   "resolutions": {
     "@codemirror/view": "^6.39.11"
-  }
+  },
+  "packageManager": "yarn@4.12.0"
 }
