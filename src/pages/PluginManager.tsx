@@ -90,8 +90,7 @@ export default function PluginManager({ setLoading, setError }) {
 
     const next = Number(job_id);
     if (next === jobId) return;
-
-    handleChangeJob(next, jobs);
+    handleChangeJob(next, jobs, pluginId);
   }, [job_id, jobs]);
 
   /* ----------------------------------------
@@ -124,8 +123,8 @@ export default function PluginManager({ setLoading, setError }) {
       setSchema(schema);
       setJobs(sortedJobs);
 
-      const resolvedJobId = targetJobId ?? jobs[0]?.id ?? 0;
-      handleChangeJob(resolvedJobId, jobs);
+      const resolvedJobId = targetJobId ?? sortedJobs[0]?.id ?? 0;
+      handleChangeJob(resolvedJobId, sortedJobs, targetPluginId);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -133,45 +132,41 @@ export default function PluginManager({ setLoading, setError }) {
     }
   };
 
-  const pluginInfo = useMemo(
-    () =>
-      typeof pluginId === 'number'
-        ? plugins.find((p) => p.id === pluginId)
-        : { package: pluginId, interval: 0 },
-    [pluginId, plugins],
-  );
-
   /* ----------------------------------------
    * Job helpers
    * ------------------------------------- */
-  const handleChangeJob = useCallback(
-    async (newJobId: number, sourceJobs: Job[]) => {
-      if (!pluginInfo) return;
-      const job = sourceJobs.find((j) => j.id === newJobId);
-      if (!job) throw new Error('Job not found');
+  const handleChangeJob = async (
+    newJobId: number,
+    sourceJobs: Job[],
+    pluginId: string | number,
+  ) => {
+    const job = sourceJobs.find((j) => j.id === newJobId);
+    if (!job) throw new Error('Job not found');
 
-      let finalJob = job;
+    let finalJob = job;
 
-      if (!job.config) {
-        const config = JSON.parse(
-          await api.renderTemplate(
-            pluginInfo.package,
-            `{{ util.get_config(job_id) | tojson }}`,
-            { job_id: newJobId },
-          ),
-        );
+    if (!job.config) {
+      const pluginPackage =
+        typeof pluginId === 'number'
+          ? plugins.find((p) => p.id === pluginId).package
+          : pluginId;
+      const config = JSON.parse(
+        await api.renderTemplate(
+          pluginPackage,
+          `{{ util.get_config(job_id) | tojson }}`,
+          { job_id: newJobId },
+        ),
+      );
 
-        finalJob = { ...job, config };
+      finalJob = { ...job, config };
 
-        setJobs((prev) => prev.map((j) => (j.id === newJobId ? finalJob : j)));
-      }
+      setJobs((prev) => prev.map((j) => (j.id === newJobId ? finalJob : j)));
+    }
 
-      setJobId(newJobId);
-      setIsNewJobMode(false);
-      setJobDesc(finalJob.description ?? '');
-    },
-    [pluginInfo],
-  );
+    setJobId(newJobId);
+    setIsNewJobMode(false);
+    setJobDesc(finalJob.description ?? '');
+  };
 
   const handleNewJob = useCallback(() => {
     setIsNewJobMode(true);
@@ -297,6 +292,14 @@ export default function PluginManager({ setLoading, setError }) {
   /* ----------------------------------------
    * Memoized derived state
    * ------------------------------------- */
+
+  const pluginInfo = useMemo(
+    () =>
+      typeof pluginId === 'number'
+        ? plugins.find((p) => p.id === pluginId)
+        : { package: pluginId, interval: 0 },
+    [pluginId, plugins],
+  );
 
   const currentJob = jobs.find((j) => j.id === jobId);
 
