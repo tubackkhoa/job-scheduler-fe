@@ -152,10 +152,17 @@ export default function TemplateStudio() {
         direction={{ md: 'row', sm: 'column' }}
         gap={2}
         mb={2}
-        sx={{ height: { md: '75vh' } }}
+        sx={{ height: { md: '75vh' }, alignItems: 'stretch' }}
       >
         {/* CHAT */}
-        <Paper sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <Paper
+          sx={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            minWidth: { md: 320 },
+          }}
+        >
           <Box sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
             <Stack spacing={2}>
               {messages.map((msg, i) => (
@@ -256,7 +263,14 @@ export default function TemplateStudio() {
         </Paper>
 
         {/* EDITOR */}
-        <Paper sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <Paper
+          sx={{
+            flex: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            minWidth: 0,
+          }}
+        >
           <Box
             sx={{
               display: 'flex',
