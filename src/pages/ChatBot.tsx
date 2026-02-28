@@ -14,6 +14,7 @@ import {
   MenuItem,
   IconButton,
   Tooltip,
+  ListItemText,
 } from '@mui/material';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { jinjaLang } from '@/utils';
@@ -141,7 +142,26 @@ export default function TemplateStudio() {
           >
             {plugins.map((p) => (
               <MenuItem key={p.id} value={p.package}>
-                {p.package} — {p.description}
+                <ListItemText
+                  primary={p.package}
+                  secondary={p.description}
+                  slotProps={{
+                    primary: {
+                      noWrap: true,
+                    },
+                    secondary: {
+                      noWrap: true,
+                    },
+                  }}
+                  sx={{
+                    overflow: 'hidden',
+                    '& .MuiTypography-root': {
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    },
+                  }}
+                />
               </MenuItem>
             ))}
           </Select>
