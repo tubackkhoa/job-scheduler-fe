@@ -128,7 +128,7 @@ export default function TemplateStudio() {
 
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
-      <Stack direction="row" alignItems="center" spacing={2} mb={2}>
+      <Stack direction={{ md: 'row', sm: 'column' }} gap={2} mb={2}>
         <Typography variant="h5" fontWeight={700}>
           🧩 Template Studio
         </Typography>
@@ -148,7 +148,12 @@ export default function TemplateStudio() {
         </FormControl>
       </Stack>
 
-      <Stack direction="row" spacing={2} sx={{ height: '75vh' }}>
+      <Stack
+        direction={{ md: 'row', sm: 'column' }}
+        gap={2}
+        mb={2}
+        sx={{ height: { md: '75vh' } }}
+      >
         {/* CHAT */}
         <Paper sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
