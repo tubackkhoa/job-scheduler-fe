@@ -226,7 +226,7 @@ export default function Dashboard({
                   primary={p.title}
                   secondary={p.description}
                   sx={{
-                    minWidth: 0, // IMPORTANT: allows ellipsis to work inside flex
+                    minWidth: 0,
                   }}
                   slotProps={{
                     primary: {
@@ -235,10 +235,6 @@ export default function Dashboard({
                     },
                     secondary: {
                       noWrap: true,
-                      sx: {
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      },
                     },
                   }}
                 />

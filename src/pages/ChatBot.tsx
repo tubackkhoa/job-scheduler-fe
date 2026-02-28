@@ -153,14 +153,6 @@ export default function TemplateStudio() {
                       noWrap: true,
                     },
                   }}
-                  sx={{
-                    overflow: 'hidden',
-                    '& .MuiTypography-root': {
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    },
-                  }}
                 />
               </MenuItem>
             ))}

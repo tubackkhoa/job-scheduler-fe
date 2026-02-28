@@ -187,20 +187,12 @@ export function JobsList({
                     />
                   </Stack>
                 }
-                secondary={
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      display: 'block',
-                    }}
-                  >
-                    #{job.id} • {pluginPackage || 'Plugin'}
-                  </Typography>
-                }
+                secondary={`#${job.id} • ${pluginPackage || 'Plugin'}`}
+                slotProps={{
+                  secondary: {
+                    noWrap: true,
+                  },
+                }}
               />
               <Switch
                 edge="end"

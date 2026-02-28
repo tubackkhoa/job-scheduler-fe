@@ -37,19 +37,13 @@ export function PluginSitemap({ plugins, routeState, loadRoutes }: Props) {
                 </ListItemIcon>
 
                 <ListItemText
-                  primary={
-                    <Typography
-                      sx={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                      fontWeight={500}
-                    >
-                      {state?.routes ? '▾' : '▸'} {plugin.package}
-                    </Typography>
-                  }
+                  primary={`${state?.routes ? '▾' : '▸'} ${plugin.package}`}
                   secondary={plugin.description}
+                  slotProps={{
+                    primary: {
+                      noWrap: true,
+                    },
+                  }}
                 />
 
                 <Tooltip title="Edit Plugin">
