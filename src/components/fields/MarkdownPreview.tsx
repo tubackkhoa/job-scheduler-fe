@@ -11,7 +11,7 @@ import { useAppColorScheme } from '@/hooks/useAppColorSchema';
 
 interface Props {
   text: string;
-  maxHeight: string | number;
+  maxHeight?: string | number;
   renderModule?: (children: React.ReactNode) => React.ReactElement;
 }
 
@@ -39,7 +39,11 @@ const sanitizeSchema = {
   },
 };
 
-export const MarkdownPreview = ({ text, maxHeight, renderModule }: Props) => {
+export const MarkdownPreview = ({
+  text,
+  maxHeight = 'auto',
+  renderModule,
+}: Props) => {
   const [mode] = useAppColorScheme();
   const styles = useMemo(
     () => ({

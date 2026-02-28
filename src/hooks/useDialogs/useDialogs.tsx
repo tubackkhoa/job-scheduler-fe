@@ -10,7 +10,7 @@ import useEventCallback from '@mui/utils/useEventCallback';
 import DialogsContext from './DialogsContext';
 import {
   ConfirmationDialog,
-  ConfirmationSeverity
+  ConfirmationSeverity,
 } from '../../components/ConfirmationDialog';
 
 export interface OpenDialogOptions<R> {
@@ -144,7 +144,7 @@ export interface OpenDialog {
   <P extends undefined, R>(
     Component: DialogComponent<P, R>,
     payload?: P,
-    options?: OpenDialogOptions<R>
+    options?: OpenDialogOptions<R>,
   ): Promise<R>;
   /**
    * Open a dialog and pass a payload.
@@ -155,7 +155,7 @@ export interface OpenDialog {
   <P, R>(
     Component: DialogComponent<P, R>,
     payload: P,
-    options?: OpenDialogOptions<R>
+    options?: OpenDialogOptions<R>,
   ): Promise<R>;
 }
 
@@ -189,7 +189,7 @@ function useDialogLoadingButton(onClose: () => Promise<void>) {
   };
   return {
     onClick: handleClick,
-    loading
+    loading,
   };
 }
 
@@ -210,7 +210,12 @@ export function AlertDialog({ open, payload, onClose }: AlertDialogProps) {
       <DialogTitle>{payload.title ?? 'Alert'}</DialogTitle>
       <DialogContent>{payload.msg}</DialogContent>
       <DialogActions>
-        <Button disabled={!open} {...okButtonProps}>
+        <Button
+          variant="contained"
+          color="info"
+          disabled={!open}
+          {...okButtonProps}
+        >
           {payload.okText ?? 'Ok'}
         </Button>
       </DialogActions>
@@ -304,8 +309,8 @@ export function PromptDialog({ open, payload, onClose }: PromptDialogProps) {
             } finally {
               setLoading(false);
             }
-          }
-        }
+          },
+        },
       }}
     >
       <DialogTitle>{payload.title ?? 'Confirm'}</DialogTitle>
@@ -345,17 +350,17 @@ export function useDialogs(): DialogHook {
 
   const alert = useEventCallback<OpenAlertDialog>(
     (msg, { onClose, ...options } = {}) =>
-      open(AlertDialog, { ...options, msg }, { onClose })
+      open(AlertDialog, { ...options, msg }, { onClose }),
   );
 
   const confirm = useEventCallback<OpenConfirmDialog>(
     (msg, { onClose, ...options } = {}) =>
-      open(ConfirmDialog, { ...options, msg }, { onClose })
+      open(ConfirmDialog, { ...options, msg }, { onClose }),
   );
 
   const prompt = useEventCallback<OpenPromptDialog>(
     (msg, { onClose, ...options } = {}) =>
-      open(PromptDialog, { ...options, msg }, { onClose })
+      open(PromptDialog, { ...options, msg }, { onClose }),
   );
 
   return React.useMemo(
@@ -364,8 +369,8 @@ export function useDialogs(): DialogHook {
       confirm,
       prompt,
       open,
-      close
+      close,
     }),
-    [alert, close, confirm, open, prompt]
+    [alert, close, confirm, open, prompt],
   );
 }

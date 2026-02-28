@@ -61,14 +61,12 @@ async function readTextStream(
   const decoder = new TextDecoder();
 
   let text = '';
-
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
-
     const chunk = decoder.decode(value, { stream: true });
+    onToken(chunk);
     text += chunk;
-    onToken(text);
   }
 
   return text;
@@ -78,6 +76,7 @@ async function request<T = unknown>(
   path: string,
   options: RequestInit = {},
   responseType: 'json' | 'text' | 'raw' = 'json',
+  onHeader?: (headers: Headers) => void,
 ): Promise<T> {
   const token = getToken();
 
@@ -100,6 +99,8 @@ async function request<T = unknown>(
     await handleError(res);
   }
 
+  if (onHeader) onHeader(res.headers);
+
   if (responseType === 'raw') {
     return res.body as T;
   }
@@ -111,6 +112,7 @@ const postJson = <T = unknown>(
   path: string,
   body?: unknown,
   responseType: 'json' | 'text' | 'raw' = 'json',
+  onHeader?: (headers: Headers) => void,
 ) =>
   request<T>(
     path,
@@ -120,12 +122,14 @@ const postJson = <T = unknown>(
       body: body ? JSON.stringify(body) : undefined,
     },
     responseType,
+    onHeader,
   );
 
 export type StreamOptions<T> = {
   followUp?: boolean;
   payload: T;
   onToken: (text: string) => void;
+  onMeta?: (meta: { model: string }) => void;
 };
 
 export default {
@@ -306,14 +310,20 @@ export default {
     return request(`/api/plugins/value_versions?${query}`);
   },
   async streamChat<T>({
-    followUp = false,
     payload,
     onToken,
+    onMeta,
   }: StreamOptions<T>): Promise<string> {
     const body: ReadableStream = await postJson(
-      `/api/chatbot/${followUp ? 'edit' : 'generate'}`,
+      '/api/chatbot/chat',
       payload,
       'raw',
+      (headers) => {
+        const modelName = headers.get('X-Model-Name');
+        if (onMeta && modelName) {
+          onMeta({ model: modelName });
+        }
+      },
     );
 
     if (!body) {
