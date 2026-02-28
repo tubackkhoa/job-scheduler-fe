@@ -152,7 +152,7 @@ export default function TemplateStudio() {
         direction={{ md: 'row', sm: 'column' }}
         gap={2}
         mb={2}
-        sx={{ height: { md: '75vh' }, alignItems: 'stretch' }}
+        sx={{ minHeight: { md: '75vh' }, alignItems: 'stretch' }}
       >
         {/* CHAT */}
         <Paper
@@ -314,18 +314,18 @@ export default function TemplateStudio() {
             theme={mode}
             extensions={[jinjaLang]}
           />
-
-          {/* preview */}
-          <Box sx={{ borderTop: 1, borderColor: 'divider', p: 1 }}>
-            <Typography fontWeight={600}>Preview</Typography>
-          </Box>
-          {preview && (
-            <Box sx={{ p: 2, maxHeight: '100%', overflow: 'auto' }}>
-              <MarkdownPreview text={preview} />
-            </Box>
-          )}
         </Paper>
       </Stack>
+
+      {/* preview */}
+      <Box sx={{ borderTop: 1, borderColor: 'divider', p: 1 }}>
+        <Typography variant="h6">Preview</Typography>
+      </Box>
+      {preview && (
+        <Box sx={{ p: 2, maxHeight: '100%', overflow: 'auto' }}>
+          <MarkdownPreview text={preview} />
+        </Box>
+      )}
     </Container>
   );
 }
