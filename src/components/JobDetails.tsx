@@ -21,6 +21,7 @@ import JinjaEnvDocs from './JinjaEnvDocs';
 import api from '@/api';
 import UserPluginCode from './UserPluginCode';
 import { LoadingSkeleton } from './Loading';
+import useNotifications from '@/hooks/useNotifications/useNotifications';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -39,7 +40,6 @@ export function JobDetails({
   jobDesc,
   pluginPackage,
   pluginInterval,
-  setResult,
   setError,
   isActive,
   formData,
@@ -56,6 +56,7 @@ export function JobDetails({
   const [tabIndex, setTabIndex] = useState(0);
   const [localFormData, setLocalFormData] = useState();
   const [isDirty, setIsDirty] = useState(false);
+  const notifications = useNotifications();
   const [confirmDialog, setConfirmDialog] = useState({
     open: false,
     type: null, // 'save', 'saveAsNew', 'delete'
@@ -181,7 +182,7 @@ export function JobDetails({
                         pluginId,
                         localFormData,
                       );
-                      setResult(result);
+                      notifications.show(result, { severity: 'success' });
                       setIsDirty(false);
                     } catch (e) {
                       setError(e.message);
@@ -333,7 +334,6 @@ export function JobDetails({
                 pluginPackage={pluginPackage}
                 onRefresh={onRefresh}
                 formData={localFormData}
-                setResult={setResult}
                 setError={setError}
                 env={env}
               />

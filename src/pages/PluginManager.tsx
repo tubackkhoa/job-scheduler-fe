@@ -2,7 +2,6 @@ import { Box, Grid, IconButton, useMediaQuery, useTheme } from '@mui/material';
 import { ContextPanel } from '../components/ContextPanel';
 import { JobsList } from '../components/JobsList';
 import { JobDetails } from '../components/JobDetails';
-import { ResponseCard } from '../components/ResponseCard';
 import { CreatePluginModal } from '../components/CreatePluginModal';
 import { SESSIONS, JINJA_ENV } from '../constants';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -10,6 +9,7 @@ import { getDefaultFormState } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import api from '@/api';
 import { useParams } from 'react-router-dom';
+import useNotifications from '@/hooks/useNotifications/useNotifications';
 
 const PANEL_OPEN_KEY = 'panel_open';
 
@@ -33,9 +33,9 @@ export default function PluginManager({ setLoading, setError }) {
   const [env, setEnv] = useState<any>(null);
 
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<any>(null);
   const [createPluginModalOpen, setCreatePluginModalOpen] = useState(false);
 
+  const notifications = useNotifications();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -188,8 +188,10 @@ export default function PluginManager({ setLoading, setError }) {
               j.id === targetJobId ? { ...j, active: active ? 1 : 0 } : j,
             ),
           );
+          notifications.show('Plugin created successfully', {
+            severity: 'success',
+          });
         }
-        setResult(response);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -219,7 +221,9 @@ export default function PluginManager({ setLoading, setError }) {
           saveNew || !jobId ? { ...payload, pluginId, sessionId } : payload,
         );
       }
-
+      notifications.show('Update config successfully!', {
+        severity: 'success',
+      });
       await loadSchema(pluginId, sessionId, jobId);
     } catch (err: any) {
       setError(err.message);
@@ -251,7 +255,10 @@ export default function PluginManager({ setLoading, setError }) {
     try {
       const pkg = plugins.find((p) => p.id === pluginId).package;
       const response = await api.reloadPlugin(pkg);
-      setResult(response);
+      if (response.success)
+        notifications.show('Plugin reloaded successfully', {
+          severity: 'success',
+        });
       // update schema
       loadSchema(pluginId, sessionId, jobId);
     } catch (err) {
@@ -276,9 +283,8 @@ export default function PluginManager({ setLoading, setError }) {
         id,
       };
       setPlugins((prev) => [...prev, newPlugin]);
-      setResult({
-        success: true,
-        message: 'Plugin created successfully',
+      notifications.show('Plugin created successfully', {
+        severity: 'success',
       });
       setCreatePluginModalOpen(false);
     } catch (err) {
@@ -385,7 +391,6 @@ export default function PluginManager({ setLoading, setError }) {
             pluginInterval={pluginInfo?.interval}
             isActive={isActive}
             onRefresh={() => loadSchema(pluginId, sessionId, jobId)}
-            setResult={setResult}
             setError={setError}
             formData={formData}
             schema={schema}
@@ -402,10 +407,6 @@ export default function PluginManager({ setLoading, setError }) {
             }
             onDelete={handleDeleteJob}
           />
-
-          {result && (
-            <ResponseCard result={result} onClose={() => setResult(null)} />
-          )}
         </Grid>
       </Grid>
 

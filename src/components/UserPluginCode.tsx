@@ -1,20 +1,15 @@
 import api from '@/api';
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
+import useNotifications from '@/hooks/useNotifications/useNotifications';
 import { JinjaCompletionBuilder, jinjaLinter, yamlLangWithJs } from '@/utils';
 import { jinja } from '@codemirror/lang-jinja';
 import { Paper, Stack, Typography } from '@mui/material';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { useEffect, useState } from 'react';
 
-export default ({
-  pluginPackage,
-  formData,
-  env,
-  setResult,
-  setError,
-  onRefresh,
-}) => {
+export default ({ pluginPackage, formData, env, setError, onRefresh }) => {
   const [mode] = useAppColorScheme();
+  const notifications = useNotifications();
   const [isDirty, setIsDirty] = useState(false);
   const [code, setCode] = useState<PluginUserCodeResponse>({
     form: '',
@@ -31,7 +26,10 @@ export default ({
     if (!isDirty) return;
     try {
       const result = await api.updateTemplatePluginCode(pluginPackage, code);
-      setResult(result);
+      if (result.success)
+        notifications.show('Update template successuflly', {
+          severity: 'success',
+        });
       setIsDirty(false);
       onRefresh();
     } catch (ex) {
