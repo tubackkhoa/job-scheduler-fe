@@ -4,11 +4,12 @@ import { JobsList } from '../components/JobsList';
 import { JobDetails } from '../components/JobDetails';
 import { ResponseCard } from '../components/ResponseCard';
 import { CreatePluginModal } from '../components/CreatePluginModal';
-import { SESSIONS, JINJA_ENV } from '../constants';
+import { SESSIONS } from '../constants';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getDefaultFormState } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import api from '@/api';
+import { getEnvDoc } from '@/utils';
 import { useParams } from 'react-router-dom';
 
 const PANEL_OPEN_KEY = 'panel_open';
@@ -118,7 +119,7 @@ export default function PluginManager({ setLoading, setError }) {
       const { schema, jobs, user, globals } = response;
       const sortedJobs = jobs.sort((a, b) => a.id - b.id);
       window.ctx = { user };
-      setEnv({ ...JINJA_ENV, globals: { ...JINJA_ENV.globals, ...globals } });
+      setEnv(await getEnvDoc(globals));
       setSchema(schema);
       setJobs(sortedJobs);
 
