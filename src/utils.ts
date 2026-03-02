@@ -504,11 +504,6 @@ const getPyodide = () => {
   return globalThis.__PYODIDE_PROMISE__;
 };
 
-export const getEnvDoc = async (globals: Record<string, unknown>) => {
-  const envDoc = await import('./jinja_env').then((m) => m.default);
-  return { ...envDoc, globals: { ...envDoc.globals, ...globals } };
-};
-
 const extractUndeclaredVariables = async (
   tpl: string,
   data: {
