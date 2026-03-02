@@ -101,11 +101,14 @@ async function request<T = unknown>(
 
   if (onHeader) onHeader(res.headers);
 
-  if (responseType === 'raw') {
-    return res.body as T;
+  switch (responseType) {
+    case 'json':
+      return parseJson(res);
+    case 'text':
+      return res.text() as Promise<T>;
+    case 'raw':
+      return res.body as T;
   }
-
-  return responseType === 'json' ? parseJson(res) : ((await res.text()) as T);
 }
 
 const postJson = <T = unknown>(
