@@ -59,21 +59,6 @@ export interface ConfirmOptions extends OpenDialogOptions<boolean> {
   cancelText?: string;
 }
 
-export interface PromptOptions extends OpenDialogOptions<string | null> {
-  /**
-   * A title for the dialog. Defaults to `'Prompt'`.
-   */
-  title?: React.ReactNode;
-  /**
-   * The text to show in the "Ok" button. Defaults to `'Ok'`.
-   */
-  okText?: React.ReactNode;
-  /**
-   * The text to show in the "Cancel" button. Defaults to `'Cancel'`.
-   */
-  cancelText?: React.ReactNode;
-}
-
 /**
  * The props that are passed to a dialog component.
  */
@@ -121,18 +106,6 @@ export interface OpenConfirmDialog {
   (msg: React.ReactNode, options?: ConfirmOptions): Promise<boolean>;
 }
 
-export interface OpenPromptDialog {
-  /**
-   * Open a prompt dialog to request user input. Returns a promise that resolves to the input
-   * if the user confirms, null if the user cancels.
-   *
-   * @param msg The message to show in the dialog.
-   * @param options Additional options for the dialog.
-   * @returns A promise that resolves to the user input if the user confirms, null if the user cancels.
-   */
-  (msg: React.ReactNode, options?: PromptOptions): Promise<string | null>;
-}
-
 export type DialogComponent<P, R> = React.ComponentType<DialogProps<P, R>>;
 
 export interface OpenDialog {
@@ -172,7 +145,6 @@ export interface CloseDialog {
 export interface DialogHook {
   alert: OpenAlertDialog;
   confirm: OpenConfirmDialog;
-  prompt: OpenPromptDialog;
   open: OpenDialog;
   close: CloseDialog;
 }
@@ -269,78 +241,6 @@ export function ConfirmDialog({ open, payload, onClose }: ConfirmDialogProps) {
   );
 }
 
-export interface PromptDialogPayload extends PromptOptions {
-  msg: React.ReactNode;
-}
-
-export interface PromptDialogProps extends DialogProps<
-  PromptDialogPayload,
-  string | null
-> {}
-
-export function PromptDialog({ open, payload, onClose }: PromptDialogProps) {
-  const [input, setInput] = React.useState('');
-  const cancelButtonProps = useDialogLoadingButton(() => onClose(null));
-
-  const [loading, setLoading] = React.useState(false);
-
-  const name = 'input';
-  return (
-    <Dialog
-      maxWidth="xs"
-      fullWidth
-      open={open}
-      onClose={() => onClose(null)}
-      slotProps={{
-        paper: {
-          component: 'form',
-          onSubmit: async (event: React.FormEvent<HTMLFormElement>) => {
-            event.preventDefault();
-            try {
-              setLoading(true);
-              const formData = new FormData(event.currentTarget);
-              const value = formData.get(name) ?? '';
-
-              if (typeof value !== 'string') {
-                throw new Error('Value must come from a text input.');
-              }
-
-              await onClose(value);
-            } finally {
-              setLoading(false);
-            }
-          },
-        },
-      }}
-    >
-      <DialogTitle>{payload.title ?? 'Confirm'}</DialogTitle>
-      <DialogContent>
-        <DialogContentText>{payload.msg} </DialogContentText>
-        <TextField
-          autoFocus
-          required
-          margin="dense"
-          id="name"
-          name={name}
-          type="text"
-          fullWidth
-          variant="standard"
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button disabled={!open} {...cancelButtonProps}>
-          {payload.cancelText ?? 'Cancel'}
-        </Button>
-        <Button disabled={!open} loading={loading} type="submit">
-          {payload.okText ?? 'Ok'}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-}
-
 export function useDialogs(): DialogHook {
   const dialogsContext = React.useContext(DialogsContext);
   if (!dialogsContext) {
@@ -358,19 +258,13 @@ export function useDialogs(): DialogHook {
       open(ConfirmDialog, { ...options, msg }, { onClose }),
   );
 
-  const prompt = useEventCallback<OpenPromptDialog>(
-    (msg, { onClose, ...options } = {}) =>
-      open(PromptDialog, { ...options, msg }, { onClose }),
-  );
-
   return React.useMemo(
     () => ({
       alert,
       confirm,
-      prompt,
       open,
       close,
     }),
-    [alert, close, confirm, open, prompt],
+    [alert, close, confirm, open],
   );
 }

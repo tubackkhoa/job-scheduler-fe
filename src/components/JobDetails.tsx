@@ -13,7 +13,6 @@ import {
   Tab,
   Divider,
 } from '@mui/material';
-import { ConfirmationDialog } from './ConfirmationDialog';
 import { ConfigForm } from './ConfigForm';
 import LogViewer from './LogViewer';
 import SignalsLogsViewer from './SignalsLogsViewer';
@@ -22,6 +21,7 @@ import api from '@/api';
 import UserPluginCode from './UserPluginCode';
 import { LoadingSkeleton } from './Loading';
 import useNotifications from '@/hooks/useNotifications/useNotifications';
+import { useDialogs } from '@/hooks/useDialogs/useDialogs';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -57,68 +57,7 @@ export function JobDetails({
   const [localFormData, setLocalFormData] = useState();
   const [isDirty, setIsDirty] = useState(false);
   const notifications = useNotifications();
-  const [confirmDialog, setConfirmDialog] = useState({
-    open: false,
-    type: null, // 'save', 'saveAsNew', 'delete'
-  });
-
-  const openConfirmDialog = (type) => setConfirmDialog({ open: true, type });
-  const closeConfirmDialog = () =>
-    setConfirmDialog({ open: false, type: null });
-
-  const handleConfirm = () => {
-    closeConfirmDialog();
-    setIsDirty(false);
-
-    switch (confirmDialog.type) {
-      case 'save':
-        onSave(localFormData);
-        break;
-      case 'saveAsNew':
-        onSaveAsNew(localFormData);
-        break;
-      case 'delete':
-        onDelete();
-        break;
-      default:
-        break;
-    }
-  };
-
-  const getConfirmDialogProps = () => {
-    switch (confirmDialog.type) {
-      case 'save':
-        return {
-          title: 'Save Job Configuration',
-          message: 'Are you sure you want to save these changes?',
-          details:
-            'This will update the job configuration. If you have selected a SQL version, the SQL value from that version will be used to run the job.\n\nNote: The preview value will be replaced by the saved version value.',
-          severity: 'warning',
-          confirmText: 'Save Changes',
-        };
-      case 'saveAsNew':
-        return {
-          title: 'Create New Job',
-          message:
-            'Are you sure you want to create a new job with this configuration?',
-          details:
-            'This will create a new job entry. If you have selected a SQL version, the SQL value from that version will be used to run the new job.\n\nNote: The preview value will be replaced by the saved version value.',
-          severity: 'info',
-          confirmText: 'Create New Job',
-        };
-      case 'delete':
-        return {
-          title: 'Delete Job',
-          message: 'Are you sure you want to delete this job?',
-          details:
-            'This action cannot be undone. The job and all its configuration will be permanently deleted.',
-          severity: 'error',
-          confirmText: 'Delete Job',
-        };
-      default:
-        return {};
-    }
-  };
+  const { confirm } = useDialogs();
 
   useEffect(() => {
     setLocalFormData(formData);
@@ -149,6 +88,67 @@ export function JobDetails({
   }
 
   const isUserPlugin = typeof pluginId === 'string';
+
+  // -------------------------
+  // Confirm Handlers
+  // -------------------------
+
+  const handleSave = async () => {
+    if (typeof pluginId === 'string') {
+      return onSave(localFormData);
+    }
+
+    const confirmed = await confirm(
+      'Are you sure you want to save these changes?',
+      {
+        title: 'Save Job Configuration',
+        details:
+          'This will update the job configuration. If you have selected a SQL version, the SQL value from that version will be used to run the job.\n\nNote: The preview value will be replaced by the saved version value.',
+        severity: 'warning',
+        okText: 'Save Changes',
+      },
+    );
+
+    if (!confirmed) return;
+
+    setIsDirty(false);
+    await onSave(localFormData);
+  };
+
+  const handleSaveAsNew = async () => {
+    const confirmed = await confirm(
+      'Are you sure you want to create a new job with this configuration?',
+      {
+        title: 'Create New Job',
+        details:
+          'This will create a new job entry. If you have selected a SQL version, the SQL value from that version will be used to run the new job.\n\nNote: The preview value will be replaced by the saved version value.',
+        severity: 'info',
+        okText: 'Create New Job',
+      },
+    );
+
+    if (!confirmed) return;
+
+    setIsDirty(false);
+    await onSaveAsNew(localFormData);
+  };
+
+  const handleDelete = async () => {
+    const confirmed = await confirm(
+      'Are you sure you want to delete this job?',
+      {
+        title: 'Delete Job',
+        details:
+          'This action cannot be undone. The job and all its configuration will be permanently deleted.',
+        severity: 'error',
+        okText: 'Delete Job',
+      },
+    );
+
+    if (!confirmed) return;
+
+    await onDelete();
+  };
 
   return (
     <Card sx={{ bgcolor: 'background.paper', p: 1 }}>
@@ -355,12 +355,7 @@ export function JobDetails({
             <Button
               variant="contained"
               startIcon={<AppIcon.Save />}
-              onClick={() => {
-                if (typeof pluginId === 'string') {
-                  return onSave(localFormData);
-                }
-                openConfirmDialog('save');
-              }}
+              onClick={handleSave}
               disabled={isSubmitting}
               color="primary"
             >
@@ -370,7 +365,7 @@ export function JobDetails({
               <Button
                 variant="outlined"
                 startIcon={<AppIcon.AddCircleOutline />}
-                onClick={() => openConfirmDialog('saveAsNew')}
+                onClick={handleSaveAsNew}
                 disabled={isSubmitting}
               >
                 Save new
@@ -382,7 +377,7 @@ export function JobDetails({
                 variant="outlined"
                 color="error"
                 startIcon={<AppIcon.Delete />}
-                onClick={() => openConfirmDialog('delete')}
+                onClick={handleDelete}
                 disabled={isSubmitting}
               >
                 Delete
@@ -391,14 +386,6 @@ export function JobDetails({
           </Stack>
         </Stack>
       </CardContent>
-
-      <ConfirmationDialog
-        open={confirmDialog.open}
-        onClose={closeConfirmDialog}
-        onConfirm={handleConfirm}
-        isLoading={isSubmitting}
-        {...getConfirmDialogProps()}
-      />
     </Card>
   );
 }
