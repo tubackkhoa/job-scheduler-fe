@@ -504,14 +504,6 @@ const getPyodide = () => {
   return globalThis.__PYODIDE_PROMISE__;
 };
 
-export const getEnvDoc = async (globals: Record<string, unknown>) => {
-  const pyodide = await getPyodide();
-  const envDoc = JSON.parse(pyodide.globals.get('doc_json'));
-  // update globals recursively
-  _.merge(envDoc.globals, globals);
-  return envDoc;
-};
-
 const extractUndeclaredVariables = async (
   tpl: string,
   data: {
