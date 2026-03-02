@@ -39,9 +39,6 @@ export default function TemplateStudio() {
   useEffect(() => {
     api.fetchPlugins().then(setPlugins);
   }, []);
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, loading]);
 
   async function sendMessage(opts?: {
     content?: string;
@@ -288,13 +285,13 @@ export default function TemplateStudio() {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              px: 1,
+              p: 1,
               borderBottom: '1px solid',
               borderColor: 'divider',
             }}
           >
-            <Typography variant="subtitle2">Template Editor</Typography>
-            <Stack direction="row" spacing={0.5}>
+            <Typography variant="subtitle1">Template Editor</Typography>
+            <Stack direction="row" spacing={1}>
               <Tooltip title="Run">
                 <span>
                   <IconButton
