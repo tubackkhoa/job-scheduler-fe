@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Container,
   Paper,
@@ -16,7 +16,7 @@ import {
   Tooltip,
   ListItemText,
 } from '@mui/material';
-import ReactCodeMirror, { ReactCodeMirrorRef } from '@uiw/react-codemirror';
+import ReactCodeMirror from '@uiw/react-codemirror';
 import { jinjaLang } from '@/utils';
 import api from '@/api';
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
@@ -26,13 +26,11 @@ type Message = { role: 'user' | 'assistant'; content: string; model?: string };
 
 export default function TemplateStudio() {
   const [mode] = useAppColorScheme();
-  const bottomRef = useRef<HTMLDivElement | null>(null);
-
   const [plugins, setPlugins] = useState<PluginData[]>([]);
   const [packageName, setPackageName] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
-  const inputRef = useRef<HTMLTextAreaElement | null>(null);
-  const editorRef = useRef<ReactCodeMirrorRef>(null);
+  const [input, setInput] = useState('');
+  const [output, setOutput] = useState('');
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState('');
 
@@ -40,40 +38,24 @@ export default function TemplateStudio() {
     api.fetchPlugins().then(setPlugins);
   }, []);
 
-  const setEditor = (text: string) => {
-    editorRef.current?.view?.dispatch({
-      changes: {
-        from: 0,
-        to: editorRef.current.view.state.doc.length,
-        insert: text,
-      },
-    });
-  };
-
-  const getEditor = () => {
-    return editorRef.current?.view.state.doc.toString();
-  };
-
-  async function sendMessage(opts?: {
-    content?: string;
+  async function sendMessage(opts: {
+    content: string;
     index?: number; // resend from this user message index
   }) {
-    if (loading || !packageName || !inputRef.current) return;
+    const content = opts.content.trim();
 
-    const content = opts?.content ?? inputRef.current.value ?? '';
-
-    if (!content.trim()) return;
+    if (loading || !packageName || !content) return;
 
     let baseMessages = messages;
 
     // resend mode → truncate after selected user message
-    if (opts?.index !== undefined) {
+    if (opts.index !== undefined) {
       baseMessages = messages.slice(0, opts.index + 1);
     } else {
       // normal send → append user message
       const userMsg: Message = { role: 'user', content };
       baseMessages = [...messages, userMsg];
-      inputRef.current.value = '';
+      setInput('');
     }
 
     // add empty assistant placeholder
@@ -107,7 +89,7 @@ export default function TemplateStudio() {
             return copy;
           });
 
-          setEditor(text);
+          setOutput(text);
         },
       });
     } finally {
@@ -118,12 +100,12 @@ export default function TemplateStudio() {
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      sendMessage({ content: input });
     }
   }
 
   const handleRun = async () => {
-    let tmpl = getEditor().trim();
+    let tmpl = output.trim();
     if (!tmpl) return;
     tmpl = tmpl.replace(/^```[a-zA-Z0-9]*\s*\n?/, '').replace(/\n?```$/, '');
     const result = await api.renderTemplate(packageName, tmpl, {});
@@ -131,10 +113,10 @@ export default function TemplateStudio() {
   };
 
   function handleCopy() {
-    navigator.clipboard.writeText(getEditor());
+    navigator.clipboard.writeText(output);
   }
   function handleClear() {
-    setEditor('');
+    setOutput('');
   }
 
   return (
@@ -226,7 +208,7 @@ export default function TemplateStudio() {
                   ) : (
                     <Paper
                       variant="outlined"
-                      onClick={() => setEditor(msg.content)}
+                      onClick={() => setOutput(msg.content)}
                       sx={{
                         p: 1,
                         cursor: 'pointer',
@@ -258,7 +240,6 @@ export default function TemplateStudio() {
                 </Box>
               ))}
               {loading && <CircularProgress size={20} />}
-              <div ref={bottomRef} />
             </Stack>
           </Box>
 
@@ -269,13 +250,14 @@ export default function TemplateStudio() {
                 multiline
                 maxRows={4}
                 placeholder="Describe template..."
-                inputRef={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
               <Button
                 variant="contained"
                 disabled={loading || !packageName}
-                onClick={() => sendMessage()}
+                onClick={() => sendMessage({ content: input })}
               >
                 Send
               </Button>
@@ -309,7 +291,7 @@ export default function TemplateStudio() {
                   <IconButton
                     size="small"
                     onClick={handleRun}
-                    disabled={!getEditor()}
+                    disabled={!output}
                   >
                     <AppIcon.PlayArrow fontSize="small" />
                   </IconButton>
@@ -330,7 +312,8 @@ export default function TemplateStudio() {
 
           {/* editor */}
           <ReactCodeMirror
-            ref={editorRef}
+            value={output}
+            onChange={setOutput}
             theme={mode}
             extensions={[jinjaLang]}
           />

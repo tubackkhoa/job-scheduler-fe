@@ -4,7 +4,7 @@ import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import ReactCodeMirror from '@uiw/react-codemirror';
-import { useMemo } from 'react';
+import { memo } from 'react';
 import { SortableTable } from '../SortableTable';
 import { mdCodeLanguages } from '@/utils';
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
@@ -39,140 +39,136 @@ const sanitizeSchema = {
   },
 };
 
-export const MarkdownPreview = ({
-  text,
-  maxHeight = 'auto',
-  renderModule,
-}: Props) => {
-  const [mode] = useAppColorScheme();
-  const styles = useMemo(
-    () => ({
-      height: '100%',
-      maxWidth: '100%',
-      maxHeight,
-      '& .cm-editor': {
-        backgroundColor: 'transparent',
-      },
-      '& .cm-scroller': {
-        backgroundColor: 'transparent',
-      },
-      typography: 'body2',
-      '& h1': { typography: 'h4', mb: 2 },
-      '& h2': { typography: 'h5', mt: 3 },
-      '& h3': { typography: 'h6', mt: 2 },
-      '& table': {
-        width: '100%',
-        borderCollapse: 'collapse',
-        my: 2,
-      },
-      '& th, & td': {
-        p: 1,
-        border: '1px solid',
-        borderColor: 'divider',
-        whiteSpace: 'nowrap',
-        font: 'inherit',
-      },
-      '& th': {
-        bgcolor: 'action.hover',
-        fontWeight: 'medium',
-      },
-    }),
-    [maxHeight],
-  );
-  return (
-    <Box sx={styles}>
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}
-        components={{
-          code({ className, children }) {
-            const lang = className?.replace('language-', '');
-
-            switch (lang) {
-              case 'html':
-                return (
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: children as string,
-                    }}
-                  />
-                );
-              case 'module':
-                // get name of the node as name
-                return renderModule?.(children);
-              case 'json':
-              case 'yml':
-              case 'yaml':
-              case 'markdown':
-              case 'sql':
-              case 'jinja':
-              case 'js':
-                return (
-                  <ReactCodeMirror
-                    theme={mode}
-                    basicSetup={{
-                      lineNumbers: false,
-                      foldGutter: false,
-                    }}
-                    editable={false}
-                    value={children as string}
-                    extensions={[mdCodeLanguages[lang]]}
-                  />
-                );
-
-              default:
-                return <code className={className}>{children}</code>;
-            }
+export const MarkdownPreview = memo(
+  ({ text, maxHeight = 'auto', renderModule }: Props) => {
+    const [mode] = useAppColorScheme();
+    return (
+      <Box
+        sx={{
+          height: '100%',
+          maxWidth: '100%',
+          maxHeight,
+          '& .cm-editor': {
+            backgroundColor: 'transparent',
           },
-          table({ children, className }) {
-            return (
-              <SortableTable className={className}>{children}</SortableTable>
-            );
+          '& .cm-scroller': {
+            backgroundColor: 'transparent',
           },
-          thead({ children }) {
-            return <TableHead>{children}</TableHead>;
+          typography: 'body2',
+          '& h1': { typography: 'h4', mb: 2 },
+          '& h2': { typography: 'h5', mt: 3 },
+          '& h3': { typography: 'h6', mt: 2 },
+          '& table': {
+            width: '100%',
+            borderCollapse: 'collapse',
+            my: 2,
           },
-          tbody({ children }) {
-            return <TableBody>{children}</TableBody>;
+          '& th, & td': {
+            p: 1,
+            border: '1px solid',
+            borderColor: 'divider',
+            whiteSpace: 'nowrap',
+            font: 'inherit',
           },
-          tr({ children }) {
-            return <TableRow>{children}</TableRow>;
-          },
-          th({ children }) {
-            return (
-              <TableCell sx={{ fontWeight: 'bold', cursor: 'pointer' }}>
-                {children}
-              </TableCell>
-            );
-          },
-          td({ children }) {
-            return <TableCell>{children}</TableCell>;
-          },
-          img({ src, alt }) {
-            return (
-              <Box
-                component="img"
-                src={src}
-                alt={alt}
-                sx={{
-                  maxWidth: {
-                    xs: '100%',
-                    sm: 600,
-                    md: 800,
-                  },
-                  width: '100%',
-                  height: 'auto',
-                  display: 'block',
-                  mx: 'auto',
-                  my: 2,
-                }}
-              />
-            );
+          '& th': {
+            bgcolor: 'action.hover',
+            fontWeight: 'medium',
           },
         }}
       >
-        {text}
-      </ReactMarkdown>
-    </Box>
-  );
-};
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}
+          components={{
+            code({ className, children }) {
+              const lang = className?.replace('language-', '');
+
+              switch (lang) {
+                case 'html':
+                  return (
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: children as string,
+                      }}
+                    />
+                  );
+                case 'module':
+                  // get name of the node as name
+                  return renderModule?.(children);
+                case 'json':
+                case 'yml':
+                case 'yaml':
+                case 'markdown':
+                case 'sql':
+                case 'jinja':
+                case 'js':
+                  return (
+                    <ReactCodeMirror
+                      theme={mode}
+                      basicSetup={{
+                        lineNumbers: false,
+                        foldGutter: false,
+                      }}
+                      editable={false}
+                      value={children as string}
+                      extensions={[mdCodeLanguages[lang]]}
+                    />
+                  );
+
+                default:
+                  return <code className={className}>{children}</code>;
+              }
+            },
+            table({ children, className }) {
+              return (
+                <SortableTable className={className}>{children}</SortableTable>
+              );
+            },
+            thead({ children }) {
+              return <TableHead>{children}</TableHead>;
+            },
+            tbody({ children }) {
+              return <TableBody>{children}</TableBody>;
+            },
+            tr({ children }) {
+              return <TableRow>{children}</TableRow>;
+            },
+            th({ children }) {
+              return (
+                <TableCell sx={{ fontWeight: 'bold', cursor: 'pointer' }}>
+                  {children}
+                </TableCell>
+              );
+            },
+            td({ children }) {
+              return <TableCell>{children}</TableCell>;
+            },
+            img({ src, alt }) {
+              return (
+                <Box
+                  component="img"
+                  src={src}
+                  alt={alt}
+                  sx={{
+                    maxWidth: {
+                      xs: '100%',
+                      sm: 600,
+                      md: 800,
+                    },
+                    width: '100%',
+                    height: 'auto',
+                    display: 'block',
+                    mx: 'auto',
+                    my: 2,
+                  }}
+                />
+              );
+            },
+          }}
+        >
+          {text}
+        </ReactMarkdown>
+      </Box>
+    );
+  },
+);
