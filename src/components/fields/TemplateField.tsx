@@ -89,11 +89,6 @@ export function TemplateField({
     setLocalValue(formData);
   }, [formData]);
 
-  // Track changes in editor
-  const handleEditorChange = (value) => {
-    setLocalValue(value);
-  };
-
   // Only notify parent on blur (when user finishes editing)
   const handleBlur = () => {
     if (localValue !== formData) {
@@ -222,7 +217,7 @@ export function TemplateField({
             {...codeStyle}
             value={localValue}
             extensions={extensions}
-            onChange={handleEditorChange}
+            onChange={setLocalValue}
             onBlur={handleBlur}
           />
         </Box>
