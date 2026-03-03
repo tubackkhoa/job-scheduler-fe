@@ -108,11 +108,9 @@ export default function TemplateStudio() {
   }
 
   const handleRun = async () => {
-    if (!editor.trim()) return;
-
-    const tmpl = editor
-      .replace(/^```[a-zA-Z0-9]*\s*\n?/, '')
-      .replace(/\n?```$/, '');
+    let tmpl = editor.trim();
+    if (!tmpl) return;
+    tmpl = tmpl.replace(/^```[a-zA-Z0-9]*\s*\n?/, '').replace(/\n?```$/, '');
     const result = await api.renderTemplate(packageName, tmpl, {});
     setPreview(result);
   };
