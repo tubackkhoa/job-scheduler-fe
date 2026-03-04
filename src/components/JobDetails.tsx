@@ -355,7 +355,7 @@ export function JobDetails({
             <Button
               variant="contained"
               startIcon={<AppIcon.Save />}
-              onClick={handleSave}
+              onPointerDown={handleSave}
               disabled={isSubmitting}
               color="primary"
             >
@@ -365,7 +365,7 @@ export function JobDetails({
               <Button
                 variant="outlined"
                 startIcon={<AppIcon.AddCircleOutline />}
-                onClick={handleSaveAsNew}
+                onPointerDown={handleSaveAsNew}
                 disabled={isSubmitting}
               >
                 Save new
@@ -377,7 +377,7 @@ export function JobDetails({
                 variant="outlined"
                 color="error"
                 startIcon={<AppIcon.Delete />}
-                onClick={handleDelete}
+                onPointerDown={handleDelete}
                 disabled={isSubmitting}
               >
                 Delete
