@@ -117,6 +117,7 @@ function SortableWidget({
       {...attributes}
     >
       <CardHeader
+        {...listeners}
         title={title}
         sx={{
           backgroundColor: 'action.hover',
