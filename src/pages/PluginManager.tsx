@@ -188,9 +188,12 @@ export default function PluginManager({ setLoading, setError }) {
               j.id === targetJobId ? { ...j, active: active ? 1 : 0 } : j,
             ),
           );
-          notifications.show('Plugin created successfully', {
-            severity: 'success',
-          });
+          notifications.show(
+            `Plugin ${active ? 'activated' : 'deactivated'} successfully`,
+            {
+              severity: 'success',
+            },
+          );
         }
       } catch (err: any) {
         setError(err.message);
