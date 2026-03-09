@@ -117,18 +117,20 @@ function SortableWidget({
       {...attributes}
     >
       <CardHeader
-        {...listeners}
         title={title}
         sx={{
           backgroundColor: 'action.hover',
         }}
         slotProps={{
           title: {
+            ...listeners,
             sx: {
+              cursor: 'move',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
               fontSize: '1rem',
+              touchAction: 'none',
             },
           },
           content: {
