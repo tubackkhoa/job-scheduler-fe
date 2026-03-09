@@ -166,8 +166,8 @@ export default function NotificationsProvider(
       return {
         ...prev,
         queue: [
-          ...prev.queue,
           { message, options, notificationKey, open: true },
+          ...prev.queue,
         ],
       };
     });
