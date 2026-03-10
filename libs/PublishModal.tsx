@@ -169,7 +169,11 @@ export function PublishModal({
 
   const checkRegistrationStatus = async () => {
     try {
-      const render = buildJinjaContext(USER_PLUGIN_PACKAGE, {}, true);
+      const render = buildJinjaContext(
+        'plugins.quant_engine_management_plugin.Plugin',
+        {},
+        true,
+      );
       const result = await render(
         `{{ list_trade_models(env, url, apikey) }}`,
         JINJA_CONTEXT,

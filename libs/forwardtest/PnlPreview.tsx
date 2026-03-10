@@ -910,7 +910,7 @@ export default ({ formData, registry }: FieldProps) => {
   const fetchPublishedModels = async () => {
     try {
       const render = Utils.buildJinjaContext(
-        'alpha_miner.plugins.LiveTradeForUserPlugin',
+        'plugins.quant_engine_management_plugin.Plugin',
         {},
         true,
       );
