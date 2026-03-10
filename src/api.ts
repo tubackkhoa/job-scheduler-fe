@@ -226,6 +226,10 @@ export default {
     });
   },
 
+  getJobConfig(jobId: number): Promise<Record<string, number[]>> {
+    return request(`/api/jobs/${jobId}/config`);
+  },
+
   activateJob(jobId: number, activation: boolean): Promise<PostResponse> {
     return postJson(
       `/api/jobs/${jobId}/${activation ? 'activate' : 'deactivate'}`,

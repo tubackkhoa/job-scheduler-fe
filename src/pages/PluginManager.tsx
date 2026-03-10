@@ -145,20 +145,8 @@ export default function PluginManager({ setLoading, setError }) {
     let finalJob = job;
 
     if (!job.config) {
-      const pluginPackage =
-        typeof pluginId === 'number'
-          ? plugins.find((p) => p.id === pluginId).package
-          : pluginId;
-      const config = JSON.parse(
-        await api.renderTemplate(
-          pluginPackage,
-          `{{ util.get_config(job_id) | tojson }}`,
-          { job_id: newJobId },
-        ),
-      );
-
+      const config = await api.getJobConfig(newJobId);
       finalJob = { ...job, config };
-
       setJobs((prev) => prev.map((j) => (j.id === newJobId ? finalJob : j)));
     }
 
