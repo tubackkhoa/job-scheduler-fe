@@ -131,14 +131,12 @@ export function SelectField({
             <Typography
               variant="subtitle2"
               key={id}
+              noWrap
               sx={{
                 bgcolor: 'primary.main',
                 px: 1,
                 borderRadius: 0.5,
                 maxWidth: 120,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
               }}
             >
               {optionMap.get(id) ?? id}

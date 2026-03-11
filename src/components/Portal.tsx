@@ -124,11 +124,9 @@ function SortableWidget({
         slotProps={{
           title: {
             ...listeners,
+            noWrap: true,
             sx: {
               cursor: 'move',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
               fontSize: '1rem',
               touchAction: 'none',
             },

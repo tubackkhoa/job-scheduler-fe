@@ -4,16 +4,28 @@ import {
   CardContent,
   CardHeader,
   Button,
-  List,
-  ListItemButton,
-  ListItemText,
   Typography,
   Stack,
   Chip,
   Switch,
   CircularProgress,
+  Autocomplete,
+  TextField,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+
+interface JobsListProps {
+  jobs: Job[];
+  selectedJobId: number;
+  pluginPackage?: string;
+  pluginId: string | number;
+  sessionId: number;
+  onToggleJob: (active: boolean, jobId: number) => void | Promise<void>;
+  onNewJob: () => void;
+  isNewJobMode: boolean;
+  disabled?: boolean;
+  togglingJobId: number | null;
+}
 
 export function JobsList({
   jobs,
@@ -26,11 +38,15 @@ export function JobsList({
   isNewJobMode,
   disabled,
   togglingJobId,
-}) {
-  const filteredJobs: Job[] = jobs.filter((j) => j.id !== 0);
+}: JobsListProps) {
   const navigate = useNavigate();
+
+  const filteredJobs = jobs.filter((j) => j.id !== 0);
+
+  const selectedJob = filteredJobs.find((j) => j.id === selectedJobId) || null;
+
   return (
-    <Card sx={{ bgcolor: 'background.paper' }}>
+    <Card sx={{ bgcolor: 'background.paper', flex: 1 }}>
       <CardHeader
         title="Jobs"
         subheader="Select, start, pause, or add a job"
@@ -45,182 +61,132 @@ export function JobsList({
             New
           </Button>
         }
-        slotProps={{
-          title: {
-            variant: 'h6',
-            fontWeight: 600,
-          },
-          subheader: {
-            variant: 'body2',
-          },
-        }}
       />
-      <CardContent
-        sx={{
-          pt: 0,
-        }}
-      >
-        <List disablePadding>
-          {/* New Job Mode Indicator */}
-          {isNewJobMode && (
-            <ListItemButton
-              selected
-              sx={{
-                mb: 1,
-                borderRadius: 2,
-                border: 2,
-                borderColor: 'secondary.main',
-                bgcolor: 'rgba(236, 72, 153, 0.12)',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <AppIcon.NoteAdd sx={{ mr: 1.5, color: 'secondary.main' }} />
-              <ListItemText
-                primary={
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <Typography
-                      variant="body1"
-                      fontWeight={600}
-                      color="secondary.main"
-                    >
-                      ✨ Creating New Job
-                    </Typography>
-                    <Chip
-                      label="Draft"
-                      size="small"
-                      color="secondary"
-                      variant="filled"
-                      sx={{ height: 24 }}
-                    />
-                  </Stack>
-                }
-                secondary={
-                  <Typography variant="caption" color="text.secondary">
-                    Fill in the form and save to create this job
-                  </Typography>
-                }
-              />
-            </ListItemButton>
-          )}
 
-          {filteredJobs.map((job) => (
-            <ListItemButton
-              key={job.id}
-              selected={selectedJobId === job.id && !isNewJobMode}
-              onClick={() => {
-                navigate(
-                  `/plugins/${pluginId}/sessions/${sessionId}/jobs/${job.id}`,
-                );
-              }}
-              sx={{
-                mb: 1,
-                borderRadius: 2,
-                border: 1,
-                borderColor:
-                  selectedJobId === job.id && !isNewJobMode
-                    ? 'primary.main'
-                    : 'divider',
-                bgcolor:
-                  selectedJobId === job.id && !isNewJobMode
-                    ? 'rgba(99, 102, 241, 0.08)'
-                    : 'transparent',
-                '&:hover': {
-                  bgcolor: 'action.hover',
-                  borderColor: 'primary.main',
-                },
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <ListItemText
-                primary={
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <Typography variant="body1" fontWeight={500}>
-                      {job.description || 'Untitled job'}
-                    </Typography>
-                    <Chip
-                      label={
-                        togglingJobId === job.id
-                          ? 'Updating...'
-                          : job.active
-                            ? 'Active'
-                            : 'Paused'
-                      }
-                      size="small"
-                      color={
-                        togglingJobId === job.id
-                          ? 'default'
-                          : job.active
-                            ? 'success'
-                            : 'default'
-                      }
-                      variant={job.active ? 'filled' : 'outlined'}
-                      icon={
-                        togglingJobId === job.id ? (
-                          <Box
-                            sx={{
-                              width: 12,
-                              height: 12,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            <CircularProgress size={10} color="inherit" />
-                          </Box>
-                        ) : job.active ? (
-                          <Box
-                            sx={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: '50%',
-                              bgcolor: 'success.main',
-                              animation: 'pulse 2s infinite',
-                              '@keyframes pulse': {
-                                '0%, 100%': { opacity: 1 },
-                                '50%': { opacity: 0.5 },
-                              },
-                            }}
-                          />
-                        ) : undefined
-                      }
-                      sx={{ height: 24 }}
-                    />
-                  </Stack>
-                }
-                secondary={`#${job.id} • ${pluginPackage || 'Plugin'}`}
-                slotProps={{
-                  secondary: {
-                    noWrap: true,
-                  },
-                }}
-              />
-              <Switch
-                edge="end"
-                checked={!!job.active}
-                disabled={togglingJobId === job.id}
-                onChange={(e) => {
-                  e.stopPropagation();
-                  onToggleJob(e.target.checked, job.id);
-                }}
-                onClick={(e) => e.stopPropagation()}
-                color="success"
-              />
-            </ListItemButton>
-          ))}
+      <CardContent sx={{ pt: 0 }}>
+        {isNewJobMode && (
+          <Box
+            sx={{
+              mb: 2,
+              p: 1.5,
+              borderRadius: 2,
+              border: 2,
+              borderColor: 'secondary.main',
+              bgcolor: 'rgba(236, 72, 153, 0.12)',
+            }}
+          >
+            <Stack direction="row" spacing={1} alignItems="center">
+              <AppIcon.NoteAdd sx={{ color: 'secondary.main' }} />
 
-          {filteredJobs.length === 0 && (
-            <Box
-              sx={{
-                py: 6,
-                textAlign: 'center',
-              }}
-            >
-              <Typography variant="body2" color="text.secondary">
-                No jobs yet. Pick a plugin to load defaults.
+              <Typography fontWeight={600} color="secondary.main">
+                ✨ Creating New Job
               </Typography>
-            </Box>
+
+              <Chip label="Draft" size="small" color="secondary" />
+            </Stack>
+
+            <Typography variant="caption" color="text.secondary">
+              Fill in the form and save to create this job
+            </Typography>
+          </Box>
+        )}
+
+        <Autocomplete
+          options={filteredJobs}
+          value={selectedJob}
+          disabled={disabled}
+          getOptionLabel={(option) => option.description || `Job #${option.id}`}
+          isOptionEqualToValue={(a, b) => a.id === b.id}
+          onChange={(e, job) => {
+            if (!job) return;
+
+            navigate(
+              `/plugins/${pluginId}/sessions/${sessionId}/jobs/${job.id}`,
+            );
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Select Job"
+              placeholder="Search jobs..."
+            />
           )}
-        </List>
+          renderOption={(props, job) => {
+            const updating = togglingJobId === job.id;
+            const active = !!job.active;
+
+            return (
+              <Box component="li" {...props}>
+                <Box
+                  sx={{
+                    flex: 1,
+                    minWidth: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  {/* Title */}
+                  <Typography fontWeight={500}>
+                    {job.description || 'Untitled job'}
+                    <Chip
+                      size="small"
+                      label={
+                        updating ? 'Updating...' : active ? 'Active' : 'Paused'
+                      }
+                      color={
+                        updating ? 'default' : active ? 'success' : 'default'
+                      }
+                      variant={active ? 'filled' : 'outlined'}
+                      icon={
+                        updating ? <CircularProgress size={12} /> : undefined
+                      }
+                      sx={{
+                        float: 'right',
+                        ml: 1,
+                        height: 20,
+                        flexShrink: 0,
+                      }}
+                    />
+                  </Typography>
+
+                  {/* Metadata row */}
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                    sx={{ minWidth: 0 }}
+                  >
+                    <Typography variant="caption" color="text.secondary" noWrap>
+                      #{job.id} • {pluginPackage || 'Plugin'}
+                    </Typography>
+                  </Stack>
+                </Box>
+
+                {/* Switch */}
+                <Switch
+                  checked={active}
+                  disabled={updating}
+                  size="small"
+                  color="success"
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    onToggleJob(e.target.checked, job.id);
+                  }}
+                  sx={{ mt: -3, ml: 1 }}
+                />
+              </Box>
+            );
+          }}
+        />
+
+        {filteredJobs.length === 0 && (
+          <Box sx={{ py: 4, textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
+              No jobs yet. Pick a plugin to load defaults.
+            </Typography>
+          </Box>
+        )}
       </CardContent>
     </Card>
   );

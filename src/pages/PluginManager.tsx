@@ -342,6 +342,8 @@ export default function PluginManager({ setLoading, setError }) {
           <Box
             sx={{
               display: 'flex',
+              position: 'sticky',
+              top: 150,
               flexDirection: panelOpen ? 'column' : 'row',
               gap: 3,
             }}

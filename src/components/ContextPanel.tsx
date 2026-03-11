@@ -44,7 +44,7 @@ export function ContextPanel({
     <Card
       sx={{
         bgcolor: 'background.paper',
-        flexGrow: 1,
+        flex: 1,
         backgroundImage:
           'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%)',
       }}
@@ -174,14 +174,7 @@ export function ContextPanel({
               >
                 <Box component="li" {...props}>
                   <Stack width="100%">
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
+                    <Typography variant="body2" noWrap>
                       {option.label}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">

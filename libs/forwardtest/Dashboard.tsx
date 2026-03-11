@@ -142,14 +142,7 @@ function JobRowComponent({
           >
             <AppIcon.Storage sx={{ fontSize: 16, color: 'text.secondary' }} />
             <Tooltip title={pluginName}>
-              <Typography
-                variant="body2"
-                sx={{
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
+              <Typography variant="body2" noWrap>
                 {pluginName || '-'}
               </Typography>
             </Tooltip>
