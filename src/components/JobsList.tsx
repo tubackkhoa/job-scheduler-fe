@@ -72,7 +72,6 @@ export function JobsList({
               borderRadius: 2,
               border: 2,
               borderColor: 'secondary.main',
-              bgcolor: 'rgba(236, 72, 153, 0.12)',
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
