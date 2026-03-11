@@ -21,6 +21,7 @@ import { jinjaLang } from '@/utils';
 import api from '@/api';
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
 import { MarkdownPreview } from '@/components/fields/MarkdownPreview';
+import useNotifications from '@/hooks/useNotifications/useNotifications';
 
 type Message = { role: 'user' | 'assistant'; content: string; model?: string };
 
@@ -33,6 +34,7 @@ export default function TemplateStudio() {
   const [output, setOutput] = useState('');
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState('');
+  const notifications = useNotifications();
 
   useEffect(() => {
     api.fetchPlugins().then(setPlugins);
@@ -107,9 +109,13 @@ export default function TemplateStudio() {
   const handleRun = async () => {
     let tmpl = output.trim();
     if (!tmpl) return;
-    tmpl = tmpl.replace(/^```[a-zA-Z0-9]*\s*\n?/, '').replace(/\n?```$/, '');
-    const result = await api.renderTemplate(packageName, tmpl, {});
-    setPreview(result);
+    try {
+      tmpl = tmpl.replace(/^```[a-zA-Z0-9]*\s*\n?/, '').replace(/\n?```$/, '');
+      const result = await api.renderTemplate(packageName, tmpl, {});
+      setPreview(result);
+    } catch (ex) {
+      notifications.show(ex.message, { severity: 'error' });
+    }
   };
 
   function handleCopy() {
