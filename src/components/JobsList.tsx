@@ -119,12 +119,10 @@ export function JobsList({
 
               return (
                 <Box component="li" {...props}>
-                  <Box
+                  <Stack
                     sx={{
                       flex: 1,
                       minWidth: 0,
-                      display: 'flex',
-                      flexDirection: 'column',
                     }}
                   >
                     {/* Title */}
@@ -155,24 +153,11 @@ export function JobsList({
                       />
                     </Typography>
 
-                    {/* Metadata row */}
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      alignItems="center"
-                      sx={{ minWidth: 0 }}
-                    >
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        noWrap
-                      >
-                        #{job.id} • {pluginPackage || 'Plugin'}
-                      </Typography>
-                    </Stack>
-                  </Box>
+                    <Typography variant="caption" color="text.secondary" noWrap>
+                      #{job.id} • {pluginPackage || 'Plugin'}
+                    </Typography>
+                  </Stack>
 
-                  {/* Switch */}
                   <Switch
                     checked={active}
                     disabled={updating}
@@ -190,11 +175,13 @@ export function JobsList({
             }}
           />
         ) : (
-          <Box sx={{ py: 4, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
-              No jobs yet. Pick a plugin to load defaults.
-            </Typography>
-          </Box>
+          <Typography
+            variant="body2"
+            sx={{ py: 4, textAlign: 'center' }}
+            color="text.secondary"
+          >
+            No jobs yet. Pick a plugin to load defaults.
+          </Typography>
         )}
       </CardContent>
     </Card>

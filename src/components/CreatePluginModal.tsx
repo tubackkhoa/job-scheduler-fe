@@ -7,7 +7,6 @@ import {
   TextField,
   Stack,
   Typography,
-  Box
 } from '@mui/material';
 import { useState } from 'react';
 
@@ -49,7 +48,7 @@ export function CreatePluginModal({ open, onClose, onSubmit, isLoading }) {
     onSubmit({
       package: packageName.trim(),
       interval: Number(interval),
-      description: description.trim() || undefined
+      description: description.trim() || undefined,
     });
   };
 
@@ -92,7 +91,7 @@ export function CreatePluginModal({ open, onClose, onSubmit, isLoading }) {
             required
             fullWidth
             slotProps={{
-              htmlInput: { min: 1 }
+              htmlInput: { min: 1 },
             }}
             disabled={isLoading}
           />

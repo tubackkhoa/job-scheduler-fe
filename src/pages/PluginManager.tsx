@@ -338,7 +338,7 @@ export default function PluginManager({ setLoading, setError }) {
         </IconButton>
       )}
       <Grid container spacing={3} sx={{ mt: 1 }}>
-        <Grid size={{ xs: 12, md: panelOpen ? 3 : 12 }}>
+        <Grid size={{ xs: 12, md: panelOpen ? 4 : 12 }}>
           <Box
             sx={{
               display: 'flex',
@@ -376,7 +376,7 @@ export default function PluginManager({ setLoading, setError }) {
           </Box>
         </Grid>
 
-        <Grid size={{ xs: 12, md: panelOpen ? 9 : 12 }}>
+        <Grid size={{ xs: 12, md: panelOpen ? 8 : 12 }}>
           <JobDetails
             jobId={jobId}
             jobDesc={jobDesc}
