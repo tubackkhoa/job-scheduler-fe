@@ -91,96 +91,106 @@ export function JobsList({
           </Box>
         )}
 
-        <Autocomplete
-          options={filteredJobs}
-          value={selectedJob}
-          disabled={disabled}
-          getOptionLabel={(option) => option.description || `Job #${option.id}`}
-          isOptionEqualToValue={(a, b) => a.id === b.id}
-          onChange={(e, job) => {
-            if (!job) return;
+        {filteredJobs.length > 0 ? (
+          <Autocomplete
+            options={filteredJobs}
+            value={selectedJob}
+            disabled={disabled}
+            getOptionLabel={(option) =>
+              option.description || `Job #${option.id}`
+            }
+            isOptionEqualToValue={(a, b) => a.id === b.id}
+            onChange={(e, job) => {
+              if (!job) return;
 
-            navigate(
-              `/plugins/${pluginId}/sessions/${sessionId}/jobs/${job.id}`,
-            );
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Select Job"
-              placeholder="Search jobs..."
-            />
-          )}
-          renderOption={(props, job) => {
-            const updating = togglingJobId === job.id;
-            const active = !!job.active;
+              navigate(
+                `/plugins/${pluginId}/sessions/${sessionId}/jobs/${job.id}`,
+              );
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Select Job"
+                placeholder="Search jobs..."
+              />
+            )}
+            renderOption={(props, job) => {
+              const updating = togglingJobId === job.id;
+              const active = !!job.active;
 
-            return (
-              <Box component="li" {...props}>
-                <Box
-                  sx={{
-                    flex: 1,
-                    minWidth: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  {/* Title */}
-                  <Typography fontWeight={500}>
-                    {job.description || 'Untitled job'}
-                    <Chip
-                      size="small"
-                      label={
-                        updating ? 'Updating...' : active ? 'Active' : 'Paused'
-                      }
-                      color={
-                        updating ? 'default' : active ? 'success' : 'default'
-                      }
-                      variant={active ? 'filled' : 'outlined'}
-                      icon={
-                        updating ? <CircularProgress size={12} /> : undefined
-                      }
-                      sx={{
-                        float: 'right',
-                        ml: 1,
-                        height: 20,
-                        flexShrink: 0,
-                      }}
-                    />
-                  </Typography>
-
-                  {/* Metadata row */}
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    alignItems="center"
-                    sx={{ minWidth: 0 }}
+              return (
+                <Box component="li" {...props}>
+                  <Box
+                    sx={{
+                      flex: 1,
+                      minWidth: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
                   >
-                    <Typography variant="caption" color="text.secondary" noWrap>
-                      #{job.id} • {pluginPackage || 'Plugin'}
+                    {/* Title */}
+                    <Typography fontWeight={500}>
+                      {job.description || 'Untitled job'}
+                      <Chip
+                        size="small"
+                        label={
+                          updating
+                            ? 'Updating...'
+                            : active
+                              ? 'Active'
+                              : 'Paused'
+                        }
+                        color={
+                          updating ? 'default' : active ? 'success' : 'default'
+                        }
+                        variant={active ? 'filled' : 'outlined'}
+                        icon={
+                          updating ? <CircularProgress size={12} /> : undefined
+                        }
+                        sx={{
+                          float: 'right',
+                          ml: 1,
+                          height: 20,
+                          flexShrink: 0,
+                        }}
+                      />
                     </Typography>
-                  </Stack>
+
+                    {/* Metadata row */}
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      alignItems="center"
+                      sx={{ minWidth: 0 }}
+                    >
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        noWrap
+                      >
+                        #{job.id} • {pluginPackage || 'Plugin'}
+                      </Typography>
+                    </Stack>
+                  </Box>
+
+                  {/* Switch */}
+                  <Switch
+                    checked={active}
+                    disabled={updating}
+                    size="small"
+                    color="success"
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      onToggleJob(e.target.checked, job.id);
+                    }}
+                    sx={{ mt: -3, ml: 1 }}
+                  />
                 </Box>
-
-                {/* Switch */}
-                <Switch
-                  checked={active}
-                  disabled={updating}
-                  size="small"
-                  color="success"
-                  onClick={(e) => e.stopPropagation()}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    onToggleJob(e.target.checked, job.id);
-                  }}
-                  sx={{ mt: -3, ml: 1 }}
-                />
-              </Box>
-            );
-          }}
-        />
-
-        {filteredJobs.length === 0 && (
+              );
+            }}
+          />
+        ) : (
           <Box sx={{ py: 4, textAlign: 'center' }}>
             <Typography variant="body2" color="text.secondary">
               No jobs yet. Pick a plugin to load defaults.
