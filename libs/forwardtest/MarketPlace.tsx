@@ -35,7 +35,7 @@ export default ({ formData, ...rest }: FieldProps<RoutesResponse>) => {
       {...(rest as FieldProps)}
       schema={{
         url: import.meta.env.DEV
-          ? 'PnlPreview.tsx'
+          ? 'forwardtest/PnlPreview.tsx'
           : '{base_url}/assets/{package}/pnl_preview.js',
       }}
     />
