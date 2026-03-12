@@ -274,7 +274,8 @@ export default function TemplateStudio() {
         {/* EDITOR */}
         <Paper
           sx={{
-            flex: 2,
+            flex: 1,
+            p: 1,
             display: 'flex',
             flexDirection: 'column',
             minWidth: 0,
@@ -285,7 +286,7 @@ export default function TemplateStudio() {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              p: 1,
+
               borderBottom: '1px solid',
               borderColor: 'divider',
             }}
@@ -324,17 +325,25 @@ export default function TemplateStudio() {
             extensions={[jinjaLang]}
           />
         </Paper>
-      </Stack>
 
-      {/* preview */}
-      <Box sx={{ borderTop: 1, borderColor: 'divider', p: 1 }}>
-        <Typography variant="h6">Preview</Typography>
-      </Box>
-      {preview && (
-        <Box sx={{ p: 2, maxHeight: '100%', overflow: 'auto' }}>
-          <MarkdownPreview text={preview} />
-        </Box>
-      )}
+        {/* preview */}
+        <Paper
+          sx={{
+            flex: 1,
+            p: 1,
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <Typography variant="subtitle1">Preview</Typography>
+
+          {preview && (
+            <Box sx={{ p: 2, maxHeight: '100%', overflow: 'auto' }}>
+              <MarkdownPreview text={preview} />
+            </Box>
+          )}
+        </Paper>
+      </Stack>
     </Container>
   );
 }

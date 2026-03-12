@@ -63,3 +63,6 @@ libs/*
 
 !libs/blog/
 !libs/blog/**
+
+!libs/crm/
+!libs/crm/**

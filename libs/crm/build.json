@@ -1,0 +1,10 @@
+{
+  "libs/crm/Portal.tsx": "../job-scheduler/plugins/crm/assets/portal.js",
+  "libs/crm/Dashboard.tsx": "../job-scheduler/plugins/crm/assets/dashboard.js",
+  "libs/crm/Contacts.tsx": "../job-scheduler/plugins/crm/assets/contacts.js",
+  "libs/crm/Contact.tsx": "../job-scheduler/plugins/crm/assets/contact.js",
+  "libs/crm/Deals.tsx": "../job-scheduler/plugins/crm/assets/deals.js",
+  "libs/crm/Pipeline.tsx": "../job-scheduler/plugins/crm/assets/pipeline.js",
+  "libs/crm/Activities.tsx": "../job-scheduler/plugins/crm/assets/activities.js",
+  "libs/crm/Reports.tsx": "../job-scheduler/plugins/crm/assets/reports.js"
+}
