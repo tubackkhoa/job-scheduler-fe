@@ -159,7 +159,7 @@ export default {
   },
 
   downloadModule(name: string, version: string): Promise<PostResponse> {
-    return postJson(`/download/${name}`, {
+    return postJson(`/api/plugins/download/${name}`, {
       version,
     });
   },
