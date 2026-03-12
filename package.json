@@ -30,28 +30,29 @@
     "json5": "^2.2.3",
     "lightweight-charts": "^5.1.0",
     "lodash": "^4.17.21",
-    "preact": "^10.28.4",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^6.22.3",
+    "react-router-dom": "^7.13.1",
     "rehype-raw": "^7.0.0",
     "rehype-sanitize": "^6.0.0",
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@mui/icons-material": "^7.3.6",
-    "@preact/preset-vite": "^2.10.3",
     "@types/lodash": "^4.17.21",
     "@types/node": "^25.3.0",
     "@types/nunjucks": "^3.2.6",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.4",
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.27.3",
     "globals": "^16.5.0",
     "patch-package": "^8.0.1",
     "pyodide": "0.25.1",
     "ts-morph": "^27.0.2",
-    "vite": "^8.0.0-beta.15"
+    "vite": "^8.0.0-beta.16"
   },
   "resolutions": {
     "@codemirror/view": "^6.39.11"

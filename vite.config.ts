@@ -1,14 +1,11 @@
 import { defineConfig } from 'vite';
-import preact from '@preact/preset-vite';
+import react from '@vitejs/plugin-react';
 import path from 'path';
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   return {
-    plugins: [preact()],
-    esbuild: {
-      tsconfigRaw: 'tsconfig.vite.json',
-    },
+    plugins: [react()],
     build: {
       target: 'esnext',
       chunkSizeWarningLimit: 5000,
