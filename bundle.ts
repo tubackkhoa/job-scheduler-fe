@@ -7,7 +7,6 @@ import path from 'path';
 
 const IMPORT_REWRITE_MAP: Record<string, string> = {
   react: 'React',
-  'react/jsx-runtime': 'React',
   'react-router-dom': 'RouterDom',
   '@mui/material': 'Mui',
   'lightweight-charts': 'LightweightChart',
@@ -115,7 +114,7 @@ function baseOptions(plugins: Plugin[]): BuildOptions {
     minify: true,
     legalComments: 'none',
     format: 'esm',
-    target: 'es2020',
+    target: 'esnext',
     loader: {
       '.tsx': 'tsx',
       '.py': 'text',
@@ -123,7 +122,10 @@ function baseOptions(plugins: Plugin[]): BuildOptions {
     jsx: 'transform',
     jsxFactory: 'React.createElement',
     jsxFragment: 'React.Fragment',
-    external: Object.keys(IMPORT_REWRITE_MAP),
+    // define for import.meta.env
+    define: {
+      'import.meta.env.DEV': 'false',
+    },
   };
 }
 
