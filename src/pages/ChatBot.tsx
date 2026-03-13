@@ -123,11 +123,11 @@ export default function TemplateStudio() {
     setTab(value);
   };
 
-  const loadPreview = async () => {
+  const loadPreview = async (text: string) => {
     // Only render preview when user switches to preview tab, not on every keystroke
     if (loading) return;
 
-    let tmpl = output.trim();
+    let tmpl = text.trim();
     if (!tmpl) return;
 
     try {
@@ -229,7 +229,10 @@ export default function TemplateStudio() {
                   ) : (
                     <Paper
                       variant="outlined"
-                      onClick={() => setOutput(msg.content)}
+                      onClick={() => {
+                        setOutput(msg.content);
+                        if (tab === 'preview') loadPreview(msg.content);
+                      }}
                       sx={{
                         p: 1,
                         cursor: 'pointer',
@@ -300,7 +303,11 @@ export default function TemplateStudio() {
         >
           <Tabs orientation="vertical" value={tab} onChange={handleTabChange}>
             <Tab label="Editor" value="editor" />
-            <Tab label="Preview" value="preview" onClick={loadPreview} />
+            <Tab
+              label="Preview"
+              value="preview"
+              onClick={() => loadPreview(output)}
+            />
           </Tabs>
           <Box
             sx={{
