@@ -134,7 +134,8 @@ export default function TemplateStudio() {
       tmpl = tmpl.replace(/^```[a-zA-Z0-9]*\s*\n?/, '').replace(/\n?```$/, '');
 
       const result = await api.renderTemplate(packageName, tmpl, {});
-      setPreview(result);
+      const normalized = result.replace(/^\s+(<\/?[a-zA-Z][^>]*>)/gm, '$1');
+      setPreview(normalized);
     } catch (ex) {
       notifications.show(ex.message, { severity: 'error' });
     }
