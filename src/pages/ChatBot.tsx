@@ -15,52 +15,60 @@ import {
   IconButton,
   Tooltip,
   ListItemText,
+  Tabs,
+  Tab,
 } from '@mui/material';
+
 import ReactCodeMirror from '@uiw/react-codemirror';
+
 import { jinjaLang } from '@/utils';
 import api from '@/api';
+
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
 import { MarkdownPreview } from '@/components/fields/MarkdownPreview';
 import useNotifications from '@/hooks/useNotifications/useNotifications';
 
-type Message = { role: 'user' | 'assistant'; content: string; model?: string };
+type Message = {
+  role: 'user' | 'assistant';
+  content: string;
+  model?: string;
+};
 
 export default function TemplateStudio() {
   const [mode] = useAppColorScheme();
+  const notifications = useNotifications();
+
   const [plugins, setPlugins] = useState<PluginData[]>([]);
   const [packageName, setPackageName] = useState('');
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+
   const [output, setOutput] = useState('');
-  const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState('');
-  const notifications = useNotifications();
+
+  const [loading, setLoading] = useState(false);
+  const [tab, setTab] = useState<'editor' | 'preview'>('editor');
 
   useEffect(() => {
     api.fetchPlugins().then(setPlugins);
   }, []);
 
-  async function sendMessage(opts: {
-    content: string;
-    index?: number; // resend from this user message index
-  }) {
+  async function sendMessage(opts: { content: string; index?: number }) {
     const content = opts.content.trim();
 
     if (loading || !packageName || !content) return;
 
     let baseMessages = messages;
 
-    // resend mode → truncate after selected user message
     if (opts.index !== undefined) {
       baseMessages = messages.slice(0, opts.index + 1);
     } else {
-      // normal send → append user message
       const userMsg: Message = { role: 'user', content };
       baseMessages = [...messages, userMsg];
       setInput('');
     }
 
-    // add empty assistant placeholder
     setMessages([...baseMessages, { role: 'assistant', content: '' }]);
 
     setLoading(true);
@@ -75,9 +83,11 @@ export default function TemplateStudio() {
           message: content,
           history: baseMessages.slice(-6).map((m) => m.content),
         },
+
         onMeta(meta) {
           model = meta.model;
         },
+
         onToken(token: string) {
           text += token;
 
@@ -106,11 +116,23 @@ export default function TemplateStudio() {
     }
   }
 
-  const handleRun = async () => {
+  const handleTabChange = async (
+    _: React.SyntheticEvent,
+    value: 'editor' | 'preview',
+  ) => {
+    setTab(value);
+  };
+
+  const loadPreview = async () => {
+    // Only render preview when user switches to preview tab, not on every keystroke
+    if (loading) return;
+
     let tmpl = output.trim();
     if (!tmpl) return;
+
     try {
       tmpl = tmpl.replace(/^```[a-zA-Z0-9]*\s*\n?/, '').replace(/\n?```$/, '');
+
       const result = await api.renderTemplate(packageName, tmpl, {});
       setPreview(result);
     } catch (ex) {
@@ -118,21 +140,17 @@ export default function TemplateStudio() {
     }
   };
 
-  function handleCopy() {
-    navigator.clipboard.writeText(output);
-  }
-  function handleClear() {
-    setOutput('');
-  }
-
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
+      {/* HEADER */}
       <Stack direction={{ md: 'row', sm: 'column' }} gap={2} mb={2}>
         <Typography variant="h5" fontWeight={700}>
           🧩 Template Studio
         </Typography>
+
         <FormControl size="small" sx={{ minWidth: 300 }}>
           <InputLabel>Plugin</InputLabel>
+
           <Select
             value={packageName}
             label="Plugin"
@@ -144,12 +162,8 @@ export default function TemplateStudio() {
                   primary={p.package}
                   secondary={p.description}
                   slotProps={{
-                    primary: {
-                      noWrap: true,
-                    },
-                    secondary: {
-                      noWrap: true,
-                    },
+                    primary: { noWrap: true },
+                    secondary: { noWrap: true },
                   }}
                 />
               </MenuItem>
@@ -161,8 +175,7 @@ export default function TemplateStudio() {
       <Stack
         direction={{ md: 'row', sm: 'column' }}
         gap={2}
-        mb={2}
-        sx={{ minHeight: { md: '75vh' }, alignItems: 'stretch' }}
+        sx={{ minHeight: { md: '75vh' }, maxHeight: { md: '90vh' } }}
       >
         {/* CHAT */}
         <Paper
@@ -184,7 +197,7 @@ export default function TemplateStudio() {
                   }}
                 >
                   {msg.role === 'user' ? (
-                    <Stack direction="row" spacing={1} alignItems="flex-start">
+                    <Stack direction="row" spacing={1}>
                       <Paper
                         sx={{
                           p: 1.5,
@@ -196,6 +209,7 @@ export default function TemplateStudio() {
                           {msg.content}
                         </Typography>
                       </Paper>
+
                       <Tooltip title="Resend">
                         <IconButton
                           size="small"
@@ -205,7 +219,6 @@ export default function TemplateStudio() {
                               index: i,
                             })
                           }
-                          sx={{ color: 'inherit' }}
                         >
                           <AppIcon.Refresh fontSize="small" />
                         </IconButton>
@@ -245,6 +258,7 @@ export default function TemplateStudio() {
                   )}
                 </Box>
               ))}
+
               {loading && <CircularProgress size={20} />}
             </Stack>
           </Box>
@@ -260,6 +274,7 @@ export default function TemplateStudio() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
+
               <Button
                 variant="contained"
                 disabled={loading || !packageName}
@@ -271,11 +286,10 @@ export default function TemplateStudio() {
           </Box>
         </Paper>
 
-        {/* EDITOR */}
+        {/* EDITOR + PREVIEW */}
         <Paper
           sx={{
-            flex: 1,
-            p: 1,
+            flex: 2,
             display: 'flex',
             flexDirection: 'column',
             minWidth: 0,
@@ -285,63 +299,32 @@ export default function TemplateStudio() {
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center',
-
               borderBottom: '1px solid',
               borderColor: 'divider',
             }}
           >
-            <Typography variant="subtitle1">Template Editor</Typography>
-            <Stack direction="row" spacing={1}>
-              <Tooltip title="Run">
-                <span>
-                  <IconButton
-                    size="small"
-                    onClick={handleRun}
-                    disabled={!output}
-                  >
-                    <AppIcon.PlayArrow fontSize="small" />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Tooltip title="Copy">
-                <IconButton size="small" onClick={handleCopy}>
-                  <AppIcon.ContentCopy fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Clear">
-                <IconButton size="small" onClick={handleClear}>
-                  <AppIcon.Delete fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Stack>
+            <Tabs value={tab} onChange={handleTabChange}>
+              <Tab label="Editor" value="editor" />
+              <Tab label="Preview" value="preview" onClick={loadPreview} />
+            </Tabs>
           </Box>
 
-          {/* editor */}
-          <ReactCodeMirror
-            value={output}
-            onChange={setOutput}
-            theme={mode}
-            extensions={[jinjaLang]}
-          />
-        </Paper>
+          <Box sx={{ flex: 1, overflow: 'auto' }}>
+            {tab === 'editor' && (
+              <ReactCodeMirror
+                value={output}
+                onChange={setOutput}
+                theme={mode}
+                extensions={[jinjaLang]}
+              />
+            )}
 
-        {/* preview */}
-        <Paper
-          sx={{
-            flex: 1,
-            p: 1,
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          <Typography variant="subtitle1">Preview</Typography>
-
-          {preview && (
-            <Box sx={{ p: 2, maxHeight: '100%', overflow: 'auto' }}>
-              <MarkdownPreview text={preview} />
-            </Box>
-          )}
+            {tab === 'preview' && (
+              <Box sx={{ p: 2 }}>
+                <MarkdownPreview text={preview} />
+              </Box>
+            )}
+          </Box>
         </Paper>
       </Stack>
     </Container>
