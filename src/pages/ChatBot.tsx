@@ -172,21 +172,22 @@ export default function TemplateStudio() {
         </FormControl>
       </Stack>
 
-      <Stack
-        direction={{ md: 'row', sm: 'column' }}
-        gap={2}
-        sx={{ minHeight: { md: '75vh' }, maxHeight: { md: '90vh' } }}
+      <Paper
+        sx={{
+          display: 'flex',
+          flexDirection: { md: 'row', sm: 'column' },
+          minHeight: { md: '75vh' },
+          maxHeight: { md: '90vh' },
+        }}
       >
         {/* CHAT */}
-        <Paper
-          sx={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            minWidth: { md: 320 },
-          }}
-        >
-          <Box sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
+        <Stack flex={1} justifyContent="space-between">
+          <Box
+            sx={{
+              p: 2,
+              overflowY: 'auto',
+            }}
+          >
             <Stack spacing={2}>
               {messages.map((msg, i) => (
                 <Box
@@ -284,32 +285,29 @@ export default function TemplateStudio() {
               </Button>
             </Stack>
           </Box>
-        </Paper>
+        </Stack>
 
         {/* EDITOR + PREVIEW */}
-        <Paper
+        <Box
           sx={{
-            flex: 2,
+            overflowX: 'hidden',
+            p: 2,
             display: 'flex',
-            flexDirection: 'column',
-            minWidth: 0,
+            flex: 2,
+            alignItems: 'stretch',
           }}
         >
+          <Tabs orientation="vertical" value={tab} onChange={handleTabChange}>
+            <Tab label="Editor" value="editor" />
+            <Tab label="Preview" value="preview" onClick={loadPreview} />
+          </Tabs>
           <Box
             sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              borderBottom: '1px solid',
-              borderColor: 'divider',
+              flex: 1,
+              minWidth: 0,
+              overflow: 'auto',
             }}
           >
-            <Tabs value={tab} onChange={handleTabChange}>
-              <Tab label="Editor" value="editor" />
-              <Tab label="Preview" value="preview" onClick={loadPreview} />
-            </Tabs>
-          </Box>
-
-          <Box sx={{ flex: 1, overflow: 'auto' }}>
             {tab === 'editor' && (
               <ReactCodeMirror
                 value={output}
@@ -319,14 +317,10 @@ export default function TemplateStudio() {
               />
             )}
 
-            {tab === 'preview' && (
-              <Box sx={{ p: 2 }}>
-                <MarkdownPreview text={preview} />
-              </Box>
-            )}
+            {tab === 'preview' && <MarkdownPreview text={preview} />}
           </Box>
-        </Paper>
-      </Stack>
+        </Box>
+      </Paper>
     </Container>
   );
 }
