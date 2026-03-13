@@ -144,7 +144,7 @@ export default function TemplateStudio() {
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
       {/* HEADER */}
-      <Stack direction={{ md: 'row', sm: 'column' }} gap={2} mb={2}>
+      <Stack gap={2} mb={2}>
         <Typography variant="h5" fontWeight={700}>
           🧩 Template Studio
         </Typography>
