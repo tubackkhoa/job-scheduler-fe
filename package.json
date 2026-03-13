@@ -30,6 +30,7 @@
     "json5": "^2.2.3",
     "lightweight-charts": "^5.1.0",
     "lodash": "^4.17.21",
+    "mermaid": "^11.13.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-markdown": "^10.1.0",

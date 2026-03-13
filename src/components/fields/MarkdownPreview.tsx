@@ -8,6 +8,7 @@ import { memo } from 'react';
 import { SortableTable } from '../SortableTable';
 import { mdCodeLanguages } from '@/utils';
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
+import { MermaidChart } from '../MermaidChart';
 
 interface Props {
   text: string;
@@ -84,6 +85,11 @@ export const MarkdownPreview = memo(
               const lang = className?.replace('language-', '');
 
               switch (lang) {
+                case 'mermaid':
+                  return (
+                    <MermaidChart chart={children as string} theme={mode} />
+                  );
+
                 case 'html':
                   return (
                     <div

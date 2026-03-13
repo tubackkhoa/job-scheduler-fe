@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
+            if (id.includes('mermaid')) return 'mermaid';
             if (id.includes('node_modules')) return 'vendor';
           },
         },

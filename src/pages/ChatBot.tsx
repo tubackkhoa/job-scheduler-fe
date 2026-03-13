@@ -21,7 +21,7 @@ import {
 
 import ReactCodeMirror from '@uiw/react-codemirror';
 
-import { jinjaLang } from '@/utils';
+import { jinjaEvaluate, jinjaLang } from '@/utils';
 import api from '@/api';
 
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
@@ -133,7 +133,7 @@ export default function TemplateStudio() {
     try {
       tmpl = tmpl.replace(/^```[a-zA-Z0-9]*\s*\n?/, '').replace(/\n?```$/, '');
 
-      const result = await api.renderTemplate(packageName, tmpl, {});
+      const result = await jinjaEvaluate(packageName, tmpl, {}, true);
       const normalized = result.replace(/^\s+(<\/?[a-zA-Z][^>]*>)/gm, '$1');
       setPreview(normalized);
     } catch (ex) {
@@ -309,16 +309,30 @@ export default function TemplateStudio() {
               overflow: 'auto',
             }}
           >
-            {tab === 'editor' && (
+            {/* EDITOR */}
+            <Box
+              sx={{
+                display: tab === 'editor' ? 'block' : 'none',
+                height: '100%',
+              }}
+            >
               <ReactCodeMirror
                 value={output}
                 onChange={setOutput}
                 theme={mode}
                 extensions={[jinjaLang]}
               />
-            )}
+            </Box>
 
-            {tab === 'preview' && <MarkdownPreview text={preview} />}
+            {/* PREVIEW */}
+            <Box
+              sx={{
+                display: tab === 'preview' ? 'block' : 'none',
+                height: '100%',
+              }}
+            >
+              <MarkdownPreview text={preview} />
+            </Box>
           </Box>
         </Box>
       </Paper>
