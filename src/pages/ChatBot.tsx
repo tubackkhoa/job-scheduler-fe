@@ -182,7 +182,7 @@ export default function TemplateStudio() {
         }}
       >
         {/* CHAT */}
-        <Stack flex={1} justifyContent="space-between">
+        <Stack flex={1} justifyContent="space-between" minWidth={0}>
           <Box
             sx={{
               p: 2,
