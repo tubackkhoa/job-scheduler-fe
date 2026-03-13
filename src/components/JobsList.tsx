@@ -92,6 +92,7 @@ export function JobsList({
 
         {filteredJobs.length > 0 ? (
           <Autocomplete
+            size="small"
             options={filteredJobs}
             value={selectedJob}
             disabled={disabled}

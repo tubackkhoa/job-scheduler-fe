@@ -39,7 +39,6 @@ declare global {
     id: number;
     package: string;
     description: string;
-    interval: number;
   }
 
   interface CodeSchema {
@@ -62,6 +61,11 @@ declare global {
     doc: string;
   }
 
+  interface Session {
+    id: number;
+    name: string;
+  }
+
   interface Job {
     id: number;
     plugin_id: number;
@@ -69,6 +73,7 @@ declare global {
     description: string;
     config?: { [key: string]: any };
     active?: number; // usually 0 | 1
+    cron_expr?: string;
   }
 
   type Globals = Record<string, GlobalVariable>;

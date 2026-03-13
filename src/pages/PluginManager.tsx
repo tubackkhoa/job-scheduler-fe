@@ -27,6 +27,7 @@ export default function PluginManager({ setLoading, setError }) {
   const [jobs, setJobs] = useState<any[]>([]);
   const [jobId, setJobId] = useState(0);
   const [jobDesc, setJobDesc] = useState('');
+  const [jobCronExpr, setJobCronExpr] = useState('');
   const [isNewJobMode, setIsNewJobMode] = useState(false);
 
   const [schema, setSchema] = useState<any>(null);
@@ -89,7 +90,7 @@ export default function PluginManager({ setLoading, setError }) {
 
     const next = Number(job_id);
     if (next === jobId) return;
-    handleChangeJob(next, jobs, pluginId);
+    handleChangeJob(next, jobs);
   }, [job_id, jobs]);
 
   /* ----------------------------------------
@@ -123,7 +124,7 @@ export default function PluginManager({ setLoading, setError }) {
       setJobs(sortedJobs);
 
       const resolvedJobId = targetJobId ?? sortedJobs[0]?.id ?? 0;
-      handleChangeJob(resolvedJobId, sortedJobs, targetPluginId);
+      handleChangeJob(resolvedJobId, sortedJobs);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -134,11 +135,7 @@ export default function PluginManager({ setLoading, setError }) {
   /* ----------------------------------------
    * Job helpers
    * ------------------------------------- */
-  const handleChangeJob = async (
-    newJobId: number,
-    sourceJobs: Job[],
-    pluginId: string | number,
-  ) => {
+  const handleChangeJob = async (newJobId: number, sourceJobs: Job[]) => {
     const job = sourceJobs.find((j) => j.id === newJobId);
     if (!job) throw new Error('Job not found');
 
@@ -153,12 +150,14 @@ export default function PluginManager({ setLoading, setError }) {
     setJobId(newJobId);
     setIsNewJobMode(false);
     setJobDesc(finalJob.description ?? '');
+    setJobCronExpr(finalJob.cron_expr);
   };
 
   const handleNewJob = useCallback(() => {
     setIsNewJobMode(true);
     setJobId(0);
     setJobDesc('');
+    setJobCronExpr('');
   }, []);
 
   const [togglingJobId, setTogglingJobId] = useState<number | null>(null);
@@ -202,15 +201,20 @@ export default function PluginManager({ setLoading, setError }) {
     setError(null);
 
     try {
-      const payload = { config: formData, description: jobDesc };
+      const payload = {
+        config: formData,
+        description: jobDesc,
+        cron_expr: jobCronExpr,
+      };
 
       if (typeof pluginId === 'string') {
         await api.updateTemplatePlugin(pluginId, payload);
       } else {
-        await api.updateConfig(
-          saveNew || !jobId ? 0 : jobId,
-          saveNew || !jobId ? { ...payload, pluginId, sessionId } : payload,
-        );
+        const data =
+          saveNew || !jobId
+            ? { ...payload, plugin_id: pluginId, session_id: sessionId }
+            : payload;
+        await api.updateConfig(saveNew || !jobId ? 0 : jobId, data);
       }
       notifications.show('Update config successfully!', {
         severity: 'success',
@@ -263,11 +267,7 @@ export default function PluginManager({ setLoading, setError }) {
     setSubmitting(true);
     setError(null);
     try {
-      const { id } = await api.createPlugin(
-        data.package,
-        data.interval,
-        data.description,
-      );
+      const { id } = await api.createPlugin(data.package, data.description);
       // new plugin data
       const newPlugin: PluginData = {
         ...data,
@@ -293,7 +293,7 @@ export default function PluginManager({ setLoading, setError }) {
     () =>
       typeof pluginId === 'number'
         ? plugins.find((p) => p.id === pluginId)
-        : { package: pluginId, interval: 0 },
+        : { package: pluginId },
     [pluginId, plugins],
   );
 
@@ -380,8 +380,8 @@ export default function PluginManager({ setLoading, setError }) {
           <JobDetails
             jobId={jobId}
             jobDesc={jobDesc}
+            jobCronExpr={jobCronExpr}
             pluginPackage={pluginInfo?.package}
-            pluginInterval={pluginInfo?.interval}
             isActive={isActive}
             onRefresh={() => loadSchema(pluginId, sessionId, jobId)}
             setError={setError}
@@ -391,6 +391,7 @@ export default function PluginManager({ setLoading, setError }) {
             sessionId={sessionId}
             pluginId={pluginId}
             isSubmitting={submitting}
+            onCronExprChange={setJobCronExpr}
             onDescChange={setJobDesc}
             onToggleActive={() => handleJobActivation(!isActive)}
             onSave={(data) => handleSubmit({ formData: data })}

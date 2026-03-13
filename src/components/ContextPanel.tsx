@@ -15,8 +15,21 @@ import {
   Button,
   TextField,
   Autocomplete,
+  ListItem,
+  ListItemText,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+
+interface Props {
+  sessions: Session[];
+  plugins: PluginData[];
+  sessionId: number;
+  pluginId: string | number;
+  ctx?: any;
+  onReloadPlugin: () => void;
+  onCreatePlugin: () => void;
+  isLoading: boolean;
+}
 
 export function ContextPanel({
   sessions,
@@ -27,18 +40,10 @@ export function ContextPanel({
   onReloadPlugin,
   onCreatePlugin,
   isLoading,
-}) {
+}: Props) {
   const navigate = useNavigate();
 
-  const pluginOptions = plugins.map((p) => ({
-    id: p.id,
-    label: p.package,
-    description: p.description,
-    interval: p.interval,
-  }));
-
-  const selectedPlugin =
-    pluginOptions.find((p) => p.id === pluginId) || pluginId;
+  const selectedPlugin = plugins.find((p) => p.id === pluginId) || pluginId;
 
   return (
     <Card
@@ -95,18 +100,21 @@ export function ContextPanel({
 
           {/* Plugin selector (Autocomplete) */}
           <Autocomplete
+            size="small"
             freeSolo
             fullWidth
-            options={pluginOptions}
+            options={plugins}
             value={selectedPlugin}
             getOptionLabel={(option) => {
               if (typeof option === 'string') return option;
               if (typeof option === 'number')
                 return option > 0 ? option.toString() : '';
-              return option?.label ?? '';
+              return option?.package ?? '';
             }}
-            isOptionEqualToValue={(opt, val) => opt.id === val.id}
-            onChange={(event, value) => {
+            isOptionEqualToValue={(opt: PluginData, val: PluginData) =>
+              opt.id === val.id
+            }
+            onChange={(event, value: PluginData) => {
               const isUserPlugin = typeof value === 'string';
               const valueId = isUserPlugin ? value : value?.id;
               if (valueId) {
@@ -127,7 +135,7 @@ export function ContextPanel({
                     ...params.InputProps,
                     startAdornment: (
                       <>
-                        {pluginId > 0 && (
+                        {Number(pluginId) > 0 && (
                           <InputAdornment position="start">
                             <Tooltip title="Reload plugin (development)">
                               <IconButton
@@ -165,24 +173,17 @@ export function ContextPanel({
                 }}
               />
             )}
-            renderOption={({ key, ...props }, option) => (
-              <Tooltip
-                arrow
-                placement="right"
-                title={option.description}
-                key={option.id}
-              >
-                <Box component="li" {...props}>
-                  <Stack width="100%">
-                    <Typography variant="body2" noWrap>
-                      {option.label}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      interval {option.interval}s
-                    </Typography>
-                  </Stack>
-                </Box>
-              </Tooltip>
+            renderOption={({ key, ...props }, option: PluginData) => (
+              <ListItem key={option.id} {...props} disablePadding>
+                <ListItemText
+                  primary={option.package}
+                  secondary={option.description}
+                  slotProps={{
+                    primary: { noWrap: true },
+                    secondary: { noWrap: true },
+                  }}
+                />
+              </ListItem>
             )}
           />
 

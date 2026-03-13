@@ -1,4 +1,4 @@
-export const SESSIONS = [
+export const SESSIONS: Session[] = [
   {
     id: 1,
     name: 'UAT',

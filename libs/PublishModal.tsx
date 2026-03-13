@@ -220,8 +220,9 @@ export function PublishModal({
       const jobPayload = {
         config: cleanConfig,
         description: `Live Trading for ${modelIdentity}`,
-        pluginId: userPluginId,
-        sessionId: PRODUCTION_SESSION_ID,
+        plugin_id: userPluginId,
+        session_id: PRODUCTION_SESSION_ID,
+        cron_expr: '*/5 * * * * *', // Every 5 seconds for testing, adjust as needed for production
       };
 
       await api.updateConfig(0, jobPayload);

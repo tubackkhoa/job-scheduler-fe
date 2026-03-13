@@ -12,13 +12,11 @@ import { useState } from 'react';
 
 export function CreatePluginModal({ open, onClose, onSubmit, isLoading }) {
   const [packageName, setPackageName] = useState('');
-  const [interval, setInterval] = useState(60);
   const [description, setDescription] = useState('');
   const [errors, setErrors] = useState<any>({});
 
   const handleClose = () => {
     setPackageName('');
-    setInterval(60);
     setDescription('');
     setErrors({});
     onClose();
@@ -34,10 +32,6 @@ export function CreatePluginModal({ open, onClose, onSubmit, isLoading }) {
         'Package name should be a valid Python import path (e.g., plugins.sample_plugin@v0_1_0.Plugin)';
     }
 
-    if (!interval || interval < 1) {
-      newErrors.interval = 'Interval must be at least 1 second';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -47,7 +41,6 @@ export function CreatePluginModal({ open, onClose, onSubmit, isLoading }) {
 
     onSubmit({
       package: packageName.trim(),
-      interval: Number(interval),
       description: description.trim() || undefined,
     });
   };
@@ -80,23 +73,6 @@ export function CreatePluginModal({ open, onClose, onSubmit, isLoading }) {
           />
 
           <TextField
-            label="Interval (seconds)"
-            type="number"
-            value={interval}
-            onChange={(e) => setInterval(Number(e.target.value))}
-            error={!!errors.interval}
-            helperText={
-              errors.interval || 'How often the plugin should run (in seconds)'
-            }
-            required
-            fullWidth
-            slotProps={{
-              htmlInput: { min: 1 },
-            }}
-            disabled={isLoading}
-          />
-
-          <TextField
             label="Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -115,7 +91,7 @@ export function CreatePluginModal({ open, onClose, onSubmit, isLoading }) {
         <Button
           onClick={handleSubmit}
           variant="contained"
-          disabled={isLoading || !packageName.trim() || !interval}
+          disabled={isLoading || !packageName.trim()}
         >
           {isLoading ? 'Creating...' : 'Create Plugin'}
         </Button>

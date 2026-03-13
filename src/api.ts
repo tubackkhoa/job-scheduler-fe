@@ -208,7 +208,10 @@ export default {
     return request(`/api/plugins`);
   },
 
-  updateConfig(jobId: number, payload: unknown) {
+  updateConfig(
+    jobId: number,
+    payload: Omit<Job, 'id' | 'plugin_id' | 'session_id'>,
+  ): Promise<PostResponse> {
     return postJson(`/api/jobs/${jobId}/config`, payload);
   },
 
@@ -247,14 +250,9 @@ export default {
     return postJson(`/api/plugins/reload/${pkg}`);
   },
 
-  createPlugin(
-    packageName: string,
-    interval: number,
-    description = '',
-  ): Promise<PluginData> {
+  createPlugin(packageName: string, description = ''): Promise<PluginData> {
     return postJson(`/api/plugins`, {
       package: packageName,
-      interval,
       description,
     });
   },

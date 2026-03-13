@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -23,7 +23,9 @@ import { LoadingSkeleton } from './Loading';
 import useNotifications from '@/hooks/useNotifications/useNotifications';
 import { useDialogs } from '@/hooks/useDialogs/useDialogs';
 
-function TabPanel(props) {
+function TabPanel(
+  props: React.PropsWithChildren<{ value: number; index: number }>,
+) {
   const { children, value, index, ...other } = props;
   return (
     <div role="tabpanel" hidden={value !== index} {...other}>
@@ -38,14 +40,15 @@ export function JobDetails({
   onRefresh,
   sessionId,
   jobDesc,
+  jobCronExpr,
   pluginPackage,
-  pluginInterval,
   setError,
   isActive,
   formData,
   schema,
   env,
   onDescChange,
+  onCronExprChange,
   onToggleActive,
   onSave,
   onSaveAsNew,
@@ -155,9 +158,7 @@ export function JobDetails({
       <CardHeader
         title={isUserPlugin ? 'User Plugin' : 'Job Details'}
         subheader={
-          pluginPackage
-            ? `${pluginPackage}${pluginInterval ? ` • every ${pluginInterval}s` : ''}`
-            : 'Select a plugin to begin'
+          pluginPackage ? `${pluginPackage}` : 'Select a plugin to begin'
         }
         action={
           (typeof pluginId == 'string' || jobId !== 0) && (
@@ -222,6 +223,14 @@ export function JobDetails({
 
       <CardContent>
         <Stack spacing={3}>
+          <TextField
+            label="Cron Expression"
+            value={jobCronExpr}
+            onChange={(e) => onCronExprChange(e.target.value)}
+            fullWidth
+            helperText="Format: second minute hour day month weekday"
+          />
+
           {/* Description field */}
           <TextField
             label="Description"
