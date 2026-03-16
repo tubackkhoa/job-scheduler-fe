@@ -1,3 +1,4 @@
+import { useAppColorScheme } from '@/hooks/useAppColorSchema';
 import { TextField } from '@mui/material';
 import { WidgetProps } from '@rjsf/utils';
 import dayjs from 'dayjs';
@@ -15,6 +16,8 @@ export const DateTimeLocalWidget = (props: WidgetProps) => {
     label,
   } = props;
 
+  const [mode] = useAppColorScheme();
+
   const step = options.step || 1;
 
   // Convert the UTC value (ISO string) to local datetime string for input
@@ -27,7 +30,7 @@ export const DateTimeLocalWidget = (props: WidgetProps) => {
     : '';
 
   // When the input changes: parse the local datetime string, convert to UTC ISO string
-  const _onChange = (event) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = event.target.value;
     if (!inputValue) {
       onChange(undefined);
@@ -42,27 +45,32 @@ export const DateTimeLocalWidget = (props: WidgetProps) => {
     onChange(utcValue);
   };
 
-  const _onBlur = (event) => {
-    onBlur(id, event.target.value);
-  };
-
-  const _onFocus = (event) => {
-    onFocus(id, event.target.value);
-  };
-
   return (
     <TextField
       type="datetime-local"
       value={localDatetime}
-      onChange={_onChange}
-      onBlur={_onBlur}
-      onFocus={_onFocus}
+      onChange={handleChange}
+      onBlur={(event) => {
+        onBlur(id, event.target.value);
+      }}
+      onFocus={(event) => {
+        onFocus(id, event.target.value);
+      }}
       placeholder={placeholder}
       disabled={disabled}
       id={id}
       name={id}
       label={label}
-      slotProps={{ htmlInput: { step, min: options.min, max: options.max } }}
+      slotProps={{
+        htmlInput: {
+          step,
+          min: options.min,
+          max: options.max,
+          style: {
+            colorScheme: mode,
+          },
+        },
+      }}
     />
   );
 };
