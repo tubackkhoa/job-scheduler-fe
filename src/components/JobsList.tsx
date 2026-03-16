@@ -114,12 +114,12 @@ export function JobsList({
                 placeholder="Search jobs..."
               />
             )}
-            renderOption={(props, job) => {
+            renderOption={({ key, ...props }, job) => {
               const updating = togglingJobId === job.id;
               const active = !!job.active;
 
               return (
-                <Box component="li" {...props}>
+                <Box component="li" key={job.id} {...props}>
                   <Stack
                     sx={{
                       flex: 1,
