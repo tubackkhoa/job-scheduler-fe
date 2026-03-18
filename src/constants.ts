@@ -340,3 +340,8 @@ export const JINJA_ENV = {
 
   tags: [],
 };
+
+export const LANGUAGES = [
+  { code: 'en', label: 'English', flag: '🇺🇸' },
+  { code: 'vi', label: 'Tiếng Việt', flag: '🇻🇳' },
+];

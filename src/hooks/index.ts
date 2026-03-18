@@ -3,6 +3,7 @@ import { useDialogs } from './useDialogs/useDialogs';
 import { useAuth } from './useAuth/index';
 import { useSortableTable } from './useSortableTable';
 import { useAppColorScheme } from './useAppColorSchema';
+import { useTranslation } from 'react-i18next';
 
 // prevent export * to reduce size
 export default {
@@ -11,4 +12,5 @@ export default {
   useAppColorScheme,
   useDialogs,
   useAuth,
+  useTranslation,
 };

@@ -6,11 +6,14 @@ import {
   Menu,
   MenuItem,
   ListItemIcon,
+  Divider,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { scrollToTop } from '@/utils';
 import { useScroll } from '@/hooks/useScroll';
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
+import { useTranslation } from 'react-i18next';
+import { LANGUAGES } from '@/constants';
 
 export function Header({
   height,
@@ -25,6 +28,7 @@ export function Header({
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
+  const { i18n, t } = useTranslation();
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -32,6 +36,12 @@ export function Header({
 
   const handleNavigate = (path: string) => {
     navigate(path);
+    handleClose();
+  };
+
+  const handleChangeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+    localStorage.setItem('lang', lng);
     handleClose();
   };
 
@@ -69,6 +79,7 @@ export function Header({
           variant="h4"
           sx={{
             fontWeight: 700,
+            textTransform: 'capitalize',
             background:
               mode === 'dark'
                 ? 'linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%)'
@@ -78,7 +89,7 @@ export function Header({
             color: 'transparent',
           }}
         >
-          Job Scheduler Dashboard
+          {t('job scheduler dashboard')}
         </Typography>
 
         <Typography
@@ -149,6 +160,21 @@ export function Header({
               Chatbot
             </MenuItem>
           )}
+
+          <Divider />
+          {LANGUAGES.map((lang) => (
+            <MenuItem
+              key={lang.code}
+              selected={i18n.language === lang.code}
+              onClick={() => handleChangeLanguage(lang.code)}
+            >
+              <ListItemIcon sx={{ fontSize: '1.25rem' }}>
+                {lang.flag}
+              </ListItemIcon>
+              {lang.label}
+            </MenuItem>
+          ))}
+          <Divider />
 
           <MenuItem onClick={onLogout}>
             <ListItemIcon>

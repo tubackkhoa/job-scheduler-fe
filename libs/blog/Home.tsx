@@ -30,7 +30,7 @@ export default function Portal({
 
   return (
     <Box>
-      <Header link={`/${pluginId}/blog`} />
+      <Header link={`/${pluginId}/blog`} pluginPackage={pluginPackage} />
       <Container>
         <List>
           {posts.map((p) => (

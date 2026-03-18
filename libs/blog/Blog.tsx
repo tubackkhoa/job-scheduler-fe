@@ -44,7 +44,7 @@ export default function Blog({
 
   return (
     <Box>
-      <Header link={`/${pluginId}/blog`} />
+      <Header link={`/${pluginId}/blog`} pluginPackage={pluginPackage} />
       <Container>
         <Typography variant="h5">{post.title}</Typography>
         <Typography variant="body1">{post.description}</Typography>

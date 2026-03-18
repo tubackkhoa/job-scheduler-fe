@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom';
 
 export const Header = ({
   link,
-  title = 'Blog Plugin',
+  pluginPackage,
 }: {
   link: string;
-  title?: string;
+  pluginPackage: string;
 }) => {
+  const { t } = Hooks.useTranslation(pluginPackage);
   const [mode, setMode] = Hooks.useAppColorScheme();
   return (
     <Box
@@ -25,10 +26,11 @@ export const Header = ({
         fontWeight={600}
         sx={{
           textDecoration: 'none',
+          textTransform: 'capitalize',
           color: 'inherit',
         }}
       >
-        {title}
+        {t('blog plugin')}
       </Typography>
       <IconButton
         size="small"
