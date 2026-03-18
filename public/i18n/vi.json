@@ -1,3 +1,26 @@
 {
-  "job scheduler dashboard": "bảng điều khiển lập lịch công việc"
+  "job scheduler dashboard": "bảng điều khiển lập lịch công việc",
+  "manage plugins, jobs, configurations, and live logs in one view.": "quản lý plugin, công việc, cấu hình và nhật ký trực tiếp trong một giao diện",
+  "portal": "cổng thông tin",
+  "site map": "sơ đồ trang web",
+  "download module": "tải xuống module",
+  "module name": "tên module",
+  "user role management": "quản lý vai trò người dùng",
+  "version / git url": "phiên bản / url git",
+  "download": "tải xuống",
+  "reset layout": "đặt lại bố cục",
+  "role": "vai trò",
+  "permission": "quyền",
+  "user": "người dùng",
+  "roles": "vai trò",
+  "action": "hành động",
+  "choose session and plugin": "chọn phiên và plugin",
+  "session": "phiên",
+  "select or type template plugin name": "chọn hoặc nhập tên plugin mẫu",
+  "reload plugin (development)": "tải lại plugin (phát triển)",
+  "create new plugin": "tạo plugin mới",
+  "pick a plugin to load its schema and jobs.": "chọn một plugin để cấu trúc và công việc",
+  "job": "công việc",
+  "select, start, pause, or add a job": "chọn, bắt đầu, tạm dừng hoặc thêm một công việc",
+  "new job": "công việc mới"
 }

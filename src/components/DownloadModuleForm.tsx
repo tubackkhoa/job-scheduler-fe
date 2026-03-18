@@ -7,7 +7,9 @@ import {
   Stack,
   Box,
 } from '@mui/material';
-import { useState } from 'react';
+
+import { FormEvent, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function DownloadModuleForm() {
   const [name, setName] = useState('');
@@ -15,8 +17,9 @@ export default function DownloadModuleForm() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PostResponse>(null);
   const [error, setError] = useState('');
+  const { t } = useTranslation();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -34,13 +37,19 @@ export default function DownloadModuleForm() {
 
   return (
     <Box sx={{ my: 3, mx: 1, position: { md: 'sticky' }, top: 140 }}>
-      <Typography variant="h5" fontWeight={600} gutterBottom>
-        Download Module
+      <Typography
+        variant="h5"
+        sx={{ textTransform: 'capitalize' }}
+        fontWeight={600}
+        gutterBottom
+      >
+        {t('download module')}
       </Typography>
       <Paper elevation={2} sx={{ p: 3, mt: 3 }}>
         <Stack component="form" spacing={2} onSubmit={handleSubmit}>
           <TextField
-            label="Module Name"
+            sx={{ textTransform: 'capitalize' }}
+            label={t('module name')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -48,7 +57,8 @@ export default function DownloadModuleForm() {
           />
 
           <TextField
-            label="Version / Git URL"
+            sx={{ textTransform: 'capitalize' }}
+            label={t('version / git url')}
             value={version}
             onChange={(e) => setVersion(e.target.value)}
             helperText="Example: git+https://github.com/user/repo@branch"
@@ -59,10 +69,11 @@ export default function DownloadModuleForm() {
           <Button
             type="submit"
             variant="contained"
+            sx={{ textTransform: 'capitalize' }}
             loading={loading}
             disabled={!name}
           >
-            Download
+            {t('download')}
           </Button>
 
           {result && (

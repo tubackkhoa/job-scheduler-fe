@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { LoadingSkeleton } from './Loading';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   plugins: PluginData[];
@@ -19,11 +20,16 @@ interface Props {
 
 export function PluginSitemap({ plugins, routeState, loadRoutes }: Props) {
   const navigate = useNavigate();
-
+  const { t } = useTranslation();
   return (
     <Box sx={{ my: 3, mx: 1 }}>
-      <Typography variant="h5" fontWeight={600} gutterBottom>
-        Site map
+      <Typography
+        variant="h5"
+        sx={{ textTransform: 'capitalize' }}
+        fontWeight={600}
+        gutterBottom
+      >
+        {t('site map')}
       </Typography>
       <List component="nav" disablePadding>
         {plugins.map((plugin) => {

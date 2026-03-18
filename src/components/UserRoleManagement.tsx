@@ -14,6 +14,7 @@ import api from '@/api';
 import useNotifications from '@/hooks/useNotifications/useNotifications';
 import { RolePolicyTable } from './RolePolicyTable';
 import { SelectField } from './fields/SelectField';
+import { useTranslation } from 'react-i18next';
 
 function groupPolicyByRole(policy: [string, string][]) {
   return policy.reduce<Record<string, string[]>>((acc, [role, perm]) => {
@@ -35,7 +36,7 @@ export default function UserRoleManagement({ setError, setLoading }) {
   const [roleMap, setRoleMap] = useState({});
   const [users, setUsers] = useState<User[]>([]);
   const [savingUserId, setSavingUserId] = useState<number | null>(null);
-
+  const { t } = useTranslation();
   const notifications = useNotifications();
 
   useEffect(() => {
@@ -84,18 +85,23 @@ export default function UserRoleManagement({ setError, setLoading }) {
 
   return (
     <Box sx={{ my: 3, mx: 1 }}>
-      <Typography variant="h5" fontWeight={600} gutterBottom>
-        User Role Management
+      <Typography
+        variant="h5"
+        fontWeight={600}
+        sx={{ textTransform: 'capitalize' }}
+        gutterBottom
+      >
+        {t('user role management')}
       </Typography>
       <TableContainer>
         <RolePolicyTable roleMap={roleMap} />
 
-        <Table>
+        <Table sx={{ textTransform: 'capitalize' }}>
           <TableHead>
             <TableRow>
-              <TableCell>User</TableCell>
-              <TableCell>Roles</TableCell>
-              <TableCell align="right">Action</TableCell>
+              <TableCell>{t('user')}</TableCell>
+              <TableCell>{t('roles')}</TableCell>
+              <TableCell align="right">{t('action')}</TableCell>
             </TableRow>
           </TableHead>
 
@@ -108,7 +114,7 @@ export default function UserRoleManagement({ setError, setLoading }) {
                   <SelectField
                     schema={{
                       type: 'array',
-                      title: 'Roles',
+                      title: t('roles'),
                       enum: allRoles,
                     }}
                     formData={user.roles}

@@ -7,18 +7,20 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 interface RolePolicyProps {
   roleMap: Record<string, string[]>;
 }
 
 export function RolePolicyTable({ roleMap }: RolePolicyProps) {
+  const { t } = useTranslation();
   return (
-    <Table>
+    <Table sx={{ textTransform: 'capitalize' }}>
       <TableHead>
         <TableRow>
-          <TableCell>Role</TableCell>
-          <TableCell>Permissions</TableCell>
+          <TableCell>{t('role')}</TableCell>
+          <TableCell>{t('permission')}</TableCell>
         </TableRow>
       </TableHead>
 

@@ -12,6 +12,7 @@ import {
   Autocomplete,
   TextField,
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 interface JobsListProps {
@@ -40,7 +41,7 @@ export function JobsList({
   togglingJobId,
 }: JobsListProps) {
   const navigate = useNavigate();
-
+  const { t } = useTranslation();
   const filteredJobs = jobs.filter((j) => j.id !== 0);
 
   const selectedJob = filteredJobs.find((j) => j.id === selectedJobId) || null;
@@ -48,17 +49,34 @@ export function JobsList({
   return (
     <Card sx={{ bgcolor: 'background.paper', flex: 1 }}>
       <CardHeader
-        title="Jobs"
-        subheader="Select, start, pause, or add a job"
+        slotProps={{
+          title: {
+            sx: {
+              '&::first-letter': {
+                textTransform: 'uppercase',
+              },
+            },
+          },
+          subheader: {
+            sx: {
+              '&::first-letter': {
+                textTransform: 'uppercase',
+              },
+            },
+          },
+        }}
+        title={t('job')}
+        subheader={t('select, start, pause, or add a job')}
         action={
           <Button
             variant="contained"
             size="small"
+            sx={{ textTransform: 'capitalize' }}
             startIcon={<AppIcon.Add />}
             onClick={onNewJob}
             disabled={disabled}
           >
-            New
+            {t('new job')}
           </Button>
         }
       />

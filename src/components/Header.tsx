@@ -12,8 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import { scrollToTop } from '@/utils';
 import { useScroll } from '@/hooks/useScroll';
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
-import { useTranslation } from 'react-i18next';
 import { LANGUAGES } from '@/constants';
+import { useTranslation } from 'react-i18next';
 
 export function Header({
   height,
@@ -28,7 +28,7 @@ export function Header({
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
-  const { i18n, t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -95,9 +95,17 @@ export function Header({
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ mt: 0.5, display: { xs: 'none', md: 'block' } }}
+          sx={{
+            mt: 0.5,
+            display: { xs: 'none', md: 'block' },
+            '&::first-letter': {
+              textTransform: 'uppercase',
+            },
+          }}
         >
-          Manage plugins, jobs, configurations, and live logs in one view.
+          {t(
+            'manage plugins, jobs, configurations, and live logs in one view.',
+          )}
         </Typography>
       </Box>
 

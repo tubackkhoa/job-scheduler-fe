@@ -18,6 +18,8 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material';
+import { use } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 interface Props {
@@ -42,6 +44,7 @@ export function ContextPanel({
   isLoading,
 }: Props) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const selectedPlugin = plugins.find((p) => p.id === pluginId) || pluginId;
 
@@ -67,13 +70,16 @@ export function ContextPanel({
             <AppIcon.Person />
           </Avatar>
           <Box>
-            {ctx?.user && (
-              <Typography variant="h6" fontWeight={600}>
-                {ctx.user.username || 'Context'}
-              </Typography>
-            )}
-            <Typography variant="body2" color="text.secondary">
-              Choose session and plugin
+            <Typography variant="h6" fontWeight={600}>
+              {ctx?.user.username || 'Context'}
+            </Typography>
+
+            <Typography
+              variant="body2"
+              sx={{ textTransform: 'capitalize' }}
+              color="text.secondary"
+            >
+              {t('choose session and plugin')}
             </Typography>
           </Box>
         </Stack>
@@ -81,14 +87,14 @@ export function ContextPanel({
         <Stack spacing={2.5}>
           {/* Session selector */}
           <FormControl fullWidth>
-            <InputLabel>Session</InputLabel>
+            <InputLabel>{t('session')}</InputLabel>
             <Select
               value={sessionId}
               onChange={(e) => {
                 const newSessionId = Number(e.target.value);
                 navigate(`/plugins/${pluginId}/sessions/${newSessionId}`);
               }}
-              label="Session"
+              label={t('session')}
             >
               {sessions.map((session) => (
                 <MenuItem key={session.id} value={session.id}>
@@ -129,7 +135,7 @@ export function ContextPanel({
               <TextField
                 {...params}
                 label="Plugin"
-                placeholder="Select or type template plugin name"
+                placeholder={t('select or type template plugin name')}
                 slotProps={{
                   input: {
                     ...params.InputProps,
@@ -137,7 +143,7 @@ export function ContextPanel({
                       <>
                         {Number(pluginId) > 0 && (
                           <InputAdornment position="start">
-                            <Tooltip title="Reload plugin (development)">
+                            <Tooltip title={t('reload plugin (development)')}>
                               <IconButton
                                 onClick={onReloadPlugin}
                                 disabled={isLoading}
@@ -198,6 +204,7 @@ export function ContextPanel({
               mt: 1,
               borderStyle: 'dashed',
               borderColor: 'primary.main',
+              textTransform: 'capitalize',
               color: 'primary.main',
               '&:hover': {
                 borderStyle: 'solid',
@@ -205,7 +212,7 @@ export function ContextPanel({
               },
             }}
           >
-            Create New Plugin
+            {t('create new plugin')}
           </Button>
         </Stack>
       </CardContent>

@@ -22,6 +22,7 @@ import UserPluginCode from './UserPluginCode';
 import { LoadingSkeleton } from './Loading';
 import useNotifications from '@/hooks/useNotifications/useNotifications';
 import { useDialogs } from '@/hooks/useDialogs/useDialogs';
+import { useTranslation } from 'react-i18next';
 
 function TabPanel(
   props: React.PropsWithChildren<{ value: number; index: number }>,
@@ -61,6 +62,7 @@ export function JobDetails({
   const [isDirty, setIsDirty] = useState(false);
   const notifications = useNotifications();
   const { confirm } = useDialogs();
+  const { t } = useTranslation();
 
   useEffect(() => {
     setLocalFormData(formData);
@@ -83,7 +85,7 @@ export function JobDetails({
           <LoadingSkeleton size={2} />
         ) : (
           <Typography variant="body1" color="text.secondary">
-            Pick a plugin to load its schema and jobs.
+            {t('pick a plugin to load its schema and jobs.')}
           </Typography>
         )}
       </Card>

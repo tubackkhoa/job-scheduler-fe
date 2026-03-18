@@ -15,6 +15,7 @@ import Masonry from '@mui/lab/Masonry';
 import { Card, CardHeader, CardContent } from '@mui/material';
 import React, { useMemo, useEffect, useState } from 'react';
 import DynamicField from './fields/DynamicField';
+import { useTranslation } from 'react-i18next';
 
 const LAYOUT_KEY = 'portal-layout';
 
@@ -155,6 +156,7 @@ interface Props {
   routeState: RouteState;
 }
 export function PortalPage({ plugins, routeState }: Props) {
+  const { t } = useTranslation();
   const initialWidgets = useMemo<PortalWidget[]>(() => {
     return Object.entries(routeState)
       .filter((item) => item[1].portal)
@@ -228,17 +230,23 @@ export function PortalPage({ plugins, routeState }: Props) {
           alignItems: 'flex-start',
         }}
       >
-        <Typography variant="h5" fontWeight={600} gutterBottom>
-          Portal
+        <Typography
+          variant="h5"
+          sx={{ textTransform: 'capitalize' }}
+          fontWeight={600}
+          gutterBottom
+        >
+          {t('portal')}
         </Typography>
 
         <Button
           variant="outlined"
           size="small"
+          sx={{ textTransform: 'capitalize' }}
           startIcon={<AppIcon.RestartAlt />}
           onClick={handleResetLayout}
         >
-          Reset layout
+          {t('reset layout')}
         </Button>
       </Box>
 
