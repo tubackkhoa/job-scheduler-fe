@@ -55,12 +55,27 @@ const stringifySafe = (arg: any) => {
 export const Console: React.FC<ConsoleProps> = ({ logs, variant }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // scroll to bottom on logs change
   useEffect(() => {
     bottomRef.current?.scrollIntoView({
       behavior: 'smooth',
       block: 'end',
     });
   }, [logs]);
+
+  // precompute all formatted logs safely
+  const formattedLogs = useMemo(
+    () =>
+      logs.map((log) => {
+        const args = log.data || log.args || [];
+        return {
+          ...log,
+          formatted: args.map(stringifySafe).join('\n'),
+          isObjectLike: args.some((a) => typeof a === 'object' && a !== null),
+        };
+      }),
+    [logs],
+  );
 
   if (logs.length === 0) {
     return (
@@ -76,65 +91,49 @@ export const Console: React.FC<ConsoleProps> = ({ logs, variant }) => {
 
   return (
     <Box>
-      {logs.map((log, index) => {
-        const args = log.data || log.args || [];
-
-        const formatted = useMemo(
-          () => args.map(stringifySafe).join('\n'),
-          [args],
-        );
-
-        const isObjectLike = args.some(
-          (a) => typeof a === 'object' && a !== null,
-        );
-
-        return (
-          <Box
-            key={index}
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              px: 1,
-              py: 0.5,
-              borderBottom: '1px solid',
-              borderColor: 'divider',
-            }}
-          >
-            {isObjectLike ? (
-              <CodeMirror
-                value={formatted}
-                editable={false}
-                height="auto"
-                theme={variant}
-                extensions={[json()]}
-                basicSetup={{
-                  lineNumbers: false,
-                  foldGutter: true,
-                }}
-                style={{
-                  fontSize: 13,
-                  borderRadius: 4,
-                }}
-              />
-            ) : (
-              <Typography
-                sx={{
-                  fontFamily: 'Roboto Mono, monospace',
-                  fontSize: 13,
-                  whiteSpace: 'pre-wrap',
-                  color: getColor(log.method, variant),
-                }}
-              >
-                {formatted}
-              </Typography>
-            )}
-          </Box>
-        );
-      })}
-
+      {formattedLogs.map((log, index) => (
+        <Box
+          key={index}
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            px: 1,
+            py: 0.5,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          {log.isObjectLike ? (
+            <CodeMirror
+              value={log.formatted}
+              editable={false}
+              height="auto"
+              theme={variant}
+              extensions={[json()]}
+              basicSetup={{
+                lineNumbers: false,
+                foldGutter: true,
+              }}
+              style={{
+                fontSize: 13,
+                borderRadius: 4,
+              }}
+            />
+          ) : (
+            <Typography
+              sx={{
+                fontFamily: 'Roboto Mono, monospace',
+                fontSize: 13,
+                whiteSpace: 'pre-wrap',
+                color: getColor(log.method, variant),
+              }}
+            >
+              {log.formatted}
+            </Typography>
+          )}
+        </Box>
+      ))}
       <div ref={bottomRef} />
     </Box>
   );
 };
-
-export default Console;
