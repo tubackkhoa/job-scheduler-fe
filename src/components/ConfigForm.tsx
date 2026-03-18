@@ -37,7 +37,7 @@ export const ConfigForm = ({
   const [localSchema, setLocalSchema] = useState<RJSFSchema>();
   const [extraErrors, setExtraErrors] = useState({});
   const changedFieldId = useRef(null);
-  const { t } = useTranslation(pluginPackage);
+  const { t, i18n } = useTranslation(pluginPackage);
   const handleChange = (
     { formData: newFormData }: IChangeEvent,
     fieldPathId?: string,
@@ -72,7 +72,7 @@ export const ConfigForm = ({
     return () => {
       isMounted = false;
     };
-  }, [schema, t, formData]);
+  }, [schema, formData, i18n.language]);
 
   const uiSchema = useMemo(() => extractUiSchema(localSchema), [localSchema]);
 
