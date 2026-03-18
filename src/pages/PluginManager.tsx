@@ -10,8 +10,7 @@ import validator from '@rjsf/validator-ajv8';
 import api from '@/api';
 import { useParams } from 'react-router-dom';
 import useNotifications from '@/hooks/useNotifications/useNotifications';
-
-const PANEL_OPEN_KEY = 'panel_open';
+import storage from '@/storage';
 
 export default function PluginManager({ setLoading, setError }) {
   const { plugin_id, session_id, job_id } = useParams<{
@@ -41,7 +40,7 @@ export default function PluginManager({ setLoading, setError }) {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const [isPanelOpen, setIsPanelOpen] = useState<boolean>(() =>
-    JSON.parse(localStorage.getItem(PANEL_OPEN_KEY) ?? 'true'),
+    storage.getPanelOpen(),
   );
 
   /* ----------------------------------------
@@ -118,7 +117,6 @@ export default function PluginManager({ setLoading, setError }) {
 
       const { schema, jobs, user, globals } = response;
       const sortedJobs = jobs.sort((a, b) => a.id - b.id);
-      window.ctx = { user };
       setEnv({ ...JINJA_ENV, globals: { ...JINJA_ENV.globals, ...globals } });
       setSchema(schema);
       setJobs(sortedJobs);
@@ -319,7 +317,7 @@ export default function PluginManager({ setLoading, setError }) {
           onClick={() =>
             setIsPanelOpen((v) => {
               const newState = !v;
-              localStorage.setItem(PANEL_OPEN_KEY, JSON.stringify(newState));
+              storage.setPanelOpen(newState);
               return newState;
             })
           }

@@ -1,6 +1,7 @@
 import i18n, { Callback } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { API_BASE_URL } from './api';
+import storage from './storage';
 
 class CustomBackend {
   type: 'backend' = 'backend';
@@ -28,7 +29,7 @@ i18n
   .use(new CustomBackend())
   .use(initReactI18next)
   .init({
-    lng: localStorage.getItem('lang') || 'en',
+    lng: storage.getLanguage() || 'en',
     fallbackLng: false,
     ns: ['common'],
   });

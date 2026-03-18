@@ -71,7 +71,7 @@ export function ContextPanel({
           </Avatar>
           <Box>
             <Typography variant="h6" fontWeight={600}>
-              {ctx?.user.username || 'Context'}
+              {ctx.user?.username || 'Context'}
             </Typography>
 
             <Typography

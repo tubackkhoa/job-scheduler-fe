@@ -5,7 +5,7 @@ import {
   TextField,
   Typography,
   Paper,
-  Alert
+  Alert,
 } from '@mui/material';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
@@ -46,7 +46,7 @@ export default function Login() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        bgcolor: 'background.default'
+        bgcolor: 'background.default',
       }}
     >
       <Paper elevation={6} sx={{ p: 4, width: 360 }}>

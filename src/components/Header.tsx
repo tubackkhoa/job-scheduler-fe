@@ -14,6 +14,7 @@ import { useScroll } from '@/hooks/useScroll';
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
 import { LANGUAGES } from '@/constants';
 import { useTranslation } from 'react-i18next';
+import storage from '@/storage';
 
 export function Header({
   height,
@@ -41,7 +42,7 @@ export function Header({
 
   const handleChangeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
-    localStorage.setItem('lang', lng);
+    storage.saveLanguage(lng);
     handleClose();
   };
 

@@ -1,21 +1,25 @@
 import { useState } from 'react';
 import { AuthContext } from './authContext';
-import { getToken, clearToken } from './tokenStorage';
+import storage from '../storage';
 import api from '@/api';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setAuthToken] = useState<string | null>(
-    () => getToken().access_token
+    () => storage.getToken().access_token,
   );
 
   const login = async (username: string, password: string) => {
     const { access_token } = await api.login(username, password);
     setAuthToken(access_token);
+    const user = await api.me();
+    storage.saveUser(user);
+    window.ctx = { user }; // update for global access
     return access_token;
   };
 
   const logout = () => {
-    clearToken();
+    storage.clearToken();
+    storage.clearUser();
     setAuthToken(null);
   };
 
@@ -25,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         token,
         isAuthenticated: !!token,
         login,
-        logout
+        logout,
       }}
     >
       {children}

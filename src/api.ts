@@ -1,4 +1,4 @@
-import { getToken, clearToken, setToken } from './auth/tokenStorage';
+import { getToken, clearToken, setToken } from './storage';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
@@ -217,6 +217,10 @@ export default {
 
   getUsers(): Promise<User[]> {
     return request(`/api/users`);
+  },
+
+  me(): Promise<User> {
+    return request(`/api/users/me`);
   },
 
   getPolicy(): Promise<[string, string][]> {

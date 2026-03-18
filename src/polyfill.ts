@@ -11,6 +11,7 @@ import utc from 'dayjs/plugin/utc';
 import api from './api';
 import Components from './components';
 import Hooks from './hooks';
+import storage from './storage';
 
 dayjs.extend(utc);
 
@@ -29,3 +30,5 @@ Object.assign(globalThis, {
   Utils: { ...Utils, _, dayjs },
   Constants,
 });
+
+window.ctx = { user: storage.getUser() }; // for global access

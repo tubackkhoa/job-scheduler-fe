@@ -512,11 +512,7 @@ const extractUndeclaredVariables = async (
 ): Promise<string[] | string> => {
   const pyodide = await getPyodide();
   const renderFn = pyodide.globals.get('render');
-  const params = renderFn(
-    tpl,
-    pyodide.toPy(data),
-    pyodide.toPy(window.ctx ?? {}),
-  );
+  const params = renderFn(tpl, pyodide.toPy(data), pyodide.toPy(window.ctx));
   return typeof params === 'string' ? params : Array.from(params.toJs());
 };
 

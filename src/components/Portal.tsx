@@ -16,31 +16,7 @@ import { Card, CardHeader, CardContent } from '@mui/material';
 import React, { useMemo, useEffect, useState } from 'react';
 import DynamicField from './fields/DynamicField';
 import { useTranslation } from 'react-i18next';
-
-const LAYOUT_KEY = 'portal-layout';
-
-type LayoutState = {
-  order: number[];
-  hidden: number[];
-};
-
-function saveLayout(state: LayoutState) {
-  localStorage.setItem(LAYOUT_KEY, JSON.stringify(state));
-}
-
-function loadLayout(): LayoutState {
-  const defaultLayout = { order: [], hidden: [] };
-  try {
-    const raw = localStorage.getItem(LAYOUT_KEY);
-    return JSON.parse(raw) ?? defaultLayout;
-  } catch {
-    return defaultLayout;
-  }
-}
-
-function resetStoredLayout() {
-  localStorage.removeItem(LAYOUT_KEY);
-}
+import storage from '@/storage';
 
 function WidgetSettingsButton({ onRemove }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -178,7 +154,7 @@ export function PortalPage({ plugins, routeState }: Props) {
   const [widgets, setWidgets] = React.useState<PortalWidget[]>();
 
   const handleResetLayout = () => {
-    resetStoredLayout();
+    storage.resetStoredLayout();
     setWidgets(initialWidgets);
   };
 
@@ -186,9 +162,9 @@ export function PortalPage({ plugins, routeState }: Props) {
     setWidgets((prev) => {
       const next = prev.filter((w) => w.id !== id);
 
-      const current = loadLayout() ?? { order: [], hidden: [] };
+      const current = storage.loadLayout();
 
-      saveLayout({
+      storage.saveLayout({
         order: next.map((w) => w.id),
         hidden: [...new Set([...current.hidden, id])],
       });
@@ -199,7 +175,7 @@ export function PortalPage({ plugins, routeState }: Props) {
 
   useEffect(() => {
     try {
-      const layout = loadLayout();
+      const layout = storage.loadLayout();
       const map = new Map(initialWidgets.map((w) => [w.id, w]));
 
       const visibleSet = new Set(layout.order);
@@ -263,9 +239,9 @@ export function PortalPage({ plugins, routeState }: Props) {
 
             const newItems = arrayMove(items, oldIndex, newIndex);
 
-            const current = loadLayout() ?? { order: [], hidden: [] };
+            const current = storage.loadLayout();
 
-            saveLayout({
+            storage.saveLayout({
               order: newItems.map((w) => w.id),
               hidden: current.hidden,
             });
