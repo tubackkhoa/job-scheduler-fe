@@ -26,7 +26,6 @@ export const Header = ({
         fontWeight={600}
         sx={{
           textDecoration: 'none',
-          textTransform: 'capitalize',
           color: 'inherit',
         }}
       >

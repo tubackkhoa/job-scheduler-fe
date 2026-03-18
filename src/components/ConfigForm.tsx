@@ -2,13 +2,18 @@ import { useEffect, useRef, useMemo, useState } from 'react';
 import _ from 'lodash';
 import Form from '@rjsf/mui';
 import validator from '@rjsf/validator-ajv8';
-import { extractUiSchema, buildUiSchemaWithExpr } from '@/utils';
+import {
+  extractUiSchema,
+  buildUiSchemaWithExpr,
+  translateSchema,
+} from '@/utils';
 import fields from './fields';
 import widgets from './widgets';
 import { ErrorBoundary } from './ErrorBound';
 import { ObjectFieldTemplate } from './templates/ObjectFieldTemplate';
 import { IChangeEvent } from '@rjsf/core';
 import { RJSFSchema } from '@rjsf/utils';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   schema: RJSFSchema;
@@ -29,10 +34,10 @@ export const ConfigForm = ({
   pluginPackage,
   pluginId,
 }: Props) => {
-  const [localSchema, setLocalSchema] = useState(schema);
+  const [localSchema, setLocalSchema] = useState<RJSFSchema>();
   const [extraErrors, setExtraErrors] = useState({});
   const changedFieldId = useRef(null);
-
+  const { t } = useTranslation(pluginPackage);
   const handleChange = (
     { formData: newFormData }: IChangeEvent,
     fieldPathId?: string,
@@ -45,20 +50,33 @@ export const ConfigForm = ({
   };
 
   useEffect(() => {
-    buildUiSchemaWithExpr(
-      pluginPackage,
-      formData,
-      localSchema, // remain state
-      changedFieldId.current,
-    ).then(([newSchema, errors]) => {
-      setLocalSchema(newSchema);
+    let isMounted = true;
+
+    const updateSchema = async () => {
+      const translated = await translateSchema(schema, t);
+      if (!isMounted) return;
+      setLocalSchema(translated);
+
+      const [evaluatedSchema, errors] = await buildUiSchemaWithExpr(
+        pluginPackage,
+        formData,
+        translated,
+        changedFieldId.current,
+      );
+      if (!isMounted) return;
+
+      setLocalSchema(evaluatedSchema);
       if (errors.length) setExtraErrors({ __errors: errors });
-    });
-  }, [formData]);
+    };
+    updateSchema();
+    return () => {
+      isMounted = false;
+    };
+  }, [schema, t, formData]);
 
   const uiSchema = useMemo(() => extractUiSchema(localSchema), [localSchema]);
 
-  if (!schema) {
+  if (!localSchema) {
     return null;
   }
 

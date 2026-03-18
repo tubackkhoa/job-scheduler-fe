@@ -206,19 +206,13 @@ export function PortalPage({ plugins, routeState }: Props) {
           alignItems: 'flex-start',
         }}
       >
-        <Typography
-          variant="h5"
-          sx={{ textTransform: 'capitalize' }}
-          fontWeight={600}
-          gutterBottom
-        >
+        <Typography variant="h5" fontWeight={600} gutterBottom>
           {t('portal')}
         </Typography>
 
         <Button
           variant="outlined"
           size="small"
-          sx={{ textTransform: 'capitalize' }}
           startIcon={<AppIcon.RestartAlt />}
           onClick={handleResetLayout}
         >

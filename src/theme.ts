@@ -77,17 +77,10 @@ export const theme = createTheme({
     borderRadius: 12,
   },
   components: {
-    MuiCard: {
+    MuiButtonBase: {
       styleOverrides: {
         root: {
-          backgroundImage: 'none',
-        },
-      },
-    },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: 'none',
+          textTransform: 'capitalize',
           fontWeight: 500,
         },
       },

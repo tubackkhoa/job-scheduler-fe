@@ -85,18 +85,13 @@ export default function UserRoleManagement({ setError, setLoading }) {
 
   return (
     <Box sx={{ my: 3, mx: 1 }}>
-      <Typography
-        variant="h5"
-        fontWeight={600}
-        sx={{ textTransform: 'capitalize' }}
-        gutterBottom
-      >
+      <Typography variant="h5" fontWeight={600} gutterBottom>
         {t('user role management')}
       </Typography>
       <TableContainer>
         <RolePolicyTable roleMap={roleMap} />
 
-        <Table sx={{ textTransform: 'capitalize' }}>
+        <Table>
           <TableHead>
             <TableRow>
               <TableCell>{t('user')}</TableCell>

@@ -158,9 +158,9 @@ export function JobDetails({
   return (
     <Card sx={{ bgcolor: 'background.paper', p: 1 }}>
       <CardHeader
-        title={isUserPlugin ? 'User Plugin' : 'Job Details'}
+        title={isUserPlugin ? t('user plugin') : t('job details')}
         subheader={
-          pluginPackage ? `${pluginPackage}` : 'Select a plugin to begin'
+          pluginPackage ? `${pluginPackage}` : t('select a plugin to begin')
         }
         action={
           (typeof pluginId == 'string' || jobId !== 0) && (
@@ -199,10 +199,10 @@ export function JobDetails({
                 {typeof pluginId == 'string'
                   ? 'Run'
                   : isToggling
-                    ? 'Processing...'
+                    ? t('processing') + '...'
                     : isActive
-                      ? 'Pause'
-                      : 'Start'}
+                      ? t('pause')
+                      : t('start')}
               </Button>
             </Stack>
           )
@@ -226,23 +226,21 @@ export function JobDetails({
       <CardContent>
         <Stack spacing={3}>
           <TextField
-            label="Cron Expression"
+            label={t('cron expression')}
             value={jobCronExpr}
             onChange={(e) => onCronExprChange(e.target.value)}
             fullWidth
-            helperText="Format: second minute hour day month weekday"
+            helperText={t('format: second minute hour day month weekday')}
           />
 
-          {/* Description field */}
           <TextField
-            label="Description"
+            label={t('description')}
             value={jobDesc}
             onChange={(e) => onDescChange(e.target.value)}
-            placeholder="Short note for this job"
+            placeholder={t('short note for this job')}
             fullWidth
           />
 
-          {/* Tabs */}
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs
               variant="scrollable"
@@ -255,7 +253,6 @@ export function JobDetails({
               sx={{
                 '& .MuiTab-root': {
                   minHeight: 48,
-                  textTransform: 'none',
                 },
               }}
             >
@@ -263,20 +260,20 @@ export function JobDetails({
                 value={0}
                 icon={<AppIcon.Settings sx={{ fontSize: 18 }} />}
                 iconPosition="start"
-                label="Config Form"
+                label={t('config form')}
               />
               <Tab
                 value={1}
                 icon={<AppIcon.SettingsApplications sx={{ fontSize: 18 }} />}
                 iconPosition="start"
-                label="Environment"
+                label={t('environment')}
               />
 
               <Tab
                 value={2}
                 icon={<AppIcon.Terminal sx={{ fontSize: 18 }} />}
                 iconPosition="start"
-                label="Live Logs"
+                label={t('live logs')}
               />
 
               {schema.keyword && (
@@ -284,7 +281,7 @@ export function JobDetails({
                   value={3}
                   icon={<AppIcon.SignalCellularAlt sx={{ fontSize: 18 }} />}
                   iconPosition="start"
-                  label="Signals Logs"
+                  label={t('signals logs')}
                 />
               )}
 
@@ -293,7 +290,7 @@ export function JobDetails({
                   value={4}
                   icon={<AppIcon.Code sx={{ fontSize: 18 }} />}
                   iconPosition="start"
-                  label="Code"
+                  label={t('code')}
                 />
               )}
             </Tabs>
@@ -370,7 +367,7 @@ export function JobDetails({
               disabled={isSubmitting}
               color="primary"
             >
-              {isSubmitting ? 'Saving...' : 'Save'}
+              {isSubmitting ? t('saving') + '...' : t('save')}
             </Button>
             {jobId > 0 && (
               <Button
@@ -379,7 +376,7 @@ export function JobDetails({
                 onPointerDown={handleSaveAsNew}
                 disabled={isSubmitting}
               >
-                Save new
+                {t('save new')}
               </Button>
             )}
 
@@ -391,7 +388,7 @@ export function JobDetails({
                 onPointerDown={handleDelete}
                 disabled={isSubmitting}
               >
-                Delete
+                {t('delete')}
               </Button>
             )}
           </Stack>

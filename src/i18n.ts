@@ -29,7 +29,8 @@ i18n
   .use(new CustomBackend())
   .use(initReactI18next)
   .init({
-    lng: storage.getLanguage() || 'en',
-    fallbackLng: false,
+    lng: storage.getLanguage(),
+    fallbackLng: 'en',
     ns: ['common'],
+    fallbackNS: 'common',
   });

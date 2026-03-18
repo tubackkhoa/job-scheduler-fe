@@ -58,7 +58,6 @@ const LogRow = function LogRow({ log, searchText }) {
             sx={{
               fontWeight: 600,
               ml: 2,
-              textTransform: 'uppercase',
               color: getLevelColor(log.level),
             }}
           >

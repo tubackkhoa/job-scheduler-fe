@@ -23,12 +23,7 @@ export function PluginSitemap({ plugins, routeState, loadRoutes }: Props) {
   const { t } = useTranslation();
   return (
     <Box sx={{ my: 3, mx: 1 }}>
-      <Typography
-        variant="h5"
-        sx={{ textTransform: 'capitalize' }}
-        fontWeight={600}
-        gutterBottom
-      >
+      <Typography variant="h5" fontWeight={600} gutterBottom>
         {t('site map')}
       </Typography>
       <List component="nav" disablePadding>

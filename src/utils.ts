@@ -16,6 +16,7 @@ import jinjaPython from './jinja.py?raw';
 import dayjs from 'dayjs';
 import { RJSFSchema } from '@rjsf/utils';
 import { PaletteMode } from '@mui/material';
+import { TFunction } from 'i18next';
 
 export const scrollToTop = () => {
   window.scrollTo({
@@ -69,21 +70,66 @@ export const convertByType = (value: string, type: TypeofResult) => {
   }
 };
 
-export const buildUiSchemaWithExpr = async (
-  packageName: string,
-  context: Record<string, any>,
-  schema: any,
-  changedFieldId: string,
-): Promise<[any, string[]]> => {
+type SchemaNode = Record<string, any>;
+type NodeCallback = (node: SchemaNode) => void | Promise<void>;
+
+/**
+ * Recursively traverse a JSON schema and apply a callback to each node.
+ */
+export const traverseSchema = async (
+  schema: RJSFSchema,
+  callback: NodeCallback,
+): Promise<RJSFSchema> => {
   if (!schema) return schema;
 
   const newSchema = _.cloneDeep(schema);
   const stack = [{ node: newSchema }];
-  const errors = [];
 
   while (stack.length) {
     const { node } = stack.pop()!;
 
+    await callback(node); // apply logic for this node
+
+    // Traverse children
+    if (node.type === 'object' && node.properties) {
+      for (const child of Object.values(node.properties)) {
+        stack.push({ node: child as RJSFSchema });
+      }
+    }
+
+    // Resolve $ref if needed
+    if (node.$ref) {
+      const refSchema = resolveRef(newSchema, node.$ref);
+      if (refSchema) stack.push({ node: refSchema });
+    }
+  }
+
+  return newSchema;
+};
+
+export const translateSchema = (
+  schema: RJSFSchema,
+  t: TFunction,
+  uiKeysToTranslate: string[] = ['title', 'description', 'placeholder', 'help'],
+) => {
+  return traverseSchema(schema, (node) => {
+    for (const key of uiKeysToTranslate) {
+      if (key in node && typeof node[key] === 'string') {
+        node[key] = t(node[key].toLowerCase());
+      }
+    }
+  });
+};
+
+export const buildUiSchemaWithExpr = async (
+  packageName: string,
+  context: Record<string, any>,
+  schema: RJSFSchema,
+  changedFieldId: string,
+): Promise<[RJSFSchema, string[]]> => {
+  const errors: string[] = [];
+
+  const newSchema = await traverseSchema(schema, async (node) => {
     for (const [sKey, sValue] of Object.entries(node)) {
       if (sKey.startsWith('ui:expr')) {
         const [expr, deps] =
@@ -91,7 +137,6 @@ export const buildUiSchemaWithExpr = async (
             ? [sValue]
             : (sValue as [string, string[]]);
 
-        // only render if deps changed, or first time when no changedFieldId
         if (!deps || !changedFieldId || deps.includes(changedFieldId)) {
           const subKey = sKey === 'ui:expr' ? '' : sKey.replace('ui:expr:', '');
           try {
@@ -105,28 +150,16 @@ export const buildUiSchemaWithExpr = async (
             if (subKey) {
               node[subKey] = convertByType(extraOptions, typeof node[subKey]);
             } else {
-              _.merge(node, extraOptions);
+              Object.assign(node, extraOptions);
             }
-          } catch (ex) {
+          } catch (ex: any) {
             errors.push(ex.message);
           }
         }
       }
     }
+  });
 
-    if (node.type === 'object' && node.properties) {
-      for (const child of Object.values(node.properties)) {
-        stack.push({ node: child });
-      }
-    }
-
-    if (node.$ref) {
-      const refSchema = resolveRef(newSchema, node.$ref);
-      if (refSchema) stack.push({ node: refSchema });
-    }
-  }
-
-  // return both to catch error
   return [newSchema, errors];
 };
 

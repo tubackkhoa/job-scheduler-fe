@@ -43,7 +43,6 @@ export function Header({
   const handleChangeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
     storage.saveLanguage(lng);
-    handleClose();
   };
 
   return (
@@ -80,7 +79,6 @@ export function Header({
           variant="h4"
           sx={{
             fontWeight: 700,
-            textTransform: 'capitalize',
             background:
               mode === 'dark'
                 ? 'linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%)'
@@ -99,9 +97,6 @@ export function Header({
           sx={{
             mt: 0.5,
             display: { xs: 'none', md: 'block' },
-            '&::first-letter': {
-              textTransform: 'uppercase',
-            },
           }}
         >
           {t(
@@ -151,14 +146,14 @@ export function Header({
             <ListItemIcon>
               <AppIcon.Dashboard fontSize="small" />
             </ListItemIcon>
-            Dashboard
+            {t('dashboard')}
           </MenuItem>
 
           <MenuItem onClick={() => handleNavigate('/plugins')}>
             <ListItemIcon>
               <AppIcon.Extension fontSize="small" />
             </ListItemIcon>
-            Plugin Manager
+            {t('plugin manager')}
           </MenuItem>
 
           {import.meta.env.VITE_CHATBOT_ENABLED && (
@@ -166,7 +161,7 @@ export function Header({
               <ListItemIcon>
                 <AppIcon.ChatBubbleOutline fontSize="small" />
               </ListItemIcon>
-              Chatbot
+              {t('chatbot')}
             </MenuItem>
           )}
 
@@ -189,7 +184,7 @@ export function Header({
             <ListItemIcon>
               <AppIcon.Logout fontSize="small" />
             </ListItemIcon>
-            Logout
+            {t('logout')}
           </MenuItem>
         </Menu>
       </Box>

@@ -12,6 +12,14 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
 }
 
+.MuiTableCell-root,
+.MuiFormLabel-root,
+.MuiTypography-root {
+  &::first-letter {
+    text-transform: uppercase;
+  }  
+}
+
 .config-field {
   .MuiFormControl-root {
     width: 100%;

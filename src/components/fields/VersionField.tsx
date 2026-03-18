@@ -508,7 +508,6 @@ export function VersionField({
                 variant="contained"
                 fullWidth
                 onClick={() => handleUpdateChoice('update')}
-                sx={{ textTransform: 'none' }}
               >
                 <Stack spacing={0.5} sx={{ width: '100%', textAlign: 'left' }}>
                   <Typography variant="button">
@@ -526,7 +525,6 @@ export function VersionField({
                 variant="outlined"
                 fullWidth
                 onClick={() => handleUpdateChoice('save-as-new')}
-                sx={{ textTransform: 'none' }}
               >
                 <Stack spacing={0.5} sx={{ width: '100%', textAlign: 'left' }}>
                   <Typography variant="button">Save as New Version</Typography>

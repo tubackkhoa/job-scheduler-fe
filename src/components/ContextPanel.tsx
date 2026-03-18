@@ -74,11 +74,7 @@ export function ContextPanel({
               {ctx.user?.username || 'Context'}
             </Typography>
 
-            <Typography
-              variant="body2"
-              sx={{ textTransform: 'capitalize' }}
-              color="text.secondary"
-            >
+            <Typography variant="body2" color="text.secondary">
               {t('choose session and plugin')}
             </Typography>
           </Box>
@@ -204,7 +200,6 @@ export function ContextPanel({
               mt: 1,
               borderStyle: 'dashed',
               borderColor: 'primary.main',
-              textTransform: 'capitalize',
               color: 'primary.main',
               '&:hover': {
                 borderStyle: 'solid',

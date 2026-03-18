@@ -16,7 +16,7 @@ interface RolePolicyProps {
 export function RolePolicyTable({ roleMap }: RolePolicyProps) {
   const { t } = useTranslation();
   return (
-    <Table sx={{ textTransform: 'capitalize' }}>
+    <Table>
       <TableHead>
         <TableRow>
           <TableCell>{t('role')}</TableCell>

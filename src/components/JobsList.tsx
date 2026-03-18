@@ -49,29 +49,12 @@ export function JobsList({
   return (
     <Card sx={{ bgcolor: 'background.paper', flex: 1 }}>
       <CardHeader
-        slotProps={{
-          title: {
-            sx: {
-              '&::first-letter': {
-                textTransform: 'uppercase',
-              },
-            },
-          },
-          subheader: {
-            sx: {
-              '&::first-letter': {
-                textTransform: 'uppercase',
-              },
-            },
-          },
-        }}
         title={t('job')}
         subheader={t('select, start, pause, or add a job')}
         action={
           <Button
             variant="contained"
             size="small"
-            sx={{ textTransform: 'capitalize' }}
             startIcon={<AppIcon.Add />}
             onClick={onNewJob}
             disabled={disabled}

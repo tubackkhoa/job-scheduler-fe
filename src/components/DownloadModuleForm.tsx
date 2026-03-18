@@ -37,18 +37,12 @@ export default function DownloadModuleForm() {
 
   return (
     <Box sx={{ my: 3, mx: 1, position: { md: 'sticky' }, top: 140 }}>
-      <Typography
-        variant="h5"
-        sx={{ textTransform: 'capitalize' }}
-        fontWeight={600}
-        gutterBottom
-      >
+      <Typography variant="h5" fontWeight={600} gutterBottom>
         {t('download module')}
       </Typography>
       <Paper elevation={2} sx={{ p: 3, mt: 3 }}>
         <Stack component="form" spacing={2} onSubmit={handleSubmit}>
           <TextField
-            sx={{ textTransform: 'capitalize' }}
             label={t('module name')}
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -57,7 +51,6 @@ export default function DownloadModuleForm() {
           />
 
           <TextField
-            sx={{ textTransform: 'capitalize' }}
             label={t('version / git url')}
             value={version}
             onChange={(e) => setVersion(e.target.value)}
@@ -69,7 +62,6 @@ export default function DownloadModuleForm() {
           <Button
             type="submit"
             variant="contained"
-            sx={{ textTransform: 'capitalize' }}
             loading={loading}
             disabled={!name}
           >
