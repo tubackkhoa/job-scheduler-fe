@@ -1,4 +1,4 @@
-import { getToken, clearToken, setToken } from './storage';
+import storage from './storage';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
@@ -78,7 +78,7 @@ async function request<T = unknown>(
   responseType: 'json' | 'text' | 'raw' = 'json',
   onHeader?: (headers: Headers) => void,
 ): Promise<T> {
-  const token = getToken();
+  const token = storage.getToken();
 
   const headers = new Headers(options.headers);
   if (token) {
@@ -91,7 +91,7 @@ async function request<T = unknown>(
   });
 
   if (res.status === 401) {
-    clearToken();
+    // let user manually logout in case of token expiration or invalid token, instead of auto logout which might cause bad UX
     throw new Error('Unauthorized');
   }
 
@@ -146,7 +146,6 @@ export default {
       body: new URLSearchParams({ username, password }),
     });
 
-    setToken(data);
     return data;
   },
 

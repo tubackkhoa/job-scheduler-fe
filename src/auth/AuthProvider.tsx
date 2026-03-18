@@ -9,12 +9,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const login = async (username: string, password: string) => {
-    const { access_token } = await api.login(username, password);
-    setAuthToken(access_token);
+    const data = await api.login(username, password);
+    storage.setToken(data);
+    setAuthToken(data.access_token);
     const user = await api.me();
     storage.saveUser(user);
     window.ctx = { user }; // update for global access
-    return access_token;
+    return data.access_token;
   };
 
   const logout = () => {
