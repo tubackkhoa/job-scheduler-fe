@@ -447,11 +447,11 @@ export function VersionField({
         open={confirmDialogOpen}
         onClose={() => setConfirmDialogOpen(false)}
         onConfirm={doSave}
-        title={selectedVersion ? 'Update SQL Version' : 'Save SQL Version'}
+        title={selectedVersion ? 'Update value version' : 'Save value version'}
         message="Are you sure you want to proceed?"
         details={`When you ${
           selectedVersion ? 'update' : 'save'
-        } this version "${versionName.trim()}", the SQL value from this version will be used to run jobs.\n\nNote: The preview value in the editor will be replaced by the saved SQL version value.`}
+        } this version "${versionName.trim()}", the value value from this version will be used to run jobs.\n\nNote: The preview value in the editor will be replaced by the saved value version value.`}
         severity="warning"
         confirmText={selectedVersion ? 'Update Version' : 'Save Version'}
         isLoading={saving}
@@ -482,9 +482,9 @@ export function VersionField({
             }}
           />
         }
-        message={`This action will apply the SQL version "${
+        message={`This action will apply the value version "${
           selectedVersion?.name || ''
-        }" to ALL jobs in this plugin.\n\n⚠️ Important:\n• All jobs will use the SQL value from this version\n• This will override any custom SQL configurations in individual jobs\n• The change takes effect immediately for all jobs`}
+        }" to ALL jobs in this plugin.\n\n⚠️ Important:\n• All jobs will use the value value from this version\n• This will override any custom value configurations in individual jobs\n• The change takes effect immediately for all jobs`}
         severity="warning"
         confirmText="Apply to All Jobs"
         isLoading={applying}

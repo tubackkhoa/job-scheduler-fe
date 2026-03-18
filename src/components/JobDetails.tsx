@@ -106,7 +106,7 @@ export function JobDetails({
       {
         title: 'Save Job Configuration',
         details:
-          'This will update the job configuration. If you have selected a SQL version, the SQL value from that version will be used to run the job.\n\nNote: The preview value will be replaced by the saved version value.',
+          'This will update the job configuration. If you have selected a value version, the value from that version will be used to run the job.\n\nNote: The preview value will be replaced by the saved version value.',
         severity: 'warning',
         okText: 'Save Changes',
       },
@@ -124,7 +124,7 @@ export function JobDetails({
       {
         title: 'Create New Job',
         details:
-          'This will create a new job entry. If you have selected a SQL version, the SQL value from that version will be used to run the new job.\n\nNote: The preview value will be replaced by the saved version value.',
+          'This will create a new job entry. If you have selected a value version, the value from that version will be used to run the new job.\n\nNote: The preview value will be replaced by the saved version value.',
         severity: 'info',
         okText: 'Create New Job',
       },
