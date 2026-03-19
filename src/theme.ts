@@ -74,17 +74,9 @@ export const theme = createTheme({
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
   },
   shape: {
-    borderRadius: 12,
+    borderRadius: 8,
   },
   components: {
-    MuiButtonBase: {
-      styleOverrides: {
-        root: {
-          textTransform: 'capitalize',
-          fontWeight: 500,
-        },
-      },
-    },
     MuiTextField: {
       defaultProps: {
         variant: 'outlined',
