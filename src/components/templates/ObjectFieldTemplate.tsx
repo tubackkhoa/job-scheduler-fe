@@ -1,7 +1,9 @@
-import { type ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import type {
   ObjectFieldTemplatePropertyType,
   ObjectFieldTemplateProps,
+  RJSFSchema,
+  UiSchema,
 } from '@rjsf/utils';
 import _ from 'lodash';
 import {
@@ -13,13 +15,14 @@ import {
   Stack,
 } from '@mui/material';
 
-type UISchema = {
-  'ui:field'?: string;
-  'ui:options'?: {
-    size?: GridSize | Record<string, GridSize>;
-    section?: boolean;
-  };
-};
+interface FieldsGridProps {
+  fields: ObjectFieldTemplatePropertyType[];
+}
+
+interface FieldContentProps {
+  schema: RJSFSchema;
+  uiSchema?: UiSchema;
+}
 
 type ResponsiveStyleValue<T> =
   | T
@@ -27,7 +30,7 @@ type ResponsiveStyleValue<T> =
   | { [key in Breakpoint]?: T | null };
 type GridSizeObject = ResponsiveStyleValue<GridSize>;
 
-const calculateItemSize = (schema?: UISchema): GridSizeObject => {
+const calculateItemSize = (schema?: RJSFSchema): GridSizeObject => {
   const isEditor = schema?.['ui:field'] === 'Template';
   const size = schema?.['ui:options']?.size;
 
@@ -50,18 +53,32 @@ const fieldWrapperStyle = {
   borderRadius: { xs: 0, sm: 3 },
 };
 
-type FieldsGridProps = {
-  fields: ObjectFieldTemplatePropertyType[];
-};
-
 const FieldsGrid: React.FC<FieldsGridProps> = ({ fields }) => (
   <Grid container spacing={2}>
     {fields.map(({ content }) => {
-      // @ts-ignore
-      const size = calculateItemSize(content.props?.schema);
+      let children = content as React.ReactElement<FieldContentProps>;
+
+      const { schema, uiSchema } = children.props;
+      const size = calculateItemSize(schema);
+
+      // build uiSchema dynamic from schema
+      if (!uiSchema) {
+        const newUiSchema = {};
+
+        for (const [uiKey, uiValue] of Object.entries(schema)) {
+          if (uiKey.startsWith('ui:') && !uiKey.startsWith('ui:expr')) {
+            newUiSchema[uiKey] = uiValue;
+          }
+        }
+        // update uiSchema
+        children = React.cloneElement(children, {
+          uiSchema: newUiSchema,
+        });
+      }
+
       return (
         <Grid size={size} key={content.key} className="config-field">
-          {content}
+          {children}
         </Grid>
       );
     })}
@@ -108,12 +125,14 @@ const SectionPaper: React.FC<SectionPaperProps> = ({
 export const ObjectFieldTemplate: React.FC<ObjectFieldTemplateProps> = (
   props,
 ) => {
-  const { title, description, properties, schema, fieldPathId } = props;
+  const { title, description, properties, schema, uiSchema, fieldPathId } =
+    props;
 
   // ----------------------------------------------------
   // NESTED OBJECT
   // ----------------------------------------------------
-  const sectionOption = schema?.['ui:options']?.section;
+  const sectionOption = uiSchema?.['ui:options']?.section;
+  console.log(sectionOption, uiSchema, schema);
 
   if (sectionOption === false) {
     return <FieldsGrid fields={properties} />;

@@ -31,6 +31,7 @@ export function TemplateField({
   formData,
   onChange,
   schema,
+  uiSchema,
   fieldPathId,
   registry,
 }: FieldProps) {
@@ -129,6 +130,7 @@ export function TemplateField({
   // Fullscreen style object
   const fullscreenStyles = getContainerStyle(fullscreen);
   const codeStyle = getCodeMirrorStyle(mode, fullscreen);
+  const showPreview = uiSchema['ui:options']?.preview ?? true;
 
   return (
     <Stack spacing={1} sx={fullscreenStyles}>
@@ -143,10 +145,12 @@ export function TemplateField({
       >
         <Tabs value={tabIndex} onChange={handleTabChange} sx={{ flexGrow: 1 }}>
           <Tab label={t('code')} />
-          <Tab
-            label={t('preview')}
-            onClick={() => updatePrewiewCode(localValue)}
-          />
+          {showPreview && (
+            <Tab
+              label={t('preview')}
+              onClick={() => updatePrewiewCode(localValue)}
+            />
+          )}
         </Tabs>
 
         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
@@ -226,26 +230,27 @@ export function TemplateField({
             onBlur={handleBlur}
           />
         </Box>
+        {showPreview && (
+          <Box
+            sx={{
+              position: 'relative',
+              display: tabIndex === 0 ? 'none' : 'block',
+              height: fullscreen ? '100%' : 'unset',
+            }}
+          >
+            <TemplatePreview
+              fullscreen={fullscreen}
+              codeStyle={codeStyle}
+              fieldPathId={fieldPathId}
+              registry={registry}
+              text={previewCode}
+              schema={schema}
+              extensions={extensions}
+            />
 
-        <Box
-          sx={{
-            position: 'relative',
-            display: tabIndex === 0 ? 'none' : 'block',
-            height: fullscreen ? '100%' : 'unset',
-          }}
-        >
-          <TemplatePreview
-            fullscreen={fullscreen}
-            codeStyle={codeStyle}
-            fieldPathId={fieldPathId}
-            registry={registry}
-            text={previewCode}
-            schema={schema}
-            extensions={extensions}
-          />
-
-          {loadingPreview && <LoadingSkeleton />}
-        </Box>
+            {loadingPreview && <LoadingSkeleton />}
+          </Box>
+        )}
       </Box>
     </Stack>
   );

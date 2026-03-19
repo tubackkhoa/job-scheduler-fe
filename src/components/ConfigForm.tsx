@@ -1,12 +1,8 @@
-import { useEffect, useRef, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import _ from 'lodash';
 import Form from '@rjsf/mui';
 import validator from '@rjsf/validator-ajv8';
-import {
-  extractUiSchema,
-  buildUiSchemaWithExpr,
-  translateSchema,
-} from '@/utils';
+import { buildUiSchemaWithExpr, translateSchema } from '@/utils';
 import fields from './fields';
 import widgets from './widgets';
 import { ErrorBoundary } from './ErrorBound';
@@ -24,6 +20,10 @@ interface Props {
   pluginPackage: string;
   pluginId: number;
 }
+
+export const defaultUiSchema: Record<string, any> = {
+  'ui:submitButtonOptions': { norender: true },
+};
 
 export const ConfigForm = ({
   schema,
@@ -74,8 +74,6 @@ export const ConfigForm = ({
     };
   }, [schema, formData, i18n.language]);
 
-  const uiSchema = useMemo(() => extractUiSchema(localSchema), [localSchema]);
-
   if (!localSchema) {
     return null;
   }
@@ -85,7 +83,7 @@ export const ConfigForm = ({
       <Form
         extraErrors={extraErrors}
         schema={localSchema}
-        uiSchema={uiSchema}
+        uiSchema={defaultUiSchema}
         formContext={{ formData, pluginPackage, env, sessionId }}
         idPrefix={localSchema.pluginId ?? pluginId}
         idSeparator="."

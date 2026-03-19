@@ -163,53 +163,6 @@ export const buildUiSchemaWithExpr = async (
   return [newSchema, errors];
 };
 
-export const extractUiSchema = (schema: any): Record<string, any> => {
-  if (!schema?.properties) return {};
-
-  const uiSchema: Record<string, any> = {
-    'ui:submitButtonOptions': { norender: true },
-  };
-
-  const stack: Array<{
-    props: Record<string, any>;
-    target: Record<string, any>;
-  }> = [{ props: schema.properties, target: uiSchema }];
-
-  while (stack.length) {
-    const { props, target } = stack.pop()!;
-
-    for (const [key, prop] of Object.entries(props)) {
-      const uiEntry: Record<string, any> = {};
-
-      for (const [uiKey, uiValue] of Object.entries(prop)) {
-        if (uiKey.startsWith('ui:') && !uiKey.startsWith('ui:expr')) {
-          uiEntry[uiKey] = uiValue;
-        }
-      }
-
-      let nestedProps: Record<string, any> | null = null;
-
-      if (prop.type === 'object' && prop.properties) {
-        nestedProps = prop.properties;
-      } else if (prop.$ref) {
-        const defSchema = resolveRef(schema, prop.$ref);
-        if (defSchema?.type === 'object' && defSchema.properties) {
-          nestedProps = defSchema.properties;
-        }
-      }
-
-      if (nestedProps) {
-        target[key] = uiEntry;
-        stack.push({ props: nestedProps, target: target[key] });
-      } else if (Object.keys(uiEntry).length > 0) {
-        target[key] = uiEntry;
-      }
-    }
-  }
-
-  return uiSchema;
-};
-
 /* ================================
  * Theme
  * ================================ */
