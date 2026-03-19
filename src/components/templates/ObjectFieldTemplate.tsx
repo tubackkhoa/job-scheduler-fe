@@ -1,19 +1,18 @@
-import React, { type ReactNode } from 'react';
+import {
+  Breakpoint,
+  Grid,
+  GridSize,
+  Paper,
+  Stack,
+  Typography,
+} from '@mui/material';
 import type {
   ObjectFieldTemplatePropertyType,
   ObjectFieldTemplateProps,
   RJSFSchema,
   UiSchema,
 } from '@rjsf/utils';
-import _ from 'lodash';
-import {
-  Paper,
-  Typography,
-  Grid,
-  Breakpoint,
-  GridSize,
-  Stack,
-} from '@mui/material';
+import React, { type ReactNode } from 'react';
 
 interface FieldsGridProps {
   fields: ObjectFieldTemplatePropertyType[];
@@ -46,11 +45,9 @@ const calculateItemSize = (schema?: RJSFSchema): GridSizeObject => {
 };
 
 const fieldWrapperStyle = {
-  p: { xs: 0, sm: 3.5 },
-  bgcolor: { xs: 'transparent', sm: 'rgba(99, 102, 241, 0.04)' },
-  border: { xs: 'none', sm: 1 },
-  borderColor: { xs: 'transparent', sm: 'divider' },
-  borderRadius: { xs: 0, sm: 3 },
+  p: { xs: 0, sm: 1 },
+  bgcolor: 'transparent',
+  border: 'none',
 };
 
 const FieldsGrid: React.FC<FieldsGridProps> = ({ fields }) => (

@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
+import { IChangeEvent } from '@rjsf/core';
+import { RJSFSchema } from '@rjsf/utils';
+import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import Form from '@rjsf/mui';
 import validator from '@rjsf/validator-ajv8';
 import { buildUiSchemaWithExpr, translateSchema } from '@/utils';
 import fields from './fields';
 import widgets from './widgets';
+import templates from './templates';
 import { ErrorBoundary } from './ErrorBound';
-import { ObjectFieldTemplate } from './templates/ObjectFieldTemplate';
-import { IChangeEvent } from '@rjsf/core';
-import { RJSFSchema } from '@rjsf/utils';
-import { useTranslation } from 'react-i18next';
 
 interface Props {
   schema: RJSFSchema;
@@ -93,9 +93,7 @@ export const ConfigForm = ({
         validator={validator}
         onChange={handleChange}
         liveValidate={false}
-        templates={{
-          ObjectFieldTemplate,
-        }}
+        templates={templates}
       />
     </ErrorBoundary>
   );
