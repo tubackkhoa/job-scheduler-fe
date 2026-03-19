@@ -604,15 +604,15 @@ export const markdownLang = markdown({
 export const jinjaLang = jinja({ base: markdownLang });
 
 export const resolveLanguageExtension = (
-  type: string,
+  lang: string,
   schema?: SQLNamespace,
 ): LanguageSupport => {
   // sql with custom meta
-  if (type === 'sql') {
+  if (lang === 'sql') {
     return schema ? sql({ dialect: PostgreSQL, schema }) : sqlLang;
   }
 
-  if (type === 'markdown') return markdownLang;
+  if (lang === 'markdown') return markdownLang;
 
-  return languageByType[type];
+  return languageByType[lang];
 };
