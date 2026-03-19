@@ -12,6 +12,10 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
 }
 
+.MuiMenuItem-root {
+  text-transform: capitalize;
+}
+
 .MuiTableCell-root,
 .MuiFormLabel-root,
 .MuiTypography-root {
