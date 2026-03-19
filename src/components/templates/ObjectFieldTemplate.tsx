@@ -125,19 +125,17 @@ const SectionPaper: React.FC<SectionPaperProps> = ({
 export const ObjectFieldTemplate: React.FC<ObjectFieldTemplateProps> = (
   props,
 ) => {
-  const { title, description, properties, schema, uiSchema, fieldPathId } =
-    props;
+  const { title, description, properties, schema, fieldPathId } = props;
 
   // ----------------------------------------------------
   // NESTED OBJECT
   // ----------------------------------------------------
-  const sectionOption = uiSchema?.['ui:options']?.section;
-  console.log(sectionOption, uiSchema, schema);
-
+  const sectionOption = schema?.['ui:options']?.section;
   if (sectionOption === false) {
     return <FieldsGrid fields={properties} />;
   }
   const isRoot = fieldPathId.path.length === 0;
+
   return (
     <SectionPaper title={title} description={description} isRoot={isRoot}>
       <FieldsGrid fields={properties} />
