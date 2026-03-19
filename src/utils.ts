@@ -615,5 +615,7 @@ export const resolveLanguageExtension = (
       : sqlLang;
   }
 
+  if (type === 'markdown') return markdownLang;
+
   return languageByType[type];
 };
