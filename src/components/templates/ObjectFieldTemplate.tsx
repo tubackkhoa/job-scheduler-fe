@@ -27,9 +27,9 @@ type ResponsiveStyleValue<T> =
   | { [key in Breakpoint]?: T | null };
 type GridSizeObject = ResponsiveStyleValue<GridSize>;
 
-const calculateItemSize = (uiSchema?: UISchema): GridSizeObject => {
-  const isEditor = uiSchema?.['ui:field'] === 'Template';
-  const size = uiSchema?.['ui:options']?.size;
+const calculateItemSize = (schema?: UISchema): GridSizeObject => {
+  const isEditor = schema?.['ui:field'] === 'Template';
+  const size = schema?.['ui:options']?.size;
 
   const calSize: GridSizeObject = { xs: 12 };
 
@@ -58,8 +58,7 @@ const FieldsGrid: React.FC<FieldsGridProps> = ({ fields }) => (
   <Grid container spacing={2}>
     {fields.map(({ content }) => {
       // @ts-ignore
-      const size = calculateItemSize(content.props?.uiSchema);
-
+      const size = calculateItemSize(content.props?.schema);
       return (
         <Grid size={size} key={content.key} className="config-field">
           {content}
@@ -109,12 +108,12 @@ const SectionPaper: React.FC<SectionPaperProps> = ({
 export const ObjectFieldTemplate: React.FC<ObjectFieldTemplateProps> = (
   props,
 ) => {
-  const { title, description, properties, uiSchema, fieldPathId } = props;
+  const { title, description, properties, schema, fieldPathId } = props;
 
   // ----------------------------------------------------
   // NESTED OBJECT
   // ----------------------------------------------------
-  const sectionOption = uiSchema?.['ui:options']?.section;
+  const sectionOption = schema?.['ui:options']?.section;
 
   if (sectionOption === false) {
     return <FieldsGrid fields={properties} />;
