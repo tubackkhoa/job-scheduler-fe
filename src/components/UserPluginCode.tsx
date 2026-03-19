@@ -1,7 +1,7 @@
 import api from '@/api';
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
 import useNotifications from '@/hooks/useNotifications/useNotifications';
-import { JinjaCompletionBuilder, jinjaLinter, yamlLangWithJs } from '@/utils';
+import { JinjaCompletionBuilder, jinjaLinter, yamlLang } from '@/utils';
 import { jinja } from '@codemirror/lang-jinja';
 import { Paper, Stack, Typography } from '@mui/material';
 import CodeMirror from '@uiw/react-codemirror';
@@ -48,7 +48,7 @@ export default ({ pluginPackage, formData, env, setError, onRefresh }) => {
           theme={mode}
           minHeight="200px"
           value={code.form}
-          extensions={[yamlLangWithJs]}
+          extensions={[yamlLang]}
           onChange={(value) => {
             setIsDirty(true);
             setCode((prev) => {

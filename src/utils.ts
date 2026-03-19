@@ -9,7 +9,7 @@ import { javascript } from '@codemirror/lang-javascript';
 import { yamlLanguage } from '@codemirror/lang-yaml';
 import { json } from '@codemirror/lang-json';
 import { yaml } from '@codemirror/lang-yaml';
-import { PostgreSQL, sql } from '@codemirror/lang-sql';
+import { PostgreSQL, sql, SQLNamespace } from '@codemirror/lang-sql';
 import { markdown } from '@codemirror/lang-markdown';
 import { jinja, JinjaCompletionConfig } from '@codemirror/lang-jinja';
 import jinjaPython from './jinja.py?raw';
@@ -580,12 +580,11 @@ export const createUrlFromString = (code: string) => {
 
 // export language to re-use
 export const jsonLang = json();
-export const yamlLang = yaml();
 export const sqlLang = sql({ dialect: PostgreSQL });
 export const javascriptLang = javascript({ jsx: true, typescript: true });
-export const yamlLangWithJs = yamlWithEmbeddedJS();
+export const yamlLang = yamlWithEmbeddedJS();
 
-export const languageByType = {
+const languageByType = {
   json: jsonLang,
   yml: yamlLang,
   yaml: yamlLang,
@@ -605,14 +604,12 @@ export const markdownLang = markdown({
 export const jinjaLang = jinja({ base: markdownLang });
 
 export const resolveLanguageExtension = (
-  schema: RJSFSchema,
+  type: string,
+  schema?: SQLNamespace,
 ): LanguageSupport => {
-  const type = schema.type as string;
   // sql with custom meta
   if (type === 'sql') {
-    return schema.meta
-      ? sql({ dialect: PostgreSQL, schema: schema.meta })
-      : sqlLang;
+    return schema ? sql({ dialect: PostgreSQL, schema }) : sqlLang;
   }
 
   if (type === 'markdown') return markdownLang;

@@ -6,7 +6,7 @@ import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import CodeMirror from '@uiw/react-codemirror';
 import { memo } from 'react';
 import { SortableTable } from '../SortableTable';
-import { languageByType } from '@/utils';
+import { resolveLanguageExtension } from '@/utils';
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
 
 interface Props {
@@ -109,7 +109,7 @@ export const MarkdownPreview = memo(
                       }}
                       editable={false}
                       value={children as string}
-                      extensions={[languageByType[lang]]}
+                      extensions={[resolveLanguageExtension(lang)]}
                     />
                   );
 

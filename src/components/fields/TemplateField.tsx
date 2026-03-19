@@ -44,7 +44,7 @@ export function TemplateField({
 
     return [
       jinja({
-        base: resolveLanguageExtension(schema),
+        base: resolveLanguageExtension(schema.type.toString(), schema.meta),
         ...completions,
       }),
       jinjaLinter(params, registry.formContext.env),
