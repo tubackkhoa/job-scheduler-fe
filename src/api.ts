@@ -207,11 +207,11 @@ export default {
     return request(`/api/plugins`);
   },
 
-  updateConfig(
+  saveJob(
     jobId: number,
-    payload: Omit<Job, 'id' | 'plugin_id' | 'session_id'>,
+    payload: MakeOptional<Job, 'id' | 'plugin_id' | 'session_id'>,
   ): Promise<PostResponse> {
-    return postJson(`/api/jobs/${jobId}/config`, payload);
+    return postJson(`/api/jobs/${jobId}`, payload);
   },
 
   getUsers(): Promise<User[]> {

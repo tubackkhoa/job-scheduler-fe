@@ -155,24 +155,32 @@ export default function NotificationsProvider(
   const { children } = props;
   const [state, setState] = React.useState<NotificationsState>({ queue: [] });
 
-  const show = React.useCallback<ShowNotification>((message, options = {}) => {
-    const notificationKey =
-      options.key ?? `::toolpad-internal::notification::${generateId()}`;
-    setState((prev) => {
-      if (prev.queue.some((n) => n.notificationKey === notificationKey)) {
-        // deduplicate by key
-        return prev;
-      }
-      return {
-        ...prev,
-        queue: [
-          { message, options, notificationKey, open: true },
-          ...prev.queue,
-        ],
-      };
-    });
-    return notificationKey;
-  }, []);
+  const show = React.useCallback<ShowNotification>(
+    (message, showOptions = {}) => {
+      const {
+        key: notificationKey = `::toolpad-internal::notification::${generateId()}`,
+        ...options
+      } = showOptions;
+      // set default value
+      options.autoHideDuration ??= 5000;
+
+      setState((prev) => {
+        if (prev.queue.some((n) => n.notificationKey === notificationKey)) {
+          // deduplicate by key
+          return prev;
+        }
+        return {
+          ...prev,
+          queue: [
+            { message, options, notificationKey, open: true },
+            ...prev.queue,
+          ],
+        };
+      });
+      return notificationKey;
+    },
+    [],
+  );
 
   const close = React.useCallback<CloseNotification>((key) => {
     setState((prev) => ({

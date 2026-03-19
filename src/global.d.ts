@@ -252,6 +252,8 @@ declare global {
     ConfigFormContext<T>
   >;
 
+  type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [P in K]?: T[P] };
+
   // for lazy init
   var __ESBUILD_PROMISE__: Promise<typeof import('esbuild-wasm')> | undefined;
   var __PYODIDE_PROMISE__: Promise<PyodideInterface> | undefined;

@@ -212,7 +212,7 @@ export default function PluginManager({ setLoading, setError }) {
           saveNew || !jobId
             ? { ...payload, plugin_id: pluginId, session_id: sessionId }
             : payload;
-        await api.updateConfig(saveNew || !jobId ? 0 : jobId, data);
+        await api.saveJob(saveNew || !jobId ? 0 : jobId, data);
       }
       notifications.show('Update config successfully!', {
         severity: 'success',

@@ -225,7 +225,7 @@ export function PublishModal({
         cron_expr: '*/5 * * * * *', // Every 5 seconds for testing, adjust as needed for production
       };
 
-      await api.updateConfig(0, jobPayload);
+      await api.saveJob(0, jobPayload);
 
       // Refresh
       await loadData();
