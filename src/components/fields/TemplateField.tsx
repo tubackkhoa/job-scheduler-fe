@@ -67,7 +67,10 @@ export function TemplateField({
   const handleCopyCode = async () => {
     if (!formData) return;
     try {
-      await navigator.clipboard.writeText(previewCode);
+      // copy code or preview code
+      await navigator.clipboard.writeText(
+        tabIndex === 0 ? localValue : previewCode,
+      );
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch (err) {
