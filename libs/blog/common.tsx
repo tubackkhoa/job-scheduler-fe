@@ -8,7 +8,7 @@ export const Header = ({
   link: string;
   pluginPackage: string;
 }) => {
-  const { t } = Hooks.useTranslation(pluginPackage);
+  const { t, i18n } = Hooks.useTranslation(pluginPackage);
   const [mode, setMode] = Hooks.useAppColorScheme();
   return (
     <Box
@@ -31,14 +31,28 @@ export const Header = ({
       >
         {t('blog plugin')}
       </Typography>
-      <IconButton
-        size="small"
-        onClick={() => setMode(mode === 'light' ? 'dark' : 'light')}
-        color="inherit"
-        disableRipple
-      >
-        {mode === 'dark' ? <AppIcon.LightMode /> : <AppIcon.DarkMode />}
-      </IconButton>
+      {!window.ctx.user && (
+        <>
+          <IconButton
+            size="small"
+            onClick={() => setMode(mode === 'light' ? 'dark' : 'light')}
+            color="inherit"
+            disableRipple
+          >
+            {mode === 'dark' ? <AppIcon.LightMode /> : <AppIcon.DarkMode />}
+          </IconButton>
+          {Constants.LANGUAGES.map((lang) => (
+            <IconButton
+              key={lang.code}
+              size="small"
+              onClick={() => i18n.changeLanguage(lang.code)}
+              disableRipple
+            >
+              {lang.flag}
+            </IconButton>
+          ))}
+        </>
+      )}
     </Box>
   );
 };
