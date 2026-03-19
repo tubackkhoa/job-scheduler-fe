@@ -1,6 +1,6 @@
 import React from 'react';
 import { MarkdownPreview } from './MarkdownPreview'; // Adjust import path as needed
-import ReactCodeMirror, {
+import CodeMirror, {
   Extension,
   ReactCodeMirrorProps,
 } from '@uiw/react-codemirror'; // Or your CodeMirror React wrapper
@@ -55,7 +55,7 @@ export const TemplatePreview: React.FC<Props> = ({
       );
     default:
       return (
-        <ReactCodeMirror
+        <CodeMirror
           {...codeStyle}
           readOnly
           value={text}

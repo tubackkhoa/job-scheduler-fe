@@ -3,10 +3,10 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import ReactCodeMirror from '@uiw/react-codemirror';
+import CodeMirror from '@uiw/react-codemirror';
 import { memo } from 'react';
 import { SortableTable } from '../SortableTable';
-import { mdCodeLanguages } from '@/utils';
+import { languageByType } from '@/utils';
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
 
 interface Props {
@@ -98,12 +98,10 @@ export const MarkdownPreview = memo(
                 case 'json':
                 case 'yml':
                 case 'yaml':
-                case 'markdown':
                 case 'sql':
-                case 'jinja':
                 case 'js':
                   return (
-                    <ReactCodeMirror
+                    <CodeMirror
                       theme={mode}
                       basicSetup={{
                         lineNumbers: false,
@@ -111,7 +109,7 @@ export const MarkdownPreview = memo(
                       }}
                       editable={false}
                       value={children as string}
-                      extensions={[mdCodeLanguages[lang]]}
+                      extensions={[languageByType[lang]]}
                     />
                   );
 

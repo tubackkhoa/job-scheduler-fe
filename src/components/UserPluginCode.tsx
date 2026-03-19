@@ -4,7 +4,7 @@ import useNotifications from '@/hooks/useNotifications/useNotifications';
 import { JinjaCompletionBuilder, jinjaLinter, yamlLangWithJs } from '@/utils';
 import { jinja } from '@codemirror/lang-jinja';
 import { Paper, Stack, Typography } from '@mui/material';
-import ReactCodeMirror from '@uiw/react-codemirror';
+import CodeMirror from '@uiw/react-codemirror';
 import { useEffect, useState } from 'react';
 
 export default ({ pluginPackage, formData, env, setError, onRefresh }) => {
@@ -44,7 +44,7 @@ export default ({ pluginPackage, formData, env, setError, onRefresh }) => {
           Json Schema Form
         </Typography>
 
-        <ReactCodeMirror
+        <CodeMirror
           theme={mode}
           minHeight="200px"
           value={code.form}
@@ -63,7 +63,7 @@ export default ({ pluginPackage, formData, env, setError, onRefresh }) => {
           Jinja Script
         </Typography>
 
-        <ReactCodeMirror
+        <CodeMirror
           theme={mode}
           minHeight="200px"
           value={code.script}

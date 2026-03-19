@@ -581,36 +581,28 @@ export const createUrlFromString = (code: string) => {
 // export language to re-use
 export const jsonLang = json();
 export const yamlLang = yaml();
-export const markdownLang = markdown();
 export const sqlLang = sql({ dialect: PostgreSQL });
 export const javascriptLang = javascript({ jsx: true, typescript: true });
-export const jinjaLang = jinja({ base: jsonLang });
 export const yamlLangWithJs = yamlWithEmbeddedJS();
 
-export const mdCodeLanguages = {
+export const languageByType = {
   json: jsonLang,
   yml: yamlLang,
   yaml: yamlLang,
   sql: sqlLang,
-  markdown: markdownLang,
-  jinja: jinjaLang,
   module: javascriptLang,
   js: javascriptLang,
 };
 
-export type MdCodeLanguage = keyof typeof mdCodeLanguages;
+// markdown lang can display custom code but not jinja, because jinja is at top
+export const markdownLang = markdown({
+  codeLanguages: Object.entries(languageByType).map(([name, support]) =>
+    LanguageDescription.of({ name, support }),
+  ),
+});
 
-export const languageByType = {
-  json: jsonLang,
-  yaml: yamlLang,
-  yml: yamlLang,
-  js: javascriptLang,
-  markdown: markdown({
-    codeLanguages: Object.entries(mdCodeLanguages).map(([name, support]) =>
-      LanguageDescription.of({ name, support }),
-    ),
-  }),
-};
+// default jinja is markdown to display dynamic content
+export const jinjaLang = jinja({ base: markdownLang });
 
 export const resolveLanguageExtension = (
   schema: RJSFSchema,

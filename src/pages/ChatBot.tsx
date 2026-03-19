@@ -19,7 +19,7 @@ import {
   Tab,
 } from '@mui/material';
 
-import ReactCodeMirror from '@uiw/react-codemirror';
+import CodeMirror from '@uiw/react-codemirror';
 
 import { jinjaEvaluate, jinjaLang } from '@/utils';
 import api from '@/api';
@@ -323,7 +323,7 @@ export default function TemplateStudio() {
                 height: '100%',
               }}
             >
-              <ReactCodeMirror
+              <CodeMirror
                 value={output}
                 onChange={setOutput}
                 theme={mode}

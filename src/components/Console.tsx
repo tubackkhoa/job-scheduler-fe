@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Box, PaletteMode, Typography } from '@mui/material';
 import CodeMirror from '@uiw/react-codemirror';
-import { json } from '@codemirror/lang-json';
+import { jsonLang } from '@/utils';
 
 export interface ConsoleLog {
   method: string;
@@ -109,7 +109,7 @@ export const Console: React.FC<ConsoleProps> = ({ logs, variant }) => {
               editable={false}
               height="auto"
               theme={variant}
-              extensions={[json()]}
+              extensions={[jsonLang]}
               basicSetup={{
                 lineNumbers: false,
                 foldGutter: true,

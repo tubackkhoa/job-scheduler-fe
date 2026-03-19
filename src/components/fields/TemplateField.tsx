@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import ReactCodeMirror from '@uiw/react-codemirror';
+import CodeMirror from '@uiw/react-codemirror';
 import {
   Stack,
   Typography,
@@ -222,7 +222,7 @@ export function TemplateField({
             height: fullscreen ? '100%' : 'unset',
           }}
         >
-          <ReactCodeMirror
+          <CodeMirror
             {...codeStyle}
             value={localValue}
             extensions={extensions}
