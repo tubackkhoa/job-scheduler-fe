@@ -97,9 +97,9 @@ const SectionPaper: React.FC<SectionPaperProps> = ({
 }) => {
   return (
     <Paper elevation={0} sx={fieldWrapperStyle}>
-      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 3 }}>
+      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1 }}>
         {isRoot && <AppIcon.Settings fontSize="small" color="primary" />}
-        <Typography variant="subtitle1" fontWeight={600}>
+        <Typography variant="subtitle1" fontWeight={isRoot ? 600 : 500}>
           {title}
         </Typography>
 
