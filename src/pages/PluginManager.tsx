@@ -376,9 +376,13 @@ export default function PluginManager({ setLoading, setError }) {
           </Box>
         </Grid>
 
-        <Grid size={{ xs: 12, md: panelOpen ? 8 : 12 }}>
+        <Grid
+          component={Card}
+          size={{ xs: 12, md: panelOpen ? 8 : 12 }}
+          sx={{ bgcolor: 'background.paper' }}
+        >
           {pluginId ? (
-            currentJob ? (
+            currentJob?.config ? (
               <JobDetails
                 jobId={jobId}
                 jobDesc={jobDesc}
@@ -404,22 +408,17 @@ export default function PluginManager({ setLoading, setError }) {
                 onDelete={handleDeleteJob}
               />
             ) : (
-              <Card sx={{ bgcolor: 'background.paper', p: 1 }}>
-                <LoadingSkeleton size={2} />
-              </Card>
+              <LoadingSkeleton size={2} />
             )
           ) : (
-            <Card
-              sx={{
-                bgcolor: 'background.paper',
-                minHeight: 400,
-                p: 3,
-              }}
+            <Typography
+              variant="h5"
+              color="text.secondary"
+              textAlign="center"
+              margin={3}
             >
-              <Typography variant="body1" color="text.secondary">
-                {t('pick a plugin to load its schema and jobs.')}
-              </Typography>
-            </Card>
+              {t('pick a plugin to load its schema and jobs.')}
+            </Typography>
           )}
         </Grid>
       </Grid>
