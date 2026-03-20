@@ -19,7 +19,6 @@ import SignalsLogsViewer from './SignalsLogsViewer';
 import JinjaEnvDocs from './JinjaEnvDocs';
 import api from '@/api';
 import UserPluginCode from './UserPluginCode';
-import { LoadingSkeleton } from './Loading';
 import useNotifications from '@/hooks/useNotifications/useNotifications';
 import { useDialogs } from '@/hooks/useDialogs/useDialogs';
 import { useTranslation } from 'react-i18next';
@@ -74,26 +73,6 @@ export function JobDetails({
       setTabIndex(0);
     }
   }, [formData]);
-
-  if (!schema) {
-    return (
-      <Card
-        sx={{
-          bgcolor: 'background.paper',
-          minHeight: 400,
-          p: 3,
-        }}
-      >
-        {pluginPackage ? (
-          <LoadingSkeleton size={2} />
-        ) : (
-          <Typography variant="body1" color="text.secondary">
-            {t('pick a plugin to load its schema and jobs.')}
-          </Typography>
-        )}
-      </Card>
-    );
-  }
 
   const isUserPlugin = typeof pluginId === 'string';
 

@@ -1,4 +1,12 @@
-import { Box, Grid, IconButton, useMediaQuery, useTheme } from '@mui/material';
+import {
+  Box,
+  Card,
+  Grid,
+  IconButton,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import { ContextPanel } from '../components/ContextPanel';
 import { JobsList } from '../components/JobsList';
 import { JobDetails } from '../components/JobDetails';
@@ -9,6 +17,8 @@ import api from '@/api';
 import { useParams } from 'react-router-dom';
 import useNotifications from '@/hooks/useNotifications/useNotifications';
 import storage from '@/storage';
+import { LoadingSkeleton } from '@/components/Loading';
+import { useTranslation } from 'react-i18next';
 
 export default function PluginManager({ setLoading, setError }) {
   const { plugin_id, session_id, job_id } = useParams<{
@@ -17,6 +27,7 @@ export default function PluginManager({ setLoading, setError }) {
     job_id?: string;
   }>();
 
+  const { t } = useTranslation();
   const [plugins, setPlugins] = useState<PluginData[]>([]);
   const [pluginId, setPluginId] = useState<string | number>(0);
   const [sessionId, setSessionId] = useState(SESSIONS[0].id);
@@ -366,31 +377,49 @@ export default function PluginManager({ setLoading, setError }) {
         </Grid>
 
         <Grid size={{ xs: 12, md: panelOpen ? 8 : 12 }}>
-          {currentJob && (
-            <JobDetails
-              jobId={jobId}
-              jobDesc={jobDesc}
-              jobCronExpr={jobCronExpr}
-              pluginPackage={pluginInfo?.package}
-              isActive={isActive}
-              onRefresh={() => loadSchema(pluginId, sessionId, jobId)}
-              setError={setError}
-              formData={currentJob.config}
-              schema={schema}
-              env={env}
-              sessionId={sessionId}
-              pluginId={pluginId}
-              isSubmitting={submitting}
-              onCronExprChange={setJobCronExpr}
-              onDescChange={setJobDesc}
-              onToggleActive={() => handleJobActivation(!isActive)}
-              onSave={(data) => handleSubmit({ formData: data })}
-              isToggling={togglingJobId === jobId}
-              onSaveAsNew={(data) =>
-                handleSubmit({ formData: data, saveNew: true })
-              }
-              onDelete={handleDeleteJob}
-            />
+          {pluginId ? (
+            currentJob ? (
+              <JobDetails
+                jobId={jobId}
+                jobDesc={jobDesc}
+                jobCronExpr={jobCronExpr}
+                pluginPackage={pluginInfo?.package}
+                isActive={isActive}
+                onRefresh={() => loadSchema(pluginId, sessionId, jobId)}
+                setError={setError}
+                formData={currentJob.config}
+                schema={schema}
+                env={env}
+                sessionId={sessionId}
+                pluginId={pluginId}
+                isSubmitting={submitting}
+                onCronExprChange={setJobCronExpr}
+                onDescChange={setJobDesc}
+                onToggleActive={() => handleJobActivation(!isActive)}
+                onSave={(data) => handleSubmit({ formData: data })}
+                isToggling={togglingJobId === jobId}
+                onSaveAsNew={(data) =>
+                  handleSubmit({ formData: data, saveNew: true })
+                }
+                onDelete={handleDeleteJob}
+              />
+            ) : (
+              <Card sx={{ bgcolor: 'background.paper', p: 1 }}>
+                <LoadingSkeleton size={2} />
+              </Card>
+            )
+          ) : (
+            <Card
+              sx={{
+                bgcolor: 'background.paper',
+                minHeight: 400,
+                p: 3,
+              }}
+            >
+              <Typography variant="body1" color="text.secondary">
+                {t('pick a plugin to load its schema and jobs.')}
+              </Typography>
+            </Card>
           )}
         </Grid>
       </Grid>
