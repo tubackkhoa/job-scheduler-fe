@@ -5,8 +5,6 @@ import { JobDetails } from '../components/JobDetails';
 import { CreatePluginModal } from '../components/CreatePluginModal';
 import { SESSIONS, JINJA_ENV } from '../constants';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getDefaultFormState } from '@rjsf/utils';
-import validator from '@rjsf/validator-ajv8';
 import api from '@/api';
 import { useParams } from 'react-router-dom';
 import useNotifications from '@/hooks/useNotifications/useNotifications';
@@ -23,7 +21,7 @@ export default function PluginManager({ setLoading, setError }) {
   const [pluginId, setPluginId] = useState<string | number>(0);
   const [sessionId, setSessionId] = useState(SESSIONS[0].id);
 
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [jobId, setJobId] = useState(0);
   const [jobDesc, setJobDesc] = useState('');
   const [jobCronExpr, setJobCronExpr] = useState('');
@@ -296,13 +294,6 @@ export default function PluginManager({ setLoading, setError }) {
   );
 
   const currentJob = jobs.find((j) => j.id === jobId);
-
-  const formData = useMemo(() => {
-    if (!schema) return undefined;
-
-    return getDefaultFormState(validator, schema, currentJob?.config, schema);
-  }, [schema, currentJob]);
-
   const isActive = !!currentJob?.active;
   const panelOpen = isMobile || isPanelOpen;
 
@@ -375,30 +366,32 @@ export default function PluginManager({ setLoading, setError }) {
         </Grid>
 
         <Grid size={{ xs: 12, md: panelOpen ? 8 : 12 }}>
-          <JobDetails
-            jobId={jobId}
-            jobDesc={jobDesc}
-            jobCronExpr={jobCronExpr}
-            pluginPackage={pluginInfo?.package}
-            isActive={isActive}
-            onRefresh={() => loadSchema(pluginId, sessionId, jobId)}
-            setError={setError}
-            formData={formData}
-            schema={schema}
-            env={env}
-            sessionId={sessionId}
-            pluginId={pluginId}
-            isSubmitting={submitting}
-            onCronExprChange={setJobCronExpr}
-            onDescChange={setJobDesc}
-            onToggleActive={() => handleJobActivation(!isActive)}
-            onSave={(data) => handleSubmit({ formData: data })}
-            isToggling={togglingJobId === jobId}
-            onSaveAsNew={(data) =>
-              handleSubmit({ formData: data, saveNew: true })
-            }
-            onDelete={handleDeleteJob}
-          />
+          {currentJob && (
+            <JobDetails
+              jobId={jobId}
+              jobDesc={jobDesc}
+              jobCronExpr={jobCronExpr}
+              pluginPackage={pluginInfo?.package}
+              isActive={isActive}
+              onRefresh={() => loadSchema(pluginId, sessionId, jobId)}
+              setError={setError}
+              formData={currentJob.config}
+              schema={schema}
+              env={env}
+              sessionId={sessionId}
+              pluginId={pluginId}
+              isSubmitting={submitting}
+              onCronExprChange={setJobCronExpr}
+              onDescChange={setJobDesc}
+              onToggleActive={() => handleJobActivation(!isActive)}
+              onSave={(data) => handleSubmit({ formData: data })}
+              isToggling={togglingJobId === jobId}
+              onSaveAsNew={(data) =>
+                handleSubmit({ formData: data, saveNew: true })
+              }
+              onDelete={handleDeleteJob}
+            />
+          )}
         </Grid>
       </Grid>
 

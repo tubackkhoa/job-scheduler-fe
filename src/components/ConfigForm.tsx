@@ -49,6 +49,7 @@ export const ConfigForm = ({
       newSchema,
       changedFieldId,
     );
+
     // handle errors
     if (errors.length) {
       const errorSchema: ErrorSchema = {};

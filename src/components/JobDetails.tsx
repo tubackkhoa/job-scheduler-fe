@@ -23,6 +23,8 @@ import { LoadingSkeleton } from './Loading';
 import useNotifications from '@/hooks/useNotifications/useNotifications';
 import { useDialogs } from '@/hooks/useDialogs/useDialogs';
 import { useTranslation } from 'react-i18next';
+import { getDefaultFormState } from '@rjsf/utils';
+import validator from '@rjsf/validator-ajv8';
 
 function TabPanel(
   props: React.PropsWithChildren<{ value: number; index: number }>,
@@ -65,7 +67,8 @@ export function JobDetails({
   const { t } = useTranslation();
 
   useEffect(() => {
-    setLocalFormData(formData);
+    const localData = getDefaultFormState(validator, schema, formData, schema);
+    setLocalFormData(localData);
     setIsDirty(false);
     if (tabIndex !== 0) {
       setTabIndex(0);
