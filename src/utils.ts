@@ -12,7 +12,7 @@ import { PostgreSQL, sql, SQLNamespace } from '@codemirror/lang-sql';
 import { markdown } from '@codemirror/lang-markdown';
 import { jinja, JinjaCompletionConfig } from '@codemirror/lang-jinja';
 import dayjs from 'dayjs';
-import { RJSFSchema } from '@rjsf/utils';
+import { FieldError, RJSFSchema } from '@rjsf/utils';
 import { PaletteMode } from '@mui/material';
 import { TFunction } from 'i18next';
 import { render } from './jinja';
@@ -123,8 +123,8 @@ export const buildUiSchemaWithExpr = async (
   packageName: string,
   context: AnyObject,
   schema: RJSFSchema,
-  changedFieldId: string,
-): Promise<[RJSFSchema, string[]]> => {
+  changedFieldId?: string,
+): Promise<[RJSFSchema, FieldError[]]> => {
   const errors: string[] = [];
 
   const newSchema = await traverseSchema(schema, async (node) => {

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { IChangeEvent } from '@rjsf/core';
-import { RJSFSchema } from '@rjsf/utils';
+import { ErrorSchema, RJSFSchema } from '@rjsf/utils';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import Form from '@rjsf/mui';
@@ -35,9 +35,30 @@ export const ConfigForm = ({
   pluginId,
 }: Props) => {
   const [localSchema, setLocalSchema] = useState<RJSFSchema>();
-  const [extraErrors, setExtraErrors] = useState({});
-  const changedFieldId = useRef(null);
+  const [extraErrors, setExtraErrors] = useState<ErrorSchema>({});
   const { t, i18n } = useTranslation(pluginPackage);
+
+  const updateSchema = async (
+    newSchema: RJSFSchema,
+    data: any,
+    changedFieldId?: string,
+  ) => {
+    const [evaluatedSchema, errors] = await buildUiSchemaWithExpr(
+      pluginPackage,
+      data,
+      newSchema,
+      changedFieldId,
+    );
+    // handle errors
+    if (errors.length) {
+      const errorSchema: ErrorSchema = {};
+      errorSchema.__errors = errors;
+      setExtraErrors(errorSchema);
+    } else {
+      setLocalSchema(evaluatedSchema);
+    }
+  };
+
   const handleChange = (
     { formData: newFormData }: IChangeEvent,
     fieldPathId?: string,
@@ -46,33 +67,16 @@ export const ConfigForm = ({
       onChange(newFormData);
     }
     // strip first segment, seperator is "."
-    changedFieldId.current = fieldPathId?.replace(/^[^.]+\./, '');
+    const changedFieldId = fieldPathId?.replace(/^[^.]+\./, '');
+    updateSchema(localSchema, newFormData, changedFieldId);
   };
 
+  // update schema when language changed
   useEffect(() => {
-    let isMounted = true;
-
-    const updateSchema = async () => {
-      const translated = await translateSchema(schema, t);
-      if (!isMounted) return;
-      setLocalSchema(translated);
-
-      const [evaluatedSchema, errors] = await buildUiSchemaWithExpr(
-        pluginPackage,
-        formData,
-        translated,
-        changedFieldId.current,
-      );
-      if (!isMounted) return;
-
-      setLocalSchema(evaluatedSchema);
-      if (errors.length) setExtraErrors({ __errors: errors });
-    };
-    updateSchema();
-    return () => {
-      isMounted = false;
-    };
-  }, [schema, formData, i18n.language]);
+    translateSchema(schema, t).then((translatedScheme) =>
+      updateSchema(translatedScheme, formData),
+    );
+  }, [schema, i18n.language]);
 
   if (!localSchema) {
     return null;
