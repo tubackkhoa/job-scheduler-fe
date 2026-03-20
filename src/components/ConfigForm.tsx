@@ -34,9 +34,10 @@ export const ConfigForm = ({
   pluginPackage,
   pluginId,
 }: Props) => {
+  const isUserPlugin = typeof pluginId === 'string';
   const [localSchema, setLocalSchema] = useState<RJSFSchema>();
   const [extraErrors, setExtraErrors] = useState<ErrorSchema>({});
-  const { t, i18n } = useTranslation(pluginPackage);
+  const { t, i18n } = useTranslation(isUserPlugin ? null : pluginPackage);
 
   const updateSchema = async (
     newSchema: RJSFSchema,
@@ -74,6 +75,10 @@ export const ConfigForm = ({
 
   // update schema when language changed
   useEffect(() => {
+    if (isUserPlugin) {
+      updateSchema(schema, formData);
+      return;
+    }
     translateSchema(schema, t).then((translatedScheme) =>
       updateSchema(translatedScheme, formData),
     );

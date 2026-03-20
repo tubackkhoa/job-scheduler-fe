@@ -7,7 +7,13 @@ import { Paper, Stack, Typography } from '@mui/material';
 import CodeMirror from '@uiw/react-codemirror';
 import { useEffect, useState } from 'react';
 
-export default ({ pluginPackage, formData, env, setError, onRefresh }) => {
+export default function UserPluginCode({
+  pluginPackage,
+  formData,
+  env,
+  setError,
+  onRefresh,
+}) {
   const [mode] = useAppColorScheme();
   const notifications = useNotifications();
   const [isDirty, setIsDirty] = useState(false);
@@ -38,7 +44,7 @@ export default ({ pluginPackage, formData, env, setError, onRefresh }) => {
   };
 
   return (
-    <Paper elevation={0}>
+    <Paper elevation={0} sx={{ background: 'transparent' }}>
       <Stack spacing={1.5} sx={{ mb: 3 }}>
         <Typography variant="subtitle1" fontWeight={600}>
           Json Schema Form
@@ -82,4 +88,4 @@ export default ({ pluginPackage, formData, env, setError, onRefresh }) => {
       </Stack>
     </Paper>
   );
-};
+}

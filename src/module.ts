@@ -15,11 +15,7 @@ export const getModule = async ({
 }: CodeSchema): Promise<ModuleCode> => {
   // only transpile if this looks like typescript with import ...
   const loader = code
-    ? loadModule(
-        Utils.createUrlFromString(
-          /^\s*import\b/.test(code) ? await Utils.transpile(code) : code,
-        ),
-      )
+    ? loadModule(await Utils.createUrlFromString(code))
     : (libModules[`../libs/${url}`]?.() ?? loadModule(url));
 
   if (!loader) {

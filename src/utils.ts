@@ -526,7 +526,7 @@ export const transformSignals = (signals: Signal[]) => {
 /* ---------------- blob cache ---------------- */
 
 const blobCache = new Map<string, string>();
-export const createUrlFromString = (code: string) => {
+export const createUrlFromString = async (code: string, isES = false) => {
   // hash from trimmed string
   const hash = getCodeHash(code.trim());
 
@@ -536,10 +536,16 @@ export const createUrlFromString = (code: string) => {
   const blob = new Blob([code], {
     type: 'application/javascript',
   });
-
   url = URL.createObjectURL(blob);
+  if (!isES) {
+    try {
+      await import(url);
+    } catch {
+      // fallback with ES module
+      return createUrlFromString(await transpile(code), true);
+    }
+  }
   blobCache.set(hash, url);
-
   return url;
 };
 
