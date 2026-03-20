@@ -1989,13 +1989,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"base-64@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "base-64@npm:1.0.0"
-  checksum: 10c0/d886cb3236cee0bed9f7075675748b59b32fad623ddb8ce1793c790306aa0f76a03238cad4b3fb398abda6527ce08a5588388533a4ccade0b97e82b9da660e28
-  languageName: node
-  linkType: hard
-
 "baseline-browser-mapping@npm:^2.9.0":
   version: 2.9.7
   resolution: "baseline-browser-mapping@npm:2.9.7"
@@ -3133,8 +3126,8 @@ __metadata:
     json5: "npm:^2.2.3"
     lightweight-charts: "npm:^5.1.0"
     lodash: "npm:^4.17.21"
+    minijinja-js: "github:tubackkhoa/jinja2-wasm#5a9dcc0552cfd64e68923feb22315e84f2c5e0aa"
     patch-package: "npm:^8.0.1"
-    pyodide: "npm:0.25.1"
     react: "npm:^19.2.4"
     react-dom: "npm:^19.2.4"
     react-i18next: "npm:^16.5.8"
@@ -4014,6 +4007,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"minijinja-js@github:tubackkhoa/jinja2-wasm#5a9dcc0552cfd64e68923feb22315e84f2c5e0aa":
+  version: 2.18.0
+  resolution: "minijinja-js@https://github.com/tubackkhoa/jinja2-wasm.git#commit=5a9dcc0552cfd64e68923feb22315e84f2c5e0aa"
+  checksum: 10c0/dc62d0ad56dfbf72821db80a4b4fa75aca1d34833333009ac7be2d81196a8033a1845e34f041674132e8c8b023e4fb67f710839efa09884d34faa2be38b444a0
+  languageName: node
+  linkType: hard
+
 "minimatch@npm:^10.0.1":
   version: 10.1.1
   resolution: "minimatch@npm:10.1.1"
@@ -4375,16 +4375,6 @@ __metadata:
   version: 7.1.0
   resolution: "property-information@npm:7.1.0"
   checksum: 10c0/e0fe22cff26103260ad0e82959229106563fa115a54c4d6c183f49d88054e489cc9f23452d3ad584179dc13a8b7b37411a5df873746b5e4086c865874bfa968e
-  languageName: node
-  linkType: hard
-
-"pyodide@npm:0.25.1":
-  version: 0.25.1
-  resolution: "pyodide@npm:0.25.1"
-  dependencies:
-    base-64: "npm:^1.0.0"
-    ws: "npm:^8.5.0"
-  checksum: 10c0/f9997b9d7f6cd131d13d159a58c94654ea21c10af0bc95ec914bc162e29f2f5eb6c9e27f4fdb9e9111bd8d74f567f0e4e8e6f18bc0da81d8cc547660f7e9cb0d
   languageName: node
   linkType: hard
 
@@ -5221,21 +5211,6 @@ __metadata:
   bin:
     node-which: bin/which.js
   checksum: 10c0/7e710e54ea36d2d6183bee2f9caa27a3b47b9baf8dee55a199b736fcf85eab3b9df7556fca3d02b50af7f3dfba5ea3a45644189836df06267df457e354da66d5
-  languageName: node
-  linkType: hard
-
-"ws@npm:^8.5.0":
-  version: 8.19.0
-  resolution: "ws@npm:8.19.0"
-  peerDependencies:
-    bufferutil: ^4.0.1
-    utf-8-validate: ">=5.0.2"
-  peerDependenciesMeta:
-    bufferutil:
-      optional: true
-    utf-8-validate:
-      optional: true
-  checksum: 10c0/4741d9b9bc3f9c791880882414f96e36b8b254e34d4b503279d6400d9a4b87a033834856dbdd94ee4b637944df17ea8afc4bce0ff4a1560d2166be8855da5b04
   languageName: node
   linkType: hard
 

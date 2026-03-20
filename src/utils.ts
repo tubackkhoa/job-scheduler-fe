@@ -17,6 +17,7 @@ import dayjs from 'dayjs';
 import { RJSFSchema } from '@rjsf/utils';
 import { PaletteMode } from '@mui/material';
 import { TFunction } from 'i18next';
+import { render } from './jinja';
 
 export const scrollToTop = () => {
   window.scrollTo({
@@ -70,8 +71,7 @@ export const convertByType = (value: string, type: TypeofResult) => {
   }
 };
 
-type SchemaNode = Record<string, any>;
-type NodeCallback = (node: SchemaNode) => void | Promise<void>;
+type NodeCallback = (node: AnyObject) => void | Promise<void>;
 
 /**
  * Recursively traverse a JSON schema and apply a callback to each node.
@@ -123,7 +123,7 @@ export const translateSchema = (
 
 export const buildUiSchemaWithExpr = async (
   packageName: string,
-  context: Record<string, any>,
+  context: AnyObject,
   schema: RJSFSchema,
   changedFieldId: string,
 ): Promise<[RJSFSchema, string[]]> => {
@@ -285,7 +285,7 @@ export const yamlWithEmbeddedJS = (keyNames: string[] = ['code']) => {
  * ================================ */
 
 export class JinjaCompletionBuilder {
-  static buildGlobals(globals: Record<string, any> = []) {
+  static buildGlobals(globals: AnyObject = []) {
     return Object.entries(globals).map(([label, meta]) => ({
       label,
       type: meta.type,
@@ -296,7 +296,7 @@ export class JinjaCompletionBuilder {
     }));
   }
 
-  static buildFilters(filters: Record<string, any> = {}) {
+  static buildFilters(filters: AnyObject = {}) {
     return Object.entries(filters).map(([label, meta]) => ({
       label,
       type: 'function',
@@ -324,7 +324,7 @@ export class JinjaCompletionBuilder {
     }));
   }
 
-  static buildTopLevelVariables(params: Record<string, any> = {}) {
+  static buildTopLevelVariables(params: AnyObject = {}) {
     return Object.keys(params).map((key) => ({
       label: key,
       type: 'variable',
@@ -333,7 +333,7 @@ export class JinjaCompletionBuilder {
     }));
   }
 
-  static buildProperties(params: Record<string, any> = {}) {
+  static buildProperties(params: AnyObject = {}) {
     return (path: readonly string[]) => {
       const value = _.get(params, path);
       if (!_.isPlainObject(value)) return [];
@@ -347,10 +347,7 @@ export class JinjaCompletionBuilder {
     };
   }
 
-  static build(
-    params: Record<string, any> = {},
-    envDoc: EnvDoc,
-  ): JinjaCompletionConfig {
+  static build(params: AnyObject = {}, envDoc: EnvDoc): JinjaCompletionConfig {
     return {
       variables: [
         ...this.buildTopLevelVariables(params),
@@ -370,10 +367,7 @@ type JinjaSymbols = {
   filters: Globals;
 };
 
-export const jinjaLinter = (
-  params: Record<string, any>,
-  symbols: JinjaSymbols,
-) => {
+export const jinjaLinter = (params: AnyObject, symbols: JinjaSymbols) => {
   return linter((view) => {
     const diagnostics: Diagnostic[] = [];
     const definitions = new Set<string>(['this']);
@@ -431,7 +425,6 @@ export const jinjaLinter = (
   });
 };
 
-// lazy init, because it is not required to build, unlike pyodide
 const getEsbuild = () => {
   if (!globalThis.__ESBUILD_PROMISE__) {
     globalThis.__ESBUILD_PROMISE__ = (async () => {
@@ -476,32 +469,6 @@ export async function transpile(code: string): Promise<string> {
   return result.code;
 }
 
-const getPyodide = () => {
-  if (!globalThis.__PYODIDE_PROMISE__) {
-    globalThis.__PYODIDE_PROMISE__ = (async () => {
-      const pyodide = await loadPyodide();
-      // Ensure Jinja2 is available
-      await pyodide.loadPackage('jinja2');
-      await pyodide.runPythonAsync(jinjaPython);
-      console.log('Pyodide initialized');
-      return pyodide;
-    })();
-  }
-  return globalThis.__PYODIDE_PROMISE__;
-};
-
-const extractUndeclaredVariables = async (
-  tpl: string,
-  data: {
-    [key: string]: any;
-  },
-): Promise<string[] | string> => {
-  const pyodide = await getPyodide();
-  const renderFn = pyodide.globals.get('render');
-  const params = renderFn(tpl, pyodide.toPy(data), pyodide.toPy(window.ctx));
-  return typeof params === 'string' ? params : Array.from(params.toJs());
-};
-
 export const buildJinjaContext = (
   packageName: string,
   params: {
@@ -526,7 +493,7 @@ export const jinjaEvaluate = async (
   raw = false,
 ) => {
   // extract includeKeys to pass to server
-  const includeKeys = await extractUndeclaredVariables(tmpl, params);
+  const includeKeys = render(tmpl, params, window.ctx);
   const result =
     typeof includeKeys === 'string'
       ? includeKeys

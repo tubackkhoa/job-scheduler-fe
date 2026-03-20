@@ -21,7 +21,7 @@ interface Props {
   pluginId: number;
 }
 
-export const defaultUiSchema: Record<string, any> = {
+export const defaultUiSchema: AnyObject = {
   'ui:submitButtonOptions': { norender: true },
 };
 

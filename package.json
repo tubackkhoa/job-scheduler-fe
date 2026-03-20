@@ -31,6 +31,7 @@
     "json5": "^2.2.3",
     "lightweight-charts": "^5.1.0",
     "lodash": "^4.17.21",
+    "minijinja-js": "github:tubackkhoa/jinja2-wasm#5a9dcc0552cfd64e68923feb22315e84f2c5e0aa",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-i18next": "^16.5.8",
@@ -52,7 +53,6 @@
     "esbuild": "^0.27.3",
     "globals": "^16.5.0",
     "patch-package": "^8.0.1",
-    "pyodide": "0.25.1",
     "ts-morph": "^27.0.2",
     "vite": "^8.0.0-beta.16"
   },

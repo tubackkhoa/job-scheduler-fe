@@ -196,16 +196,14 @@ const renderCell = (key: string, value: any) => {
   }
 };
 
-type AnyDict = Record<string, any>;
-
 type IdentityState = { state: 'active' | 'inactive'; label: string; job?: any };
 
 function buildStatsTable(
-  stats: AnyDict[],
-  jobs: AnyDict[],
+  stats: AnyObject[],
+  jobs: AnyObject[],
   publishedModels: string[] = [],
 ): {
-  rows: AnyDict[];
+  rows: AnyObject[];
   totals: {
     total_models: number;
     total_pnl: number;
@@ -224,7 +222,7 @@ function buildStatsTable(
   }
 
   // Deduplicate stats by identity (keep latest)
-  const seenIdentities: Record<string, AnyDict> = {};
+  const seenIdentities: Record<string, AnyObject> = {};
   for (const stat of stats) {
     const identity = stat.identity;
     if (identity) {
@@ -247,7 +245,7 @@ function buildStatsTable(
     }
   }
 
-  const rows: AnyDict[] = [];
+  const rows: AnyObject[] = [];
   let totalPnl = 0;
   let totalPositions = 0;
 
@@ -468,8 +466,8 @@ interface ConfigModalProps {
   open: boolean;
   onClose: () => void;
   editingRow: any;
-  initialValues: Record<string, any>;
-  onSave: (values: Record<string, any>) => void;
+  initialValues: AnyObject;
+  onSave: (values: AnyObject) => void;
   saving: boolean;
 }
 
@@ -881,7 +879,7 @@ export default ({ formData, registry }: FieldProps) => {
   const [editingRow, setEditingRow] = useState<any>(null);
   const [configOpen, setConfigOpen] = useState(false);
   const [savingConfig, setSavingConfig] = useState(false);
-  const [configValues, setConfigValues] = useState<Record<string, any>>({});
+  const [configValues, setConfigValues] = useState<AnyObject>({});
 
   // Chart Modal State
   const [chartOpen, setChartOpen] = useState(false);

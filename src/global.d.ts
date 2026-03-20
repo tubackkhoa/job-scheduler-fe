@@ -8,9 +8,7 @@ import HooksNS from './hooks';
 import ApiNS from './api';
 import ReactNS from 'react';
 import * as ConstantsNS from './constants';
-import { loadPyodide as loadPyodideNS } from 'pyodide';
 import { Params } from 'react-router-dom';
-import { PyodideInterface } from 'pyodide';
 
 declare global {
   const AppIcon: typeof AppIconNS;
@@ -22,8 +20,6 @@ declare global {
     _: typeof _;
     dayjs: typeof dayjs;
   };
-
-  const loadPyodide: typeof loadPyodideNS;
 
   type Order = 'asc' | 'desc';
 
@@ -252,11 +248,12 @@ declare global {
     ConfigFormContext<T>
   >;
 
+  type AnyObject = Record<string, any>;
+
   type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [P in K]?: T[P] };
 
   // for lazy init
   var __ESBUILD_PROMISE__: Promise<typeof import('esbuild-wasm')> | undefined;
-  var __PYODIDE_PROMISE__: Promise<PyodideInterface> | undefined;
 
   interface Window {
     ctx: { user: User };

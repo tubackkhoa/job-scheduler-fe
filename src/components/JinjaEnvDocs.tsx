@@ -31,7 +31,7 @@ type JinjaEnvJson = {
 type Props = {
   data: JinjaEnvJson;
   pluginPackage: string;
-  params: Record<string, any>;
+  params: AnyObject;
 };
 
 type RenderResult = {
