@@ -18,7 +18,6 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material';
-import { use } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -27,7 +26,7 @@ interface Props {
   plugins: PluginData[];
   sessionId: number;
   pluginId: string | number;
-  ctx?: any;
+  ctx: { user: User };
   onReloadPlugin: () => void;
   onCreatePlugin: () => void;
   isLoading: boolean;
@@ -53,8 +52,6 @@ export function ContextPanel({
       sx={{
         bgcolor: 'background.paper',
         flex: 1,
-        backgroundImage:
-          'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%)',
       }}
     >
       <CardContent sx={{ p: 3 }}>
@@ -181,7 +178,14 @@ export function ContextPanel({
                   primary={option.package}
                   secondary={option.description}
                   slotProps={{
-                    primary: { noWrap: true },
+                    primary: {
+                      noWrap: true,
+                      sx: {
+                        '&::first-letter': {
+                          textTransform: 'none',
+                        },
+                      },
+                    },
                     secondary: { noWrap: true },
                   }}
                 />

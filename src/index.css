@@ -64,6 +64,28 @@ a#tv-attr-logo{
   display: none;
 }
 
+.cm-transparent {
+  .cm-editor,.cm-gutters,.cm-activeLineGutter {
+    background: transparent;
+  }
+  
+}
+
+/* better styled caret */
+.cm-foldGutter .cm-gutterElement {
+  span {
+    font-size: 0;
+    &[title="Fold line"]::before {
+      font-size: 12px;
+      content: "▶";
+    }
+    &[title="Unfold line"]::before {
+      font-size: 12px;
+      content: "▼";
+    }
+  }    
+}
+
 /* Smaller font on mobile */
 @media (max-width: 600px) {
   .cm-editor {

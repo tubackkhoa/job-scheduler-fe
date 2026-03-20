@@ -1,7 +1,6 @@
 import { Console } from '@/components/Console';
 import React, { useEffect, useRef, useState } from 'react';
-
-import { Box, Paper, Typography, Stack, Divider } from '@mui/material';
+import { Paper } from '@mui/material';
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
 
 interface Props {
@@ -114,33 +113,7 @@ export const JavascriptPreview: React.FC<Props> = ({
       }}
     >
       <iframe ref={iframeRef} style={{ display: 'none' }} />
-      {/* Header */}
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        sx={{ px: 2, py: 1 }}
-      >
-        <Typography variant="subtitle2" color="grey.300">
-          Console
-        </Typography>
-      </Stack>
-
-      <Divider sx={{ borderColor: 'grey.800' }} />
-
-      {/* Console Output */}
-      <Box
-        sx={{
-          flex: 1,
-          overflow: 'auto',
-          px: 1,
-          py: 0.5,
-          fontFamily: 'Roboto Mono, monospace',
-          fontSize: 13,
-        }}
-      >
-        <Console logs={logs} variant={mode} />
-      </Box>
+      <Console logs={logs} variant={mode} />
     </Paper>
   );
 };

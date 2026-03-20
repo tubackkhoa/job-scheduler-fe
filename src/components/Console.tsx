@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useMemo } from 'react';
 import { Box, PaletteMode, Typography } from '@mui/material';
 import CodeMirror from '@uiw/react-codemirror';
 import { jsonLang } from '@/utils';
@@ -53,16 +53,6 @@ const stringifySafe = (arg: any) => {
 };
 
 export const Console: React.FC<ConsoleProps> = ({ logs, variant }) => {
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  // scroll to bottom on logs change
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'end',
-    });
-  }, [logs]);
-
   // precompute all formatted logs safely
   const formattedLogs = useMemo(
     () =>
@@ -90,15 +80,13 @@ export const Console: React.FC<ConsoleProps> = ({ logs, variant }) => {
   }
 
   return (
-    <Box>
+    <>
       {formattedLogs.map((log, index) => (
         <Box
           key={index}
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            px: 1,
-            py: 0.5,
+            px: 2,
+            py: 1,
             borderBottom: '1px solid',
             borderColor: 'divider',
           }}
@@ -109,6 +97,7 @@ export const Console: React.FC<ConsoleProps> = ({ logs, variant }) => {
               editable={false}
               height="auto"
               theme={variant}
+              className="cm-transparent"
               extensions={[jsonLang]}
               basicSetup={{
                 lineNumbers: false,
@@ -116,24 +105,19 @@ export const Console: React.FC<ConsoleProps> = ({ logs, variant }) => {
               }}
               style={{
                 fontSize: 13,
-                borderRadius: 4,
               }}
             />
           ) : (
             <Typography
-              sx={{
-                fontFamily: 'Roboto Mono, monospace',
-                fontSize: 13,
-                whiteSpace: 'pre-wrap',
-                color: getColor(log.method, variant),
-              }}
+              noWrap
+              fontSize={13}
+              color={getColor(log.method, variant)}
             >
               {log.formatted}
             </Typography>
           )}
         </Box>
       ))}
-      <div ref={bottomRef} />
-    </Box>
+    </>
   );
 };
