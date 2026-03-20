@@ -117,7 +117,6 @@ function baseOptions(plugins: Plugin[]): BuildOptions {
     target: 'esnext',
     loader: {
       '.tsx': 'tsx',
-      '.py': 'text',
     },
     jsx: 'transform',
     jsxFactory: 'React.createElement',
