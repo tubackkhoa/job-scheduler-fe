@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Card,
   CardContent,
   CardHeader,
   Button,
@@ -69,9 +68,6 @@ export function JobDetails({
     const localData = getDefaultFormState(validator, schema, formData, schema);
     setLocalFormData(localData);
     setIsDirty(false);
-    if (tabIndex !== 0) {
-      setTabIndex(0);
-    }
   }, [formData]);
 
   const isUserPlugin = typeof pluginId === 'string';
@@ -138,7 +134,7 @@ export function JobDetails({
   };
 
   return (
-    <Card sx={{ bgcolor: 'background.paper', p: 1 }}>
+    <>
       <CardHeader
         title={isUserPlugin ? t('user plugin') : t('job details')}
         subheader={
@@ -376,6 +372,6 @@ export function JobDetails({
           </Stack>
         </Stack>
       </CardContent>
-    </Card>
+    </>
   );
 }

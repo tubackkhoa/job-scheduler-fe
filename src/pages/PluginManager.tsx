@@ -379,10 +379,10 @@ export default function PluginManager({ setLoading, setError }) {
         <Grid
           component={Card}
           size={{ xs: 12, md: panelOpen ? 8 : 12 }}
-          sx={{ bgcolor: 'background.paper' }}
+          sx={{ bgcolor: 'background.paper', p: 1 }}
         >
           {pluginId ? (
-            currentJob?.config ? (
+            currentJob?.config && schema ? (
               <JobDetails
                 jobId={jobId}
                 jobDesc={jobDesc}
