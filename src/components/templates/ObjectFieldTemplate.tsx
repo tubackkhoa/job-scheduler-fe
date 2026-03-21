@@ -45,7 +45,7 @@ const calculateItemSize = (schema?: RJSFSchema): GridSizeObject => {
 };
 
 const fieldWrapperStyle = {
-  p: { xs: 0, sm: 1 },
+  p: { xs: 0, md: 1 },
   bgcolor: 'transparent',
   border: 'none',
 };

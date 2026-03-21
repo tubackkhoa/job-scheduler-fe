@@ -342,7 +342,7 @@ export function VersionField({
       }}
     >
       <Stack spacing={1.5}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={1}>
           <Autocomplete
             size="small"
             options={versions}
@@ -390,7 +390,7 @@ export function VersionField({
             sx={{ flex: 1, minWidth: 200 }}
           />
         </Stack>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={1}>
           <Button
             variant="contained"
             size="small"

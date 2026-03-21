@@ -17,14 +17,14 @@ import {
   ListItemText,
   Tabs,
   Tab,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 
 import CodeMirror from '@uiw/react-codemirror';
 
 import { jinjaEvaluate, jinjaLang } from '@/utils';
 import api from '@/api';
-
-import { useAppColorScheme } from '@/hooks/useAppColorSchema';
 import { MarkdownPreview } from '@/components/fields/MarkdownPreview';
 import useNotifications from '@/hooks/useNotifications/useNotifications';
 
@@ -35,7 +35,8 @@ type Message = {
 };
 
 export default function TemplateStudio() {
-  const [mode] = useAppColorScheme();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const notifications = useNotifications();
 
   const [plugins, setPlugins] = useState<PluginData[]>([]);
@@ -176,7 +177,7 @@ export default function TemplateStudio() {
       <Paper
         sx={{
           display: 'flex',
-          flexDirection: { md: 'row', sm: 'column' },
+          flexDirection: { md: 'row', xs: 'column' },
           minHeight: { md: '75vh' },
           maxHeight: { md: '90vh' },
         }}
@@ -297,11 +298,16 @@ export default function TemplateStudio() {
             overflowX: 'hidden',
             p: 2,
             display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
             flex: 2,
-            alignItems: 'stretch',
+            minWidth: 0,
           }}
         >
-          <Tabs orientation="vertical" value={tab} onChange={handleTabChange}>
+          <Tabs
+            orientation={isMobile ? 'horizontal' : 'vertical'}
+            value={tab}
+            onChange={handleTabChange}
+          >
             <Tab label="Editor" value="editor" />
             <Tab
               label="Preview"
@@ -326,7 +332,7 @@ export default function TemplateStudio() {
               <CodeMirror
                 value={output}
                 onChange={setOutput}
-                theme={mode}
+                theme={theme.palette.mode}
                 extensions={[jinjaLang]}
               />
             </Box>

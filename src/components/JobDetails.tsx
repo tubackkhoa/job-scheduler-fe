@@ -334,8 +334,8 @@ export function JobDetails({
             </Typography>
           )}
           <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            alignItems={{ xs: 'stretch', sm: 'center' }}
+            direction={{ xs: 'column', md: 'row' }}
+            alignItems={{ xs: 'stretch', md: 'center' }}
             gap={2}
           >
             <Button
