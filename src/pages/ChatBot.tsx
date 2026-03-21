@@ -36,7 +36,7 @@ type Message = {
 
 export default function TemplateStudio() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const notifications = useNotifications();
 
   const [plugins, setPlugins] = useState<PluginData[]>([]);

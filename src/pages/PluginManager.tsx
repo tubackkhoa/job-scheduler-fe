@@ -46,7 +46,7 @@ export default function PluginManager({ setLoading, setError }) {
 
   const notifications = useNotifications();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [isPanelOpen, setIsPanelOpen] = useState<boolean>(() =>
     storage.getPanelOpen(),
