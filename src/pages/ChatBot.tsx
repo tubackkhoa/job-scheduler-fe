@@ -215,6 +215,7 @@ export default function TemplateStudio() {
 
                       <Tooltip title="Resend">
                         <IconButton
+                          disableRipple
                           size="small"
                           onClick={() =>
                             sendMessage({
