@@ -2,7 +2,8 @@ import storage from './storage';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
-const apiUrl = (path: string) => `${API_BASE_URL}${path}`;
+export const apiUrl = (path: string) => `${API_BASE_URL}${path}`;
+export const wsUrl = (path: string) => apiUrl(path).replace(/^http/, 'ws');
 
 const JSON_HEADERS = {
   'Content-Type': 'application/json',
@@ -133,6 +134,16 @@ export type StreamOptions<T> = {
   payload: T;
   onToken: (text: string) => void;
   onMeta?: (meta: { model: string }) => void;
+};
+
+export type WSStreamOptions<T> = {
+  payload?: any; // optional data to send after connection
+  onMessage?: (data: T) => void; // called for each message
+  onOpen?: () => void;
+  onClose?: () => void;
+  onError?: (err: Event) => void;
+  reconnect?: boolean; // default true
+  reconnectDelay?: number; // default 2000 ms
 };
 
 export default {
@@ -339,5 +350,70 @@ export default {
     }
 
     return readTextStream(body, onToken);
+  },
+  async streamWebSocket<T>(
+    url: string,
+    {
+      payload,
+      onMessage,
+      onOpen,
+      onClose,
+      onError,
+      reconnect = true,
+      reconnectDelay = 2000,
+    }: WSStreamOptions<T>,
+  ): Promise<WebSocket> {
+    return new Promise((resolve) => {
+      let isActive = true;
+      let ws: WebSocket;
+      let reconnectTimeout: number | null = null;
+
+      const connect = () => {
+        if (!isActive) return;
+
+        ws = new WebSocket(url.startsWith('http') ? url : wsUrl(url));
+
+        ws.onopen = () => {
+          if (payload) {
+            ws.send(JSON.stringify(payload));
+          }
+          if (onOpen) onOpen();
+          resolve(ws); // resolve the promise once connection is open
+        };
+
+        ws.onmessage = (e) => {
+          try {
+            const data: T = JSON.parse(e.data);
+            if (onMessage) onMessage(data);
+          } catch (err) {
+            console.error('Failed to parse WS message', err);
+          }
+        };
+
+        ws.onclose = () => {
+          if (onClose) onClose();
+          if (isActive && reconnect) {
+            reconnectTimeout = setTimeout(connect, reconnectDelay);
+          }
+        };
+
+        ws.onerror = (err) => {
+          if (onError) onError(err);
+          ws.close(); // triggers onclose
+        };
+      };
+
+      connect();
+
+      // cleanup function
+      const cleanup = () => {
+        isActive = false;
+        if (reconnectTimeout) clearTimeout(reconnectTimeout);
+        if (ws && ws.readyState === WebSocket.OPEN) ws.close();
+      };
+
+      // attach cleanup to window unload to prevent dangling WS
+      window.addEventListener('beforeunload', cleanup);
+    });
   },
 };
