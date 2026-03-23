@@ -16,6 +16,7 @@ import { FieldError, RJSFSchema } from '@rjsf/utils';
 import { PaletteMode } from '@mui/material';
 import { TFunction } from 'i18next';
 import { render } from './jinja';
+import { loadModule } from './module';
 
 export const scrollToTop = () => {
   window.scrollTo({
@@ -539,7 +540,7 @@ export const createUrlFromString = async (code: string, isES = false) => {
   url = URL.createObjectURL(blob);
   if (!isES) {
     try {
-      await import(url);
+      await loadModule(url);
     } catch {
       // fallback with ES module
       return createUrlFromString(await transpile(code), true);
