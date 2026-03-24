@@ -5,6 +5,8 @@ typeof init === 'function' && (await init());
 // --- environment setup ---
 const env = new Environment();
 env.undefinedBehavior = 'strict';
+env.lstripBlocks = true;
+env.trimBlocks = true;
 
 // add some filter method, this help rendering at client if possible before fallback to server
 env.addFilter('in_clause', (values: any[]): string => {
