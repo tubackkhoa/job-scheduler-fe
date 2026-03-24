@@ -66,9 +66,10 @@ export function PluginSitemap({ plugins, routeState, loadRoutes }: Props) {
                   <List component="div" disablePadding>
                     {state.routes.filter(Boolean).map((route) => (
                       <ListItemButton
+                        component={RouterLink}
                         key={route}
                         sx={{ pl: 6 }}
-                        onClick={() => navigate(`/${plugin.id}/${route}`)}
+                        to={`/${plugin.id}/${route}`}
                       >
                         <ListItemIcon sx={{ minWidth: 32 }}>
                           <AppIcon.Route fontSize="small" />

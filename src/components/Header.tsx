@@ -4,6 +4,7 @@ import {
   Typography,
   IconButton,
   Menu,
+  Icon,
   MenuItem,
   ListItemIcon,
   Divider,
@@ -172,8 +173,8 @@ export function Header({
               selected={i18n.language === lang.code}
               onClick={() => handleChangeLanguage(lang.code)}
             >
-              <ListItemIcon sx={{ fontSize: '1.25rem' }}>
-                {lang.flag}
+              <ListItemIcon>
+                <Icon fontSize="small">{lang.flag}</Icon>
               </ListItemIcon>
               {lang.label}
             </MenuItem>
