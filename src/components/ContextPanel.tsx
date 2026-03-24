@@ -60,8 +60,6 @@ export function ContextPanel({
           <Avatar
             sx={{
               bgcolor: 'primary.main',
-              width: 44,
-              height: 44,
             }}
           >
             <AppIcon.Person />

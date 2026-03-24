@@ -47,7 +47,7 @@ export function JobsList({
   const selectedJob = filteredJobs.find((j) => j.id === selectedJobId) || null;
 
   return (
-    <Card sx={{ bgcolor: 'background.paper', flex: 1 }}>
+    <Card>
       <CardHeader
         title={t('job')}
         subheader={t('select, start, pause, or add a job')}
