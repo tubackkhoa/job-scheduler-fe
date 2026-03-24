@@ -196,7 +196,7 @@ export default function TemplateStudio() {
                   key={i}
                   sx={{
                     alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                    maxWidth: '90%',
+                    maxWidth: { md: '90%' },
                   }}
                 >
                   {msg.role === 'user' ? (
