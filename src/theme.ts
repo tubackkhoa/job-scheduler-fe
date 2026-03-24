@@ -70,13 +70,24 @@ export const theme = createTheme({
       palette: darkPalette,
     },
   },
-  typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-  },
   shape: {
     borderRadius: 8,
   },
   components: {
+    MuiCardHeader: {
+      styleOverrides: {
+        subheader: {
+          fontWeight: 400,
+          fontSize: '0.875rem',
+          lineHeight: 1.43,
+        },
+        title: {
+          lineHeight: 1.6,
+          fontSize: '1.25rem',
+          fontWeight: 600,
+        },
+      },
+    },
     MuiTextField: {
       defaultProps: {
         variant: 'outlined',
