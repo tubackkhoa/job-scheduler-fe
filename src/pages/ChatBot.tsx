@@ -319,6 +319,8 @@ export default function TemplateStudio() {
           <Box
             sx={{
               flex: 1,
+              pl: { xs: 0, md: 2 },
+              pt: { xs: 2, md: 0 },
               minWidth: 0,
               overflow: 'auto',
             }}
