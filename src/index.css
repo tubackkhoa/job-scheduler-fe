@@ -64,11 +64,14 @@ a#tv-attr-logo{
   display: none;
 }
 
+.cm-editor {
+  font-size: 13px;
+}
+
 .cm-transparent {
   .cm-editor,.cm-gutters,.cm-activeLineGutter {
     background: transparent;
   }
-  
 }
 
 /* better styled caret */
