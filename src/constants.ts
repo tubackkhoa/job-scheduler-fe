@@ -1,3 +1,21 @@
+// providers are injected into window
+export const BASE_PROVIDERS = [
+  'React',
+  'AppIcon',
+  'Mui',
+  'RouterDom',
+  'LightweightChart',
+  'Components',
+  'Hooks',
+  'api',
+  'Utils',
+  'Constants',
+  'ctx',
+  'solana',
+  'ethereum',
+  'keplr',
+];
+
 export const SESSIONS: Session[] = [
   {
     id: 1,

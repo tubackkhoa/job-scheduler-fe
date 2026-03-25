@@ -2,11 +2,11 @@ import { Console } from '@/components/Console';
 import React, { useEffect, useRef, useState } from 'react';
 import { Paper } from '@mui/material';
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
+import { BASE_PROVIDERS } from '@/constants';
 
 interface Props {
   text: string;
   fullscreen: boolean;
-  providers: string[];
 }
 
 /**
@@ -15,16 +15,13 @@ interface Props {
 const runCode = (
   iframe: HTMLIFrameElement,
   code: string,
-  providers: string[],
   hideConsole = true,
 ) => {
   iframe.srcdoc = `
 <script>
-    ${providers
-      .map((provider) => {
-        return `window.${provider} = parent.${provider};`;
-      })
-      .join('\n')}
+    ${BASE_PROVIDERS.map((provider) => {
+      return `window.${provider} = parent.${provider};`;
+    }).join('\n')}
     
     const METHODS = ['log', 'info', 'warn', 'error', 'debug'];
 
@@ -67,11 +64,7 @@ const runCode = (
 `;
 };
 
-export const JavascriptPreview: React.FC<Props> = ({
-  text,
-  fullscreen,
-  providers,
-}) => {
+export const JavascriptPreview: React.FC<Props> = ({ text, fullscreen }) => {
   const [mode] = useAppColorScheme();
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const [logs, setLogs] = useState<any[]>([]);
@@ -94,20 +87,7 @@ export const JavascriptPreview: React.FC<Props> = ({
     window.addEventListener('message', onMessage);
 
     if (iframeRef.current) {
-      runCode(iframeRef.current, text, [
-        'React',
-        'AppIcon',
-        'Mui',
-        'RouterDom',
-        'LightweightChart',
-        'Components',
-        'Hooks',
-        'api',
-        'Utils',
-        'Constants',
-        'ctx',
-        ...providers,
-      ]);
+      runCode(iframeRef.current, text);
     }
 
     return () => window.removeEventListener('message', onMessage);

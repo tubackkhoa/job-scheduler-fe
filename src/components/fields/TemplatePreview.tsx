@@ -46,13 +46,7 @@ export const TemplatePreview: React.FC<Props> = ({
         />
       );
     case 'js':
-      return (
-        <JavascriptPreview
-          text={text}
-          fullscreen={fullscreen}
-          providers={['solana', 'ethereum', 'keplr']}
-        />
-      );
+      return <JavascriptPreview text={text} fullscreen={fullscreen} />;
     default:
       return (
         <CodeMirror
