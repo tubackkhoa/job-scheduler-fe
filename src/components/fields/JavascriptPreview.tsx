@@ -41,8 +41,7 @@ const runCode = (
     });
 
     window.onerror = function (message, source, line, column, error) {
-        parent.postMessage(
-        {
+        parent.postMessage({
             type: 'console',
             method: 'error',
             args: [message, error && error.stack]
@@ -50,8 +49,7 @@ const runCode = (
     };
 
     window.onunhandledrejection = function (event) {
-        parent.postMessage(
-        {
+        parent.postMessage({
             type: 'console',
             method: 'error',
             args: [event.reason]
@@ -96,7 +94,20 @@ export const JavascriptPreview: React.FC<Props> = ({
     window.addEventListener('message', onMessage);
 
     if (iframeRef.current) {
-      runCode(iframeRef.current, text, providers);
+      runCode(iframeRef.current, text, [
+        'React',
+        'AppIcon',
+        'Mui',
+        'RouterDom',
+        'LightweightChart',
+        'Components',
+        'Hooks',
+        'api',
+        'Utils',
+        'Constants',
+        'ctx',
+        ...providers,
+      ]);
     }
 
     return () => window.removeEventListener('message', onMessage);
@@ -104,11 +115,11 @@ export const JavascriptPreview: React.FC<Props> = ({
 
   return (
     <Paper
-      elevation={2}
       sx={{
         maxHeight: fullscreen ? '100%' : 600,
         minHeight: 300,
         display: 'flex',
+        overflow: 'auto',
         flexDirection: 'column',
       }}
     >

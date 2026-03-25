@@ -71,7 +71,8 @@ a#tv-attr-logo{
 .cm-transparent {
   .cm-editor,.cm-gutters,.cm-activeLineGutter {
     background: transparent;
-  }
+    border: none;
+  }  
 }
 
 /* better styled caret */
