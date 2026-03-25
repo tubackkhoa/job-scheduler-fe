@@ -11,6 +11,8 @@ import {
   CircularProgress,
   Autocomplete,
   TextField,
+  ListItemText,
+  ListItem,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -59,7 +61,7 @@ export function JobsList({
             onClick={onNewJob}
             disabled={disabled}
           >
-            {t('new job')}
+            {t('new')}
           </Button>
         }
       />
@@ -120,59 +122,47 @@ export function JobsList({
               const active = !!job.active;
 
               return (
-                <Box component="li" key={job.id} {...props}>
-                  <Stack
-                    sx={{
-                      flex: 1,
-                      minWidth: 0,
+                <ListItem component="li" key={job.id} {...props}>
+                  <ListItemText
+                    slotProps={{
+                      primary: { noWrap: true },
+                      secondary: { noWrap: true },
                     }}
-                  >
-                    {/* Title */}
-                    <Typography fontWeight={500}>
-                      {job.description || 'Untitled job'}
-                      <Chip
-                        size="small"
-                        label={
-                          updating
-                            ? 'Updating...'
-                            : active
-                              ? 'Active'
-                              : 'Paused'
-                        }
-                        color={
-                          updating ? 'default' : active ? 'success' : 'default'
-                        }
-                        variant={active ? 'filled' : 'outlined'}
-                        icon={
-                          updating ? <CircularProgress size={12} /> : undefined
-                        }
-                        sx={{
-                          float: 'right',
-                          ml: 1,
-                          height: 20,
-                          flexShrink: 0,
-                        }}
-                      />
-                    </Typography>
-
-                    <Typography variant="caption" color="text.secondary" noWrap>
-                      #{job.id} • {pluginPackage || 'Plugin'}
-                    </Typography>
-                  </Stack>
-
-                  <Switch
-                    checked={active}
-                    disabled={updating}
-                    size="small"
-                    color="success"
-                    onClick={(e) => e.stopPropagation()}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      onToggleJob(e.target.checked, job.id);
-                    }}
-                    sx={{ mt: -3, ml: 1 }}
+                    primary={job.description || 'Untitled job'}
+                    secondary={`#${job.id} • ${pluginPackage || 'Plugin'}`}
                   />
-                </Box>
+
+                  <Stack alignItems="flex-end">
+                    <Chip
+                      size="small"
+                      label={
+                        updating ? 'Updating...' : active ? 'Active' : 'Paused'
+                      }
+                      color={
+                        updating ? 'default' : active ? 'success' : 'default'
+                      }
+                      variant={active ? 'filled' : 'outlined'}
+                      icon={
+                        updating ? <CircularProgress size={12} /> : undefined
+                      }
+                      sx={{
+                        height: 20,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <Switch
+                      checked={active}
+                      disabled={updating}
+                      size="small"
+                      color="success"
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        onToggleJob(e.target.checked, job.id);
+                      }}
+                    />
+                  </Stack>
+                </ListItem>
               );
             }}
           />
