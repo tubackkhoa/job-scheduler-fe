@@ -107,7 +107,7 @@ export const MarkdownPreview = memo(
 
                   // extract url from node
                   const pos = node.position;
-                  const start = pos.start.offset + 10; // skip ```module
+                  const start = pos.start.offset + 9; // skip ```module
                   const end = pos.end.offset;
 
                   // find newline directly in original text
