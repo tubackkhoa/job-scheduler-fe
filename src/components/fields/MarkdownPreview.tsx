@@ -6,13 +6,17 @@ import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import CodeMirror from '@uiw/react-codemirror';
 import { memo } from 'react';
 import { SortableTable } from '../SortableTable';
-import { resolveLanguageExtension } from '@/utils';
+import { convertByType, resolveLanguageExtension } from '@/utils';
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
+import { FieldPathId, FieldProps, RJSFSchema } from '@rjsf/utils';
+import DynamicField from './DynamicField';
 
 interface Props {
   text: string;
   maxHeight?: string | number;
-  renderModule?: (children: React.ReactNode) => React.ReactElement;
+  schema?: RJSFSchema;
+  fieldPathId?: FieldPathId;
+  registry?: FieldProps['registry'];
 }
 
 const sanitizeSchema = {
@@ -40,7 +44,7 @@ const sanitizeSchema = {
 };
 
 export const MarkdownPreview = memo(
-  ({ text, maxHeight = 'auto', renderModule }: Props) => {
+  ({ text, maxHeight = 'auto', schema, fieldPathId, registry }: Props) => {
     const [mode] = useAppColorScheme();
     return (
       <Box
@@ -80,7 +84,7 @@ export const MarkdownPreview = memo(
           remarkPlugins={[remarkGfm]}
           rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}
           components={{
-            code({ className, children }) {
+            code({ node, className, children }) {
               const lang = className?.replace('language-', '');
 
               switch (lang) {
@@ -93,8 +97,34 @@ export const MarkdownPreview = memo(
                     />
                   );
                 case 'module':
-                  // get name of the node as name
-                  return renderModule?.(children);
+                  // create props for module
+                  const props = {
+                    schema,
+                    formData: children,
+                    fieldPathId,
+                    registry,
+                  } as ConfigFieldProps;
+
+                  // extract url from node
+                  const pos = node.position;
+                  const start = pos.start.offset + 10; // skip ```module
+                  const end = pos.end.offset;
+
+                  // find newline directly in original text
+                  let i = start;
+                  while (i < end && text.charCodeAt(i) !== 10) i++; // 10 = '\n'
+
+                  // slice only once
+                  const url = text.slice(start, i).trim();
+
+                  if (url) {
+                    Object.assign(props, {
+                      schema: { url },
+                      ...convertByType(children as string, 'object'),
+                    });
+                  }
+
+                  return <DynamicField {...props} />;
                 case 'json':
                 case 'yml':
                 case 'yaml':

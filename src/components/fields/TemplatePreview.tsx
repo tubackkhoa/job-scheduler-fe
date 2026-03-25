@@ -6,13 +6,12 @@ import CodeMirror, {
 } from '@uiw/react-codemirror'; // Or your CodeMirror React wrapper
 import { JavascriptPreview } from './JavascriptPreview';
 import { FieldPathId, FieldProps, RJSFSchema } from '@rjsf/utils';
-import DynamicField from './DynamicField';
 
 type Props = {
   schema: RJSFSchema;
   fieldPathId: FieldPathId;
-  codeStyle: ReactCodeMirrorProps;
   registry: FieldProps['registry'];
+  codeStyle: ReactCodeMirrorProps;
   text: string;
   fullscreen: boolean;
   extensions: Extension[]; // You can be more specific based on your extensions type
@@ -31,16 +30,9 @@ export const TemplatePreview: React.FC<Props> = ({
     case 'markdown':
       return (
         <MarkdownPreview
-          renderModule={(children) => (
-            <DynamicField
-              {...({
-                formData: children,
-                fieldPathId,
-                registry,
-                schema,
-              } as ConfigFieldProps)}
-            />
-          )}
+          fieldPathId={fieldPathId}
+          registry={registry}
+          schema={schema}
           text={text}
           maxHeight={fullscreen ? '100%' : 'auto'}
         />
