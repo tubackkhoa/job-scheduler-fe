@@ -3,7 +3,6 @@ export const BASE_PROVIDERS = [
   'React',
   'AppIcon',
   'Mui',
-  'RouterDom',
   'LightweightChart',
   'Components',
   'Hooks',
