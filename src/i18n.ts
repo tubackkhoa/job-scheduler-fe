@@ -33,4 +33,5 @@ i18n
     fallbackLng: 'en',
     ns: ['common'],
     fallbackNS: 'common',
+    debug: import.meta.env.DEV,
   });
