@@ -18,7 +18,7 @@ interface Props {
   formData: any;
   onChange: (data: any) => void;
   pluginPackage: string;
-  pluginId: number;
+  pluginId: number | string;
 }
 
 export const defaultUiSchema: AnyObject = {

@@ -52,11 +52,6 @@ declare global {
     roles: string[];
   }
 
-  interface GlobalVariable {
-    type: 'variable' | 'function' | string;
-    doc: string;
-  }
-
   interface Session {
     id: number;
     name: string;
@@ -72,13 +67,11 @@ declare global {
     cron_expr?: string;
   }
 
-  type Globals = Record<string, GlobalVariable>;
-
   interface PluginSchemaResponse {
     jobs: Job[];
     schema: RJSFSchema;
     user: User;
-    globals?: Globals;
+    globals?: DocItems;
   }
 
   interface PostResponse {
@@ -228,9 +221,17 @@ declare global {
     offset: number;
   }
 
+  interface DocItem {
+    type: 'variable' | 'function' | string;
+    doc?: string | null;
+    signature?: string | null;
+  }
+
+  type DocItems = Record<string, DocItem>;
+
   interface EnvDoc {
-    filters: Record<string, unknown>;
-    globals: Record<string, unknown>;
+    filters: DocItems;
+    globals: DocItems;
     tests: string[];
     tags: string[];
   }

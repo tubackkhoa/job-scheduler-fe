@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import { ContextPanel } from '../components/ContextPanel';
 import { JobsList } from '../components/JobsList';
-import { JobDetails } from '../components/JobDetails';
+import { JobChangePayload, JobDetails } from '../components/JobDetails';
 import { CreatePluginModal } from '../components/CreatePluginModal';
 import { SESSIONS, JINJA_ENV } from '../constants';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -19,6 +19,7 @@ import useNotifications from '@/hooks/useNotifications/useNotifications';
 import storage from '@/storage';
 import { LoadingSkeleton } from '@/components/Loading';
 import { useTranslation } from 'react-i18next';
+import { RJSFSchema } from '@rjsf/utils';
 
 export default function PluginManager({ setLoading, setError }) {
   const { plugin_id, session_id, job_id } = useParams<{
@@ -34,12 +35,16 @@ export default function PluginManager({ setLoading, setError }) {
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [jobId, setJobId] = useState(0);
-  const [jobDesc, setJobDesc] = useState('');
-  const [jobCronExpr, setJobCronExpr] = useState('');
+
+  const [payload, setPayload] = useState<JobChangePayload>({
+    description: '',
+    cron_expr: '',
+  });
+
   const [isNewJobMode, setIsNewJobMode] = useState(false);
 
-  const [schema, setSchema] = useState<any>(null);
-  const [env, setEnv] = useState<any>(null);
+  const [schema, setSchema] = useState<RJSFSchema>(null);
+  const [env, setEnv] = useState<EnvDoc>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [createPluginModalOpen, setCreatePluginModalOpen] = useState(false);
@@ -156,15 +161,16 @@ export default function PluginManager({ setLoading, setError }) {
 
     setJobId(newJobId);
     setIsNewJobMode(false);
-    setJobDesc(finalJob.description ?? '');
-    setJobCronExpr(finalJob.cron_expr);
+    setPayload({
+      description: finalJob.description ?? '',
+      cron_expr: finalJob.cron_expr,
+    });
   };
 
   const handleNewJob = useCallback(() => {
     setIsNewJobMode(true);
     setJobId(0);
-    setJobDesc('');
-    setJobCronExpr('');
+    setPayload({ description: '', cron_expr: '' });
   }, []);
 
   const [togglingJobId, setTogglingJobId] = useState<number | null>(null);
@@ -208,19 +214,18 @@ export default function PluginManager({ setLoading, setError }) {
     setError(null);
 
     try {
-      const payload = {
+      const jobData = {
+        ...payload,
         config: formData,
-        description: jobDesc,
-        cron_expr: jobCronExpr,
       };
 
       if (typeof pluginId === 'string') {
-        await api.updateTemplatePlugin(pluginId, payload);
+        await api.updateTemplatePlugin(pluginId, jobData);
       } else {
         const data =
           saveNew || !jobId
-            ? { ...payload, plugin_id: pluginId, session_id: sessionId }
-            : payload;
+            ? { ...jobData, plugin_id: pluginId, session_id: sessionId }
+            : jobData;
         await api.saveJob(saveNew || !jobId ? 0 : jobId, data);
       }
       notifications.show('Update config successfully!', {
@@ -385,8 +390,7 @@ export default function PluginManager({ setLoading, setError }) {
             currentJob?.config && schema ? (
               <JobDetails
                 jobId={jobId}
-                jobDesc={jobDesc}
-                jobCronExpr={jobCronExpr}
+                payload={payload}
                 pluginPackage={pluginInfo?.package}
                 isActive={isActive}
                 onRefresh={() => loadSchema(pluginId, sessionId, jobId)}
@@ -397,8 +401,7 @@ export default function PluginManager({ setLoading, setError }) {
                 sessionId={sessionId}
                 pluginId={pluginId}
                 isSubmitting={submitting}
-                onCronExprChange={setJobCronExpr}
-                onDescChange={setJobDesc}
+                onPayloadChange={setPayload}
                 onToggleActive={() => handleJobActivation(!isActive)}
                 onSave={(data) => handleSubmit({ formData: data })}
                 isToggling={togglingJobId === jobId}

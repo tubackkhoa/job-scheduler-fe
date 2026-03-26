@@ -17,19 +17,8 @@ import { jinjaEvaluate } from '@/utils';
 /**
  * Types
  */
-type DocItem = {
-  type: 'function' | 'variable';
-  doc?: string | null;
-  signature?: string | null;
-};
-
-type JinjaEnvJson = {
-  globals: Record<string, DocItem>;
-  filters: Record<string, DocItem>;
-};
-
 type Props = {
-  data: JinjaEnvJson;
+  data: EnvDoc;
   pluginPackage: string;
   params: AnyObject;
 };
@@ -255,7 +244,7 @@ function DocSection({
   isFilter = false,
 }: {
   title: string;
-  items: Record<string, DocItem>;
+  items: DocItems;
   pluginPackage: string;
   isFilter?: boolean;
 }) {

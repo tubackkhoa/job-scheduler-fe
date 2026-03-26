@@ -361,12 +361,7 @@ export class JinjaCompletionBuilder {
   }
 }
 
-type JinjaSymbols = {
-  globals: Globals;
-  filters: Globals;
-};
-
-export const jinjaLinter = (params: AnyObject, symbols: JinjaSymbols) => {
+export const jinjaLinter = (params: AnyObject, symbols: EnvDoc) => {
   return linter((view) => {
     const diagnostics: Diagnostic[] = [];
     const definitions = new Set<string>(['this']);

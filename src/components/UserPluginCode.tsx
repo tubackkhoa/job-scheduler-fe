@@ -7,13 +7,21 @@ import { Paper, Stack, Typography } from '@mui/material';
 import CodeMirror from '@uiw/react-codemirror';
 import { useEffect, useState } from 'react';
 
+interface Props {
+  env: EnvDoc;
+  pluginPackage: string;
+  formData: any;
+  onRefresh: () => void;
+  setError: (msg: string) => void;
+}
+
 export default function UserPluginCode({
   pluginPackage,
   formData,
   env,
   setError,
   onRefresh,
-}) {
+}: Props) {
   const [mode] = useAppColorScheme();
   const notifications = useNotifications();
   const [isDirty, setIsDirty] = useState(false);

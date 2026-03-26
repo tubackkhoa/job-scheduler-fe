@@ -31,7 +31,7 @@ export const SESSIONS: Session[] = [
   },
 ];
 
-export const JINJA_ENV = {
+export const JINJA_ENV: EnvDoc = {
   globals: {
     range: {
       type: 'function',

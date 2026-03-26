@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import {
   Box,
   CardContent,
@@ -35,28 +35,52 @@ function TabPanel(
   );
 }
 
+export type JobChangePayload = Omit<
+  Job,
+  'id' | 'plugin_id' | 'session_id' | 'config'
+>;
+
+interface Props {
+  jobId: number;
+  pluginId: number | string;
+  onRefresh: () => void;
+  sessionId: number;
+  payload: JobChangePayload;
+  onPayloadChange: Dispatch<SetStateAction<JobChangePayload>>;
+  pluginPackage: string;
+  setError: (msg: string) => void;
+  isActive: boolean;
+  formData: any;
+  schema: any;
+  env: EnvDoc;
+  onToggleActive: () => void;
+  onSave: (data: any) => Promise<void>;
+  onSaveAsNew: (data: any) => Promise<void>;
+  onDelete: () => Promise<void>;
+  isSubmitting: boolean;
+  isToggling: boolean;
+}
+
 export function JobDetails({
   jobId,
   pluginId,
   onRefresh,
   sessionId,
-  jobDesc,
-  jobCronExpr,
+  payload,
   pluginPackage,
   setError,
   isActive,
   formData,
   schema,
   env,
-  onDescChange,
-  onCronExprChange,
+  onPayloadChange,
   onToggleActive,
   onSave,
   onSaveAsNew,
   onDelete,
   isSubmitting,
   isToggling,
-}) {
+}: Props) {
   const [tabIndex, setTabIndex] = useState(0);
   const [localFormData, setLocalFormData] = useState();
   const [isDirty, setIsDirty] = useState(false);
@@ -205,16 +229,26 @@ export function JobDetails({
         <Stack spacing={3}>
           <TextField
             label={t('cron expression')}
-            value={jobCronExpr}
-            onChange={(e) => onCronExprChange(e.target.value)}
+            value={payload.cron_expr}
+            onChange={(e) =>
+              onPayloadChange((prev) => ({
+                ...prev,
+                cron_expr: e.target.value.trim(),
+              }))
+            }
             fullWidth
             helperText={t('format: second minute hour day month weekday')}
           />
 
           <TextField
             label={t('description')}
-            value={jobDesc}
-            onChange={(e) => onDescChange(e.target.value)}
+            value={payload.description}
+            onChange={(e) =>
+              onPayloadChange((prev) => ({
+                ...prev,
+                description: e.target.value.trim(),
+              }))
+            }
             placeholder={t('short note for this job')}
             fullWidth
           />
@@ -301,7 +335,7 @@ export function JobDetails({
           </TabPanel>
 
           <TabPanel value={tabIndex} index={2}>
-            <LogViewer jobId={jobId} description={jobDesc} />
+            <LogViewer jobId={jobId} description={payload.description} />
           </TabPanel>
 
           {schema.keyword && (
@@ -309,7 +343,7 @@ export function JobDetails({
               <SignalsLogsViewer
                 setError={setError}
                 jobId={jobId}
-                description={jobDesc}
+                description={payload.description}
               />
             </TabPanel>
           )}
