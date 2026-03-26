@@ -162,7 +162,7 @@ export function Header({
               <ListItemIcon>
                 <AppIcon.ChatBubbleOutline fontSize="small" />
               </ListItemIcon>
-              {t('chatbot')}
+              chatbot
             </MenuItem>
           )}
 
