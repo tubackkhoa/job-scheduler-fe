@@ -3,29 +3,35 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Paper } from '@mui/material';
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
 import { BASE_PROVIDERS } from '@/constants';
+import { transpile } from '@/utils';
 
 interface Props {
   text: string;
   fullscreen: boolean;
 }
 
+interface Log {
+  type: 'console';
+  method: keyof Console;
+  args: any[];
+}
+
 /**
  * Safely runs code inside iframe
  */
-const runCode = (
+const runCode = async (
   iframe: HTMLIFrameElement,
   code: string,
   hideConsole = true,
 ) => {
+  const jsCode = await transpile(code);
   iframe.srcdoc = `
 <script>
     ${BASE_PROVIDERS.map((provider) => {
       return `window.${provider} = parent.${provider};`;
-    }).join('\n')}
-    
-    const METHODS = ['log', 'info', 'warn', 'error', 'debug'];
+    }).join('\n')}      
 
-    METHODS.forEach(function (method) {
+    ['log', 'info', 'warn', 'error', 'debug'].forEach(function (method) {
         const original = console[method];
         console[method] = function () {
             parent.postMessage({
@@ -55,11 +61,7 @@ const runCode = (
 </script>
 
 <script type="module">
-    try {
-    ${code}
-    } catch (e) {
-    console.error(e);
-    }
+    ${jsCode}
 </script>
 `;
 };
@@ -72,7 +74,7 @@ export const JavascriptPreview: React.FC<Props> = ({ text, fullscreen }) => {
   useEffect(() => {
     setLogs([]);
 
-    const onMessage = (event: MessageEvent<any>) => {
+    const onMessage = (event: MessageEvent<Log>) => {
       if (event.data?.type !== 'console') return;
 
       setLogs((prev) => [
@@ -87,9 +89,18 @@ export const JavascriptPreview: React.FC<Props> = ({ text, fullscreen }) => {
     window.addEventListener('message', onMessage);
 
     if (iframeRef.current) {
-      runCode(iframeRef.current, text);
+      runCode(iframeRef.current, text).catch((ex) => {
+        onMessage(
+          new MessageEvent('message', {
+            data: {
+              type: 'console',
+              method: 'error',
+              args: [ex?.message || String(ex)],
+            },
+          }),
+        );
+      });
     }
-
     return () => window.removeEventListener('message', onMessage);
   }, [text]);
 

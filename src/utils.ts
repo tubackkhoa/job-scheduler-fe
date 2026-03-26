@@ -445,7 +445,7 @@ export async function transpile(code: string): Promise<string> {
     loader: 'tsx',
     format: 'esm',
     platform: 'browser',
-    target: 'es2020',
+    target: 'esnext',
 
     // Lock down JSX
     jsx: 'transform',
