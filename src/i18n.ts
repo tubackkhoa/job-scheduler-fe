@@ -34,4 +34,5 @@ i18n
     ns: ['common'],
     fallbackNS: 'common',
     debug: import.meta.env.DEV,
+    showSupportNotice: false,
   });
