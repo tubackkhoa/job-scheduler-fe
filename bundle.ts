@@ -7,7 +7,6 @@ import path from 'path';
 
 const IMPORT_REWRITE_MAP: Record<string, string> = {
   react: 'React',
-  'react-router-dom': 'RouterDom',
   '@mui/material': 'Mui',
   'lightweight-charts': 'LightweightChart',
 };

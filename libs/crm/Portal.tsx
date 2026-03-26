@@ -9,7 +9,6 @@ import {
   Typography,
   Divider,
 } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
 import { Contact } from './type';
 
 export default function Portal({
@@ -46,7 +45,7 @@ export default function Portal({
         {contacts.map((c, i) => (
           <Box key={c.id}>
             <ListItemButton
-              component={RouterLink}
+              component={Components.RouterLink}
               to={`/${pluginId}/contacts/${c.id}`}
               sx={{ borderRadius: 1 }}
             >

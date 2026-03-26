@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { List, ListItem, ListItemText } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
 import { Post } from './type';
 
 export default function Portal({
@@ -31,7 +30,7 @@ export default function Portal({
       {posts.map((p) => (
         <ListItem
           key={p.id}
-          component={RouterLink}
+          component={Components.RouterLink}
           to={`/${pluginId}/blog/${p.id}`}
           divider
           sx={{ textDecoration: 'none', color: 'inherit' }}

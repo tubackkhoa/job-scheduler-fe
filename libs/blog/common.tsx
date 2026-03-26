@@ -1,5 +1,4 @@
 import { Box, IconButton, Typography } from '@mui/material';
-import { Link } from 'react-router-dom';
 
 export const Header = ({
   link,
@@ -20,7 +19,7 @@ export const Header = ({
       }}
     >
       <Typography
-        component={Link}
+        component={Components.RouterLink}
         to={link}
         variant="h5"
         fontWeight={600}

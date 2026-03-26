@@ -2,7 +2,6 @@ import React from 'react';
 import * as Mui from '@mui/material';
 import * as Utils from '@/utils';
 import * as Constants from '@/constants';
-import * as RouterDom from 'react-router-dom';
 import * as LightweightChart from 'lightweight-charts';
 import AppIcon from './components/AppIcon';
 import _ from 'lodash';
@@ -21,7 +20,6 @@ Object.assign(globalThis, {
   React,
   AppIcon,
   Mui,
-  RouterDom,
   LightweightChart,
   // now the extended with typescript support
   Components,

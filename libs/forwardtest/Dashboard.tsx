@@ -26,7 +26,6 @@ import {
   Autocomplete,
 } from '@mui/material';
 import { useState, Fragment, useEffect, useCallback } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
 
 const { dayjs } = Utils;
 const { SignalsLogsViewer } = Components;
@@ -184,7 +183,7 @@ function JobRowComponent({
               <IconButton
                 size="small"
                 to={`/plugins/${job.plugin_id}/sessions/${job.session_id}/jobs/${job.id}`}
-                component={RouterLink}
+                component={Components.RouterLink}
               >
                 <AppIcon.Edit fontSize="small" />
               </IconButton>

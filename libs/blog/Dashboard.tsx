@@ -11,7 +11,6 @@ import {
   Grid,
   Paper,
 } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
 import { Post } from './type';
 
 const { CodeMirror } = Components;
@@ -187,7 +186,7 @@ export default function Dashboard({
             {posts.map((p) => (
               <ListItem
                 key={p.id}
-                component={RouterLink}
+                component={Components.RouterLink}
                 to={`/${pluginId}/blog/${p.id}`}
                 divider
                 sx={{
