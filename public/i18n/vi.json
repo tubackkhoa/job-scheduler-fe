@@ -19,7 +19,7 @@
   "select or type template plugin name": "chọn hoặc nhập tên plugin mẫu",
   "reload plugin (development)": "tải lại plugin (phát triển)",
   "create new plugin": "tạo plugin mới",
-  "pick a plugin to load its schema and jobs.": "chọn một plugin để cấu trúc và công việc",
+  "pick a plugin to load its schema and jobs.": "chọn một plugin để tải dữ liệu",
   "job": "công việc",
   "select, start, pause, or add a job": "chọn, bắt đầu, tạm dừng hoặc thêm một công việc",
   "new": "thêm mới",
