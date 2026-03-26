@@ -7,9 +7,10 @@ import {
   Box,
   Select,
   Typography,
+  SelectChangeEvent,
 } from '@mui/material';
 import { FieldProps } from '@rjsf/utils';
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, MouseEventHandler } from 'react';
 
 export function SelectField({
   formData,
@@ -79,7 +80,7 @@ export function SelectField({
    * Change handler
    */
   const handleChange = useCallback(
-    (event) => {
+    (event: SelectChangeEvent<string | string[]>) => {
       let value = event.target.value;
 
       if (multiple) {
@@ -99,7 +100,7 @@ export function SelectField({
   /**
    * Select all handler (multi only)
    */
-  const handleSelectAll = useCallback(
+  const handleSelectAll = useCallback<MouseEventHandler>(
     (e) => {
       e.stopPropagation();
       onChange(
@@ -114,12 +115,12 @@ export function SelectField({
    * Render selected values (multi only)
    */
   const renderValue = useCallback(
-    (selected) => {
+    (selected: string[]) => {
       if (!multiple) return null;
 
       if (selected.length > 3) {
         return (
-          <Typography variant="body2">
+          <Typography variant="body2" noWrap>
             {selected.length} items selected
           </Typography>
         );
@@ -151,7 +152,6 @@ export function SelectField({
   return (
     <FormControl fullWidth>
       <InputLabel id={labelId}>{schema.title}</InputLabel>
-
       <Select
         labelId={labelId}
         label={schema.title}
