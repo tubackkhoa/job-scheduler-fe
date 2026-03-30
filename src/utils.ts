@@ -601,12 +601,13 @@ export const DIALECT_MAP: Record<string, SQLDialect> = {
 
 export const resolveLanguageExtension = (
   lang: string,
-  { schema, dialect }: { schema?: SQLNamespace; dialect?: string } = {},
+  dialect?: string,
+  namespace?: SQLNamespace,
 ): LanguageSupport => {
   if (lang === 'sql') {
     return sql({
       dialect: DIALECT_MAP[dialect] || PostgreSQL,
-      schema,
+      schema: namespace,
     });
   }
 

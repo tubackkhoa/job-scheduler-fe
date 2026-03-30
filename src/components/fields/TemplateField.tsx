@@ -24,7 +24,6 @@ import { getCodeMirrorStyle, getContainerStyle } from '@/theme';
 import { LoadingSkeleton } from '../Loading';
 import { useAppColorScheme } from '@/hooks/useAppColorSchema';
 import { useTranslation } from 'react-i18next';
-import { SQLNamespace } from '@codemirror/lang-sql';
 
 export function TemplateField({
   formData,
@@ -45,7 +44,8 @@ export function TemplateField({
       jinja({
         base: resolveLanguageExtension(
           schema.type.toString(),
-          schema.meta as { schema?: SQLNamespace; dialect?: string },
+          schema.dialect,
+          schema.namespace,
         ),
         ...completions,
       }),
