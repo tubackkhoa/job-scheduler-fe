@@ -34,32 +34,6 @@ input[type="number"]::-webkit-outer-spin-button {
   display: none;
 }
 
-table.sortable th {
-  cursor: pointer;
-  user-select: none;
-  position: relative;  
-
-  /* Base style for the arrow container */
-  &::after {
-    margin-left: 10px; /* Space for the arrow */
-    content: "▼";
-    opacity: 0.3; /* Subtle when inactive */
-    font-size: 0.8em;
-  }
-
-  /* Ascending state */
-  &[aria-sort="asc"]::after {    
-    opacity: 0.9;
-  }
-
-  /* Descending state */
-  &[aria-sort="desc"]::after {
-    content: "▲";    
-    opacity: 0.9;
-  }
-
-}
-
 a#tv-attr-logo{
   display: none;
 }

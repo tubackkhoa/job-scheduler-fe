@@ -1,51 +1,86 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-export const useSortableTable = () => {
-  const ref = useRef<HTMLTableElement>(null);
+type SortConfig = {
+  index: number;
+  direction: 'asc' | 'desc';
+} | null;
 
+export const useSortableTable = (rows: string[][]) => {
+  const [sortConfig, setSortConfig] = useState<SortConfig>(null);
+  const [filters, setFilters] = useState<Record<number, string>>({});
+  const [debouncedFilters, setDebouncedFilters] = useState(filters);
+
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // ⏱ debounce
   useEffect(() => {
-    const table = ref.current;
-    if (!table) return;
+    const t = setTimeout(() => {
+      setDebouncedFilters(filters);
+      setPage(0);
+    }, 300);
 
-    const thead = table.querySelector('thead');
-    const tbody = table.querySelector('tbody');
-    if (!thead || !tbody) return;
+    return () => clearTimeout(t);
+  }, [filters]);
 
-    const headers = Array.from(thead.querySelectorAll('th'));
+  const parseValue = (val: string) => {
+    const num = Number(val);
+    return isNaN(num) ? val.toLowerCase() : num;
+  };
 
-    headers.forEach((th, columnIndex) => {
-      let direction: 'asc' | 'desc' = 'asc';
-      th.setAttribute('aria-sort', 'none');
+  // 🔀 sorting
+  const sortedRows = useMemo(() => {
+    if (!sortConfig) return rows;
 
-      th.onclick = () => {
-        const rows = Array.from(tbody.querySelectorAll('tr'));
+    return [...rows].sort((a, b) => {
+      const valA = parseValue(a[sortConfig.index]);
+      const valB = parseValue(b[sortConfig.index]);
 
-        const sorted = rows.sort((a, b) => {
-          const aText = a.children[columnIndex]?.textContent?.trim() ?? '';
-          const bText = b.children[columnIndex]?.textContent?.trim() ?? '';
-
-          const aNum = Number(aText);
-          const bNum = Number(bText);
-          const numeric = !Number.isNaN(aNum) && !Number.isNaN(bNum);
-
-          if (numeric) {
-            return direction === 'asc' ? aNum - bNum : bNum - aNum;
-          }
-
-          return direction === 'asc'
-            ? aText.localeCompare(bText)
-            : bText.localeCompare(aText);
-        });
-
-        headers.forEach((h) => h.setAttribute('aria-sort', 'none'));
-
-        direction = direction === 'asc' ? 'desc' : 'asc';
-        th.setAttribute('aria-sort', direction);
-
-        sorted.forEach((tr) => tbody.appendChild(tr));
-      };
+      if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
     });
-  }, []);
+  }, [rows, sortConfig]);
 
-  return ref;
+  // 🔍 filtering
+  const filteredRows = useMemo(() => {
+    return sortedRows.filter((row) =>
+      Object.entries(debouncedFilters).every(([colIndex, value]) =>
+        row[+colIndex]?.toLowerCase().includes(value.toLowerCase()),
+      ),
+    );
+  }, [sortedRows, debouncedFilters]);
+
+  // 📄 pagination
+  const paginatedRows = useMemo(() => {
+    const start = page * rowsPerPage;
+    return filteredRows.slice(start, start + rowsPerPage);
+  }, [filteredRows, page, rowsPerPage]);
+
+  const handleSort = (index: number) => {
+    setSortConfig((prev) => {
+      if (prev?.index === index) {
+        return {
+          index,
+          direction: prev.direction === 'asc' ? 'desc' : 'asc',
+        };
+      }
+      return { index, direction: 'asc' };
+    });
+  };
+
+  return {
+    paginatedRows,
+    filteredRows,
+    sortConfig,
+    filters,
+
+    setFilters,
+    handleSort,
+
+    page,
+    setPage,
+    rowsPerPage,
+    setRowsPerPage,
+  };
 };
