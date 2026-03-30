@@ -8,7 +8,19 @@ import { parseMixed } from '@lezer/common';
 import { javascript } from '@codemirror/lang-javascript';
 import { yamlLanguage } from '@codemirror/lang-yaml';
 import { json } from '@codemirror/lang-json';
-import { PostgreSQL, sql, SQLNamespace } from '@codemirror/lang-sql';
+import {
+  PostgreSQL,
+  MySQL,
+  SQLite,
+  MSSQL,
+  MariaSQL,
+  StandardSQL,
+  PLSQL,
+  Cassandra,
+  sql,
+  SQLNamespace,
+  SQLDialect,
+} from '@codemirror/lang-sql';
 import { markdown } from '@codemirror/lang-markdown';
 import { jinja, JinjaCompletionConfig } from '@codemirror/lang-jinja';
 import dayjs from 'dayjs';
@@ -569,14 +581,33 @@ export const markdownLang = markdown({
 
 // default jinja is markdown to display dynamic content
 export const jinjaLang = jinja({ base: markdownLang });
+export const DIALECT_MAP: Record<string, SQLDialect> = {
+  postgresql: PostgreSQL,
+  postgres: PostgreSQL,
+
+  mysql: MySQL,
+  mariadb: MariaSQL,
+
+  sqlite: SQLite,
+
+  mssql: MSSQL,
+  sqlserver: MSSQL,
+
+  cassandra: Cassandra,
+  plsql: PLSQL,
+
+  standard: StandardSQL,
+};
 
 export const resolveLanguageExtension = (
   lang: string,
-  schema?: SQLNamespace,
+  { schema, dialect }: { schema?: SQLNamespace; dialect?: string } = {},
 ): LanguageSupport => {
-  // sql with custom meta
   if (lang === 'sql') {
-    return schema ? sql({ dialect: PostgreSQL, schema }) : sqlLang;
+    return sql({
+      dialect: DIALECT_MAP[dialect] || PostgreSQL,
+      schema,
+    });
   }
 
   if (lang === 'markdown') return markdownLang;
