@@ -18,7 +18,11 @@ import DynamicField from './fields/DynamicField';
 import { useTranslation } from 'react-i18next';
 import storage from '@/storage';
 
-function WidgetSettingsButton({ onRemove }) {
+interface WidgetSettingsButtonProps {
+  onRemove?: () => void;
+}
+
+function WidgetSettingsButton({ onRemove }: WidgetSettingsButtonProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -26,7 +30,7 @@ function WidgetSettingsButton({ onRemove }) {
     setAnchorEl(e.currentTarget);
   };
 
-  const handleClose = (e?: React.SyntheticEvent) => {
+  const handleClose = () => {
     setAnchorEl(null);
   };
 
@@ -135,10 +139,10 @@ export function PortalPage({ plugins, routeState }: Props) {
   const { t } = useTranslation();
   const initialWidgets = useMemo<PortalWidget[]>(() => {
     return Object.entries(routeState)
-      .filter((item) => item[1].portal)
       .map(([key, routeState]) => {
         const pluginId = Number(key);
         const plugin = plugins.find((item) => item.id === pluginId);
+        if (!plugin || !routeState.portal) return null;
         return {
           id: pluginId,
           title: plugin.package,
@@ -146,9 +150,10 @@ export function PortalPage({ plugins, routeState }: Props) {
             formData: plugin,
             registry: { formContext: { pluginPackage: plugin.package } },
             schema: routeState.portal,
-          } as ConfigFieldProps,
+          },
         };
-      });
+      })
+      .filter(Boolean) as PortalWidget[];
   }, [plugins, routeState]);
 
   const [widgets, setWidgets] = React.useState<PortalWidget[]>();
@@ -160,6 +165,7 @@ export function PortalPage({ plugins, routeState }: Props) {
 
   const handleRemoveWidget = (id: number) => {
     setWidgets((prev) => {
+      if (!prev) return prev;
       const next = prev.filter((w) => w.id !== id);
 
       const current = storage.loadLayout();
@@ -181,7 +187,9 @@ export function PortalPage({ plugins, routeState }: Props) {
       const visibleSet = new Set(layout.order);
       const hiddenSet = new Set(layout.hidden);
 
-      const ordered = layout.order.map((id) => map.get(id)).filter(Boolean);
+      const ordered = layout.order
+        .map((id) => map.get(id))
+        .filter(Boolean) as PortalWidget[];
 
       const newWidgets = initialWidgets.filter(
         (w) => !visibleSet.has(w.id) && !hiddenSet.has(w.id),
@@ -227,6 +235,7 @@ export function PortalPage({ plugins, routeState }: Props) {
           if (!over || active.id === over.id) return;
 
           setWidgets((items) => {
+            if (!items) return items;
             const oldIndex = items.findIndex((i) => i.id === active.id);
             const newIndex = items.findIndex((i) => i.id === over.id);
             if (oldIndex === -1 || newIndex === -1) return items;
